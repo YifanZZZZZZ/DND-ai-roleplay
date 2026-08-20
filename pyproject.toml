@@ -1,0 +1,46 @@
+[project]
+name = "dnd-ai-roleplay"
+version = "0.1.0"
+description = "A local, human-DM-led TRPG application with persistent AI characters."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "aiosqlite>=0.21.0",
+    "alembic>=1.16.0",
+    "fastapi>=0.116.0",
+    "openpyxl>=3.1.5",
+    "pydantic-ai-slim[openai]>=1.0.0",
+    "pydantic-settings>=2.10.0",
+    "python-multipart>=0.0.20",
+    "sqlalchemy>=2.0.40",
+    "uvicorn[standard]>=0.35.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.0",
+    "pyright>=1.1.400",
+    "pytest>=8.4.0",
+    "pytest-asyncio>=1.1.0",
+    "ruff>=0.12.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = ["."]
+testpaths = ["backend/tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC"]
+
+[tool.pyright]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+venvPath = "."
+venv = ".venv"
+include = ["backend/app"]
+exclude = ["backend/alembic"]

@@ -1,0 +1,2930 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DND AI Roleplay",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Health",
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Api V1 Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/characters": {
+      "get": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "List Characters",
+        "operationId": "list_characters_api_v1_characters_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CharacterSummary"
+                  },
+                  "type": "array",
+                  "title": "Response List Characters Api V1 Characters Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Create Character",
+        "operationId": "create_character_api_v1_characters_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CharacterCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharacterDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/characters/{character_id}": {
+      "get": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Get Character",
+        "operationId": "get_character_api_v1_characters__character_id__get",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharacterDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Update Character",
+        "operationId": "update_character_api_v1_characters__character_id__patch",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CharacterUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharacterDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/characters/{character_id}/avatar": {
+      "post": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Upload Avatar",
+        "operationId": "upload_avatar_api_v1_characters__character_id__avatar_post",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_avatar_api_v1_characters__character_id__avatar_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharacterDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/characters/{character_id}/memories": {
+      "get": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "List Memories",
+        "operationId": "list_memories_api_v1_characters__character_id__memories_get",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MemoryView"
+                  },
+                  "title": "Response List Memories Api V1 Characters  Character Id  Memories Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Create Memory",
+        "operationId": "create_memory_api_v1_characters__character_id__memories_post",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemoryCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemoryView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/characters/{character_id}/memories/{memory_id}": {
+      "patch": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Update Memory",
+        "operationId": "update_memory_api_v1_characters__character_id__memories__memory_id__patch",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          },
+          {
+            "name": "memory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Memory Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemoryUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemoryView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Delete Memory",
+        "operationId": "delete_memory_api_v1_characters__character_id__memories__memory_id__delete",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          },
+          {
+            "name": "memory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Memory Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/characters/{character_id}:export": {
+      "get": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Export Character",
+        "operationId": "export_character_api_v1_characters__character_id__export_get",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/characters/{character_id}/sheet-versions:preview": {
+      "post": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Preview Character Sheet",
+        "operationId": "preview_character_sheet_api_v1_characters__character_id__sheet_versions_preview_post",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_preview_character_sheet_api_v1_characters__character_id__sheet_versions_preview_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SheetPreview"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/characters/{character_id}/sheet-versions/{version_id}:activate": {
+      "post": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Activate Character Sheet",
+        "operationId": "activate_character_sheet_api_v1_characters__character_id__sheet_versions__version_id__activate_post",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          },
+          {
+            "name": "version_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Version Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SheetActivation"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns": {
+      "get": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "List Campaigns",
+        "operationId": "list_campaigns_api_v1_campaigns_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CampaignSummary"
+                  },
+                  "type": "array",
+                  "title": "Response List Campaigns Api V1 Campaigns Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Create Campaign",
+        "operationId": "create_campaign_api_v1_campaigns_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}": {
+      "get": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Get Campaign",
+        "operationId": "get_campaign_api_v1_campaigns__campaign_id__get",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Update Campaign",
+        "operationId": "update_campaign_api_v1_campaigns__campaign_id__patch",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Delete Campaign",
+        "operationId": "delete_campaign_api_v1_campaigns__campaign_id__delete",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/memberships": {
+      "put": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Replace Memberships",
+        "operationId": "replace_memberships_api_v1_campaigns__campaign_id__memberships_put",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignMembershipUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}:activate": {
+      "post": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Activate Campaign",
+        "operationId": "activate_campaign_api_v1_campaigns__campaign_id__activate_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}:complete": {
+      "post": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Complete Campaign",
+        "operationId": "complete_campaign_api_v1_campaigns__campaign_id__complete_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}:reopen": {
+      "post": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Reopen Campaign",
+        "operationId": "reopen_campaign_api_v1_campaigns__campaign_id__reopen_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}:export": {
+      "get": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Export Campaign",
+        "operationId": "export_campaign_api_v1_campaigns__campaign_id__export_get",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/sessions": {
+      "post": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Create Session",
+        "operationId": "create_session_api_v1_campaigns__campaign_id__sessions_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}:end": {
+      "post": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "End Session",
+        "operationId": "end_session_api_v1_sessions__session_id__end_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}": {
+      "get": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Get Session",
+        "operationId": "get_session_api_v1_sessions__session_id__get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/characters/{character_id}/hp": {
+      "patch": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Update Hp",
+        "operationId": "update_hp_api_v1_sessions__session_id__characters__character_id__hp_patch",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HpUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/messages": {
+      "get": {
+        "tags": [
+          "messages"
+        ],
+        "summary": "List Messages",
+        "operationId": "list_messages_api_v1_sessions__session_id__messages_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MessageView"
+                  },
+                  "title": "Response List Messages Api V1 Sessions  Session Id  Messages Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "messages"
+        ],
+        "summary": "Send Dm Message",
+        "operationId": "send_dm_message_api_v1_sessions__session_id__messages_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DmMessageCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DmMessageCommandResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/messages:ooc": {
+      "post": {
+        "tags": [
+          "messages"
+        ],
+        "summary": "Correct Message With Ooc",
+        "operationId": "correct_message_with_ooc_api_v1_sessions__session_id__messages_ooc_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OocCorrectionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuntimeState"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/runtime:stop": {
+      "post": {
+        "tags": [
+          "messages"
+        ],
+        "summary": "Stop Runtime",
+        "operationId": "stop_runtime_api_v1_sessions__session_id__runtime_stop_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuntimeState"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/events": {
+      "get": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Get Session Events",
+        "operationId": "get_session_events_api_v1_sessions__session_id__events_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_preview_character_sheet_api_v1_characters__character_id__sheet_versions_preview_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_preview_character_sheet_api_v1_characters__character_id__sheet_versions_preview_post"
+      },
+      "Body_upload_avatar_api_v1_characters__character_id__avatar_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_avatar_api_v1_characters__character_id__avatar_post"
+      },
+      "CampaignCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "characterIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Characterids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "CampaignCreate"
+      },
+      "CampaignDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "lifecycleStatus": {
+            "$ref": "#/components/schemas/CampaignLifecycleStatus"
+          },
+          "archivedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archivedat"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "memberCount": {
+            "type": "integer",
+            "title": "Membercount"
+          },
+          "activeSessionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activesessionid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedat"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/CampaignMember"
+            },
+            "type": "array",
+            "title": "Members"
+          },
+          "sessions": {
+            "items": {
+              "$ref": "#/components/schemas/SessionSummary"
+            },
+            "type": "array",
+            "title": "Sessions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "lifecycleStatus",
+          "archivedAt",
+          "revision",
+          "memberCount",
+          "activeSessionId",
+          "createdAt",
+          "updatedAt",
+          "members",
+          "sessions"
+        ],
+        "title": "CampaignDetail"
+      },
+      "CampaignLifecycleStatus": {
+        "type": "string",
+        "enum": [
+          "PREPARATION",
+          "ACTIVE",
+          "COMPLETED"
+        ],
+        "title": "CampaignLifecycleStatus"
+      },
+      "CampaignMember": {
+        "properties": {
+          "characterId": {
+            "type": "string",
+            "title": "Characterid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "maxHp": {
+            "type": "integer",
+            "title": "Maxhp"
+          },
+          "avatarPath": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatarpath"
+          },
+          "isConfigured": {
+            "type": "boolean",
+            "title": "Isconfigured"
+          }
+        },
+        "type": "object",
+        "required": [
+          "characterId",
+          "name",
+          "maxHp",
+          "avatarPath",
+          "isConfigured"
+        ],
+        "title": "CampaignMember"
+      },
+      "CampaignMembershipUpdate": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "characterIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Characterids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision",
+          "characterIds"
+        ],
+        "title": "CampaignMembershipUpdate"
+      },
+      "CampaignSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "lifecycleStatus": {
+            "$ref": "#/components/schemas/CampaignLifecycleStatus"
+          },
+          "archivedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archivedat"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "memberCount": {
+            "type": "integer",
+            "title": "Membercount"
+          },
+          "activeSessionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activesessionid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "lifecycleStatus",
+          "archivedAt",
+          "revision",
+          "memberCount",
+          "activeSessionId",
+          "createdAt",
+          "updatedAt"
+        ],
+        "title": "CampaignSummary"
+      },
+      "CampaignUpdate": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision"
+        ],
+        "title": "CampaignUpdate"
+      },
+      "CharacterCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "roleplayPrompt": {
+            "type": "string",
+            "maxLength": 200000,
+            "minLength": 1,
+            "title": "Roleplayprompt"
+          },
+          "maxHp": {
+            "type": "integer",
+            "maximum": 100000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Maxhp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "roleplayPrompt",
+          "maxHp"
+        ],
+        "title": "CharacterCreate"
+      },
+      "CharacterDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "maxHp": {
+            "type": "integer",
+            "title": "Maxhp"
+          },
+          "avatarPath": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatarpath"
+          },
+          "hasRoleplayPrompt": {
+            "type": "boolean",
+            "title": "Hasroleplayprompt"
+          },
+          "hasActiveSheet": {
+            "type": "boolean",
+            "title": "Hasactivesheet"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedat"
+          },
+          "roleplayPrompt": {
+            "type": "string",
+            "title": "Roleplayprompt"
+          },
+          "profileContent": {
+            "type": "string",
+            "title": "Profilecontent"
+          },
+          "profileStatus": {
+            "$ref": "#/components/schemas/ProfileStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "maxHp",
+          "avatarPath",
+          "hasRoleplayPrompt",
+          "hasActiveSheet",
+          "revision",
+          "createdAt",
+          "updatedAt",
+          "roleplayPrompt",
+          "profileContent",
+          "profileStatus"
+        ],
+        "title": "CharacterDetail"
+      },
+      "CharacterSheetSnapshot": {
+        "properties": {
+          "parserVersion": {
+            "type": "string",
+            "title": "Parserversion",
+            "default": "sad-spirit-v1"
+          },
+          "characterName": {
+            "type": "string",
+            "title": "Charactername"
+          },
+          "species": {
+            "type": "string",
+            "title": "Species"
+          },
+          "subspecies": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subspecies"
+          },
+          "classes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Classes"
+          },
+          "subclasses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Subclasses"
+          },
+          "background": {
+            "type": "string",
+            "title": "Background"
+          },
+          "homeland": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Homeland"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Languages"
+          },
+          "tools": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tools"
+          },
+          "classFeatures": {
+            "items": {
+              "$ref": "#/components/schemas/NamedDescription"
+            },
+            "type": "array",
+            "title": "Classfeatures"
+          },
+          "speciesFeatures": {
+            "items": {
+              "$ref": "#/components/schemas/NamedDescription"
+            },
+            "type": "array",
+            "title": "Speciesfeatures"
+          },
+          "feats": {
+            "items": {
+              "$ref": "#/components/schemas/NamedDescription"
+            },
+            "type": "array",
+            "title": "Feats"
+          },
+          "spells": {
+            "items": {
+              "$ref": "#/components/schemas/SpellSnapshot"
+            },
+            "type": "array",
+            "title": "Spells"
+          },
+          "equipment": {
+            "items": {
+              "$ref": "#/components/schemas/NamedDescription"
+            },
+            "type": "array",
+            "title": "Equipment"
+          },
+          "inventory": {
+            "items": {
+              "$ref": "#/components/schemas/NamedDescription"
+            },
+            "type": "array",
+            "title": "Inventory"
+          }
+        },
+        "type": "object",
+        "required": [
+          "characterName",
+          "species",
+          "classes",
+          "subclasses",
+          "background"
+        ],
+        "title": "CharacterSheetSnapshot"
+      },
+      "CharacterSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "maxHp": {
+            "type": "integer",
+            "title": "Maxhp"
+          },
+          "avatarPath": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatarpath"
+          },
+          "hasRoleplayPrompt": {
+            "type": "boolean",
+            "title": "Hasroleplayprompt"
+          },
+          "hasActiveSheet": {
+            "type": "boolean",
+            "title": "Hasactivesheet"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "maxHp",
+          "avatarPath",
+          "hasRoleplayPrompt",
+          "hasActiveSheet",
+          "revision",
+          "createdAt",
+          "updatedAt"
+        ],
+        "title": "CharacterSummary"
+      },
+      "CharacterUpdate": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "roleplayPrompt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roleplayprompt"
+          },
+          "maxHp": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maxhp"
+          },
+          "profileContent": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profilecontent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision"
+        ],
+        "title": "CharacterUpdate"
+      },
+      "DmMessageCommandResult": {
+        "properties": {
+          "message": {
+            "$ref": "#/components/schemas/MessageView"
+          },
+          "runtime": {
+            "$ref": "#/components/schemas/RuntimeState"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "runtime"
+        ],
+        "title": "DmMessageCommandResult"
+      },
+      "DmMessageCreate": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "maxLength": 3000,
+            "minLength": 1,
+            "title": "Content"
+          },
+          "audience": {
+            "$ref": "#/components/schemas/MessageAudience",
+            "default": "PUBLIC"
+          },
+          "recipientCharacterIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Recipientcharacterids"
+          },
+          "clientRequestId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Clientrequestid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content",
+          "clientRequestId"
+        ],
+        "title": "DmMessageCreate"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HpState": {
+        "properties": {
+          "characterId": {
+            "type": "string",
+            "title": "Characterid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "currentHp": {
+            "type": "integer",
+            "title": "Currenthp"
+          },
+          "maxHp": {
+            "type": "integer",
+            "title": "Maxhp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "characterId",
+          "name",
+          "currentHp",
+          "maxHp"
+        ],
+        "title": "HpState"
+      },
+      "HpUpdate": {
+        "properties": {
+          "currentHp": {
+            "type": "integer",
+            "maximum": 100000.0,
+            "minimum": 0.0,
+            "title": "Currenthp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "currentHp"
+        ],
+        "title": "HpUpdate"
+      },
+      "MemoryCreate": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Content"
+          },
+          "pinned": {
+            "type": "boolean",
+            "title": "Pinned",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "MemoryCreate"
+      },
+      "MemoryOrigin": {
+        "type": "string",
+        "enum": [
+          "DM",
+          "AUTO"
+        ],
+        "title": "MemoryOrigin"
+      },
+      "MemoryUpdate": {
+        "properties": {
+          "content": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 5000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content"
+          },
+          "pinned": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pinned"
+          }
+        },
+        "type": "object",
+        "title": "MemoryUpdate"
+      },
+      "MemoryView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "characterId": {
+            "type": "string",
+            "title": "Characterid"
+          },
+          "sourceCampaignId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sourcecampaignid"
+          },
+          "sourceSessionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sourcesessionid"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/MemoryOrigin"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "pinned": {
+            "type": "boolean",
+            "title": "Pinned"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "characterId",
+          "sourceCampaignId",
+          "sourceSessionId",
+          "origin",
+          "content",
+          "pinned",
+          "createdAt",
+          "updatedAt"
+        ],
+        "title": "MemoryView"
+      },
+      "MessageAudience": {
+        "type": "string",
+        "enum": [
+          "PUBLIC",
+          "PRIVATE",
+          "DM_ONLY"
+        ],
+        "title": "MessageAudience"
+      },
+      "MessageKind": {
+        "type": "string",
+        "enum": [
+          "IN_GAME",
+          "OOC",
+          "SYSTEM"
+        ],
+        "title": "MessageKind"
+      },
+      "MessageRecipientView": {
+        "properties": {
+          "characterId": {
+            "type": "string",
+            "title": "Characterid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "characterId",
+          "name"
+        ],
+        "title": "MessageRecipientView"
+      },
+      "MessageSenderType": {
+        "type": "string",
+        "enum": [
+          "DM",
+          "CHARACTER",
+          "SYSTEM"
+        ],
+        "title": "MessageSenderType"
+      },
+      "MessageView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "sessionId": {
+            "type": "string",
+            "title": "Sessionid"
+          },
+          "sequenceNo": {
+            "type": "integer",
+            "title": "Sequenceno"
+          },
+          "senderType": {
+            "$ref": "#/components/schemas/MessageSenderType"
+          },
+          "senderCharacterId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sendercharacterid"
+          },
+          "senderName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sendername"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/MessageKind"
+          },
+          "audience": {
+            "$ref": "#/components/schemas/MessageAudience"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "isOocCorrected": {
+            "type": "boolean",
+            "title": "Isooccorrected"
+          },
+          "oocCorrectionNote": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ooccorrectionnote"
+          },
+          "recipients": {
+            "items": {
+              "$ref": "#/components/schemas/MessageRecipientView"
+            },
+            "type": "array",
+            "title": "Recipients"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "sessionId",
+          "sequenceNo",
+          "senderType",
+          "senderCharacterId",
+          "senderName",
+          "kind",
+          "audience",
+          "content",
+          "isOocCorrected",
+          "oocCorrectionNote",
+          "recipients",
+          "createdAt"
+        ],
+        "title": "MessageView"
+      },
+      "NamedDescription": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "NamedDescription"
+      },
+      "OocCorrectionCreate": {
+        "properties": {
+          "targetMessageId": {
+            "type": "string",
+            "title": "Targetmessageid"
+          },
+          "correction": {
+            "type": "string",
+            "maxLength": 3000,
+            "minLength": 1,
+            "title": "Correction"
+          },
+          "replacementContent": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 3000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replacementcontent"
+          },
+          "clientRequestId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Clientrequestid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "targetMessageId",
+          "correction",
+          "clientRequestId"
+        ],
+        "title": "OocCorrectionCreate"
+      },
+      "ProfileStatus": {
+        "type": "string",
+        "enum": [
+          "READY",
+          "NEEDS_REBUILD",
+          "GENERATING",
+          "FAILED"
+        ],
+        "title": "ProfileStatus"
+      },
+      "RuntimeState": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/RuntimeStatus"
+          },
+          "generation": {
+            "type": "integer",
+            "title": "Generation"
+          },
+          "activeAgentRunId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activeagentrunid"
+          },
+          "waitingRequest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Waitingrequest"
+          },
+          "consecutiveAiMessages": {
+            "type": "integer",
+            "title": "Consecutiveaimessages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "generation",
+          "activeAgentRunId",
+          "waitingRequest",
+          "consecutiveAiMessages"
+        ],
+        "title": "RuntimeState"
+      },
+      "RuntimeStatus": {
+        "type": "string",
+        "enum": [
+          "IDLE",
+          "AGENTS_EVALUATING",
+          "VALIDATING_MESSAGE",
+          "WAITING_FOR_DM",
+          "ERROR",
+          "ENDED"
+        ],
+        "title": "RuntimeStatus"
+      },
+      "SessionCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "SessionCreate"
+      },
+      "SessionDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "campaignId": {
+            "type": "string",
+            "title": "Campaignid"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SessionStatus"
+          },
+          "runtimeStatus": {
+            "$ref": "#/components/schemas/RuntimeStatus"
+          },
+          "runtimeGeneration": {
+            "type": "integer",
+            "title": "Runtimegeneration"
+          },
+          "activeAgentRunId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activeagentrunid"
+          },
+          "waitingRequest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Waitingrequest"
+          },
+          "consecutiveAiMessages": {
+            "type": "integer",
+            "title": "Consecutiveaimessages"
+          },
+          "hpStates": {
+            "items": {
+              "$ref": "#/components/schemas/HpState"
+            },
+            "type": "array",
+            "title": "Hpstates"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Startedat"
+          },
+          "endedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "campaignId",
+          "title",
+          "status",
+          "runtimeStatus",
+          "runtimeGeneration",
+          "activeAgentRunId",
+          "waitingRequest",
+          "consecutiveAiMessages",
+          "hpStates",
+          "startedAt",
+          "endedAt"
+        ],
+        "title": "SessionDetail"
+      },
+      "SessionStatus": {
+        "type": "string",
+        "enum": [
+          "ACTIVE",
+          "ENDED"
+        ],
+        "title": "SessionStatus"
+      },
+      "SessionSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SessionStatus"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Startedat"
+          },
+          "endedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "status",
+          "startedAt",
+          "endedAt"
+        ],
+        "title": "SessionSummary"
+      },
+      "SheetActivation": {
+        "properties": {
+          "characterId": {
+            "type": "string",
+            "title": "Characterid"
+          },
+          "activeVersionId": {
+            "type": "string",
+            "title": "Activeversionid"
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/CharacterSheetSnapshot"
+          }
+        },
+        "type": "object",
+        "required": [
+          "characterId",
+          "activeVersionId",
+          "snapshot"
+        ],
+        "title": "SheetActivation"
+      },
+      "SheetParseStatus": {
+        "type": "string",
+        "enum": [
+          "PENDING",
+          "VALID",
+          "FAILED"
+        ],
+        "title": "SheetParseStatus"
+      },
+      "SheetPreview": {
+        "properties": {
+          "versionId": {
+            "type": "string",
+            "title": "Versionid"
+          },
+          "parseStatus": {
+            "$ref": "#/components/schemas/SheetParseStatus"
+          },
+          "originalFilename": {
+            "type": "string",
+            "title": "Originalfilename"
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/CharacterSheetSnapshot"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "versionId",
+          "parseStatus",
+          "originalFilename",
+          "snapshot",
+          "createdAt"
+        ],
+        "title": "SheetPreview"
+      },
+      "SpellSnapshot": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "school": {
+            "type": "string",
+            "title": "School",
+            "default": ""
+          },
+          "castingTime": {
+            "type": "string",
+            "title": "Castingtime",
+            "default": ""
+          },
+          "range": {
+            "type": "string",
+            "title": "Range",
+            "default": ""
+          },
+          "duration": {
+            "type": "string",
+            "title": "Duration",
+            "default": ""
+          },
+          "components": {
+            "type": "string",
+            "title": "Components",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "category"
+        ],
+        "title": "SpellSnapshot"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

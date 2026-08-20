@@ -1,0 +1,91 @@
+.uploader {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.fileInput {
+  display: none;
+}
+
+.uploadButton,
+.actions button {
+  min-height: 36px;
+  padding: 0 12px;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.uploadButton:hover,
+.actions button:hover {
+  border-color: var(--gold-muted);
+}
+
+.preview {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  background: #151310;
+  border: 1px solid rgb(212 174 104 / 22%);
+  border-radius: 6px;
+}
+
+.preview strong,
+.preview span {
+  display: block;
+}
+
+.preview strong {
+  color: var(--paper);
+}
+
+.preview span {
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.preview dl {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  margin: 0;
+}
+
+.preview dl div {
+  padding: 8px;
+  text-align: center;
+  background: rgb(255 255 255 / 2%);
+}
+
+.preview dt {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.preview dd {
+  margin: 3px 0 0;
+  color: var(--gold-bright);
+  font-size: 16px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.actions button:last-child {
+  color: #17130d;
+  background: var(--gold-bright);
+  border-color: var(--gold-bright);
+}
+
+.error {
+  margin: 0;
+  color: #efb0a8;
+  font-size: 12px;
+}
+

@@ -1,0 +1,55 @@
+:root {
+  color-scheme: dark;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+  color: #d8d3ca;
+  background: #151310;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --font-display: "Songti SC", "STSong", Georgia, serif;
+  --surface: #1c1916;
+  --surface-raised: #24201c;
+  --surface-soft: #201d19;
+  --paper: #f0e9dc;
+  --text: #d8d3ca;
+  --text-muted: #969088;
+  --gold-bright: #d4ae68;
+  --gold-muted: #8f6e37;
+  --line: rgb(224 206 174 / 12%);
+  --danger: #c66f62;
+  --success: #79a57a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 1024px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 80% 10%, rgb(143 110 55 / 8%), transparent 28%),
+    #151310;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}

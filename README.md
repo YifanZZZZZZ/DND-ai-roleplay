@@ -8,14 +8,37 @@
 
 ## 当前状态
 
-项目目前处于产品和技术设计阶段，仓库中暂未创建可执行代码脚手架。
+项目已经完成 Stage 0、Stage 1、Stage 2，并完成 Stage 3 的多角色运行闭环。
+
+当前可运行能力：
+
+- FastAPI、React/Vite、SQLite 和 Alembic 工程骨架；
+- 全局角色资料创建；
+- 固定模板 Excel 角色卡安全上传、解析预览和确认激活；
+- 角色定性身份、实际能力、法术、装备白名单快照；
+- Campaign 创建、阵容与唯一 ACTIVE Campaign 约束；
+- Session 创建、结束和唯一 ACTIVE Session 约束；
+- HP 查看与修改，修改 Max HP 时同步当前 Session 并自动回满；
+- 角色库、角色卡上传、战役阵容、生命周期、Session 与 HP 的桌面端操作页面；
+- 两栏跑团主页面、DM 场内消息、消息接收者快照与实时状态刷新；
+- `clientRequestId` 幂等发送、Generation 抢占令牌和“停止 AI 自动对话”控制；
+- DeepSeek OpenAI 兼容接口与 PydanticAI 结构化角色输出；
+- 每条新消息并行询问所有可见角色，协调器只发布一条不冲突的候选气泡；
+- 角色可保持沉默，或在需要结果裁决时等待 DM；发布后会重新广播，连续发言最多 12 条；
+- OOC 纠正会使错误消息失效，并以带标识的有效替代消息继续运行；
+- 角色拥有可编辑的成长档案、长期记忆、头像与按可见范围生成的 Session 记录；
+- 支持角色与 Campaign 的 JSON 导出，以及完成后 Campaign 的永久删除；
+- 角色上下文仅包含自己可见的消息、角色卡定性资料、长期记忆及定性健康状态；
+- 模型调用审计记录（模型、状态、耗时和输入/输出 token）；
+- OpenAPI 自动生成前端 DTO；
+- 角色、Campaign、Session 与消息可见范围的集成测试。
+
+当前角色卡解析器只支持项目约定的“DND 5E2024 人物卡〈悲灵 v1.0.0〉”固定模板。真实 Character Agent 已优先接入 DeepSeek；未配置 API Key 时，DM 消息会安全保存且不会伪造 AI 回复。尚未实现的主要部分是 Multi-Agent Orchestrator、OOC 修订、记忆自动沉淀和导出。
 
 - [精简产品需求](./PRD.md)
 - [精简技术架构](./ARCHITECTURE.md)
 - [完整产品需求文档](./AI_TRPG_Website_MVP_PRD_v0.3.md)
 - [完整技术架构文档](./AI_TRPG_MVP_TECH_ARCHITECTURE.md)
-
-本文后面的运行命令描述代码脚手架完成后的预期开发方式；在 `pyproject.toml`、`backend/` 和 `frontend/` 创建前，这些命令不会运行。
 
 ## 项目特点
 
@@ -50,7 +73,7 @@
 - Python
 - FastAPI
 - PydanticAI
-- LangGraph
+- LangGraph（将在多角色编排阶段接入）
 - SQLAlchemy 2.x
 - Alembic
 - SQLite + aiosqlite
@@ -85,11 +108,11 @@ FastAPI
 SQLite + Local File Storage
 ```
 
-每条已发布消息创建一个独立 `AgentRun`。一个 Run 会并行询问所有有权看到该消息的角色，但最多只发布一个候选气泡。若该气泡需要 DM 裁决，当前 Run 结束，Session 进入 `WAITING_FOR_DM`；DM 回复后再创建新的 Run。
+每条已发布消息创建一个独立 `AgentRun`。所有有权看到消息的角色会独立、并行地产生沉默或完整候选；纯 Python 协调器按点名、紧急性、发言公平性和记录的随机种子选择一条候选。未选择的候选不会写入消息历史。若该气泡需要 DM 裁决，当前 Run 结束，Session 进入 `WAITING_FOR_DM`；DM 回复后再创建新的 Run。
 
 SQLite 是业务事实的唯一来源。Agent 不保存框架内部长期历史，也不能直接访问或修改数据库。
 
-## 预期目录
+## 项目目录
 
 ```text
 DND跑团/
@@ -126,14 +149,12 @@ DND跑团/
 
 ## 如何运行
 
-> 以下命令将在工程脚手架创建后生效。
-
 ### 1. 环境要求
 
-- Python 3.12 或更高版本；
+- Python 3.11 或更高版本；
 - Node.js 和 npm；
 - uv；
-- Gemini 或 DeepSeek API Key。
+- DeepSeek API Key（仅在启用真实角色回应时需要）。
 
 ### 2. 创建本地配置
 
@@ -141,16 +162,14 @@ DND跑团/
 cp .env.example .env
 ```
 
-至少需要配置：
+当前至少需要配置数据目录：
 
 ```dotenv
 AI_TRPG_DATA_DIR=/absolute/path/to/AI_TRPG_DATA
-AI_TRPG_LLM_PROVIDER=google
-AI_TRPG_CHARACTER_MODEL=your-model-name
-AI_TRPG_VALIDATOR_MODEL=your-model-name
-AI_TRPG_SUMMARY_MODEL=your-model-name
-GOOGLE_API_KEY=your-api-key
-# 或 DEEPSEEK_API_KEY=your-api-key
+AI_TRPG_LLM_PROVIDER=deepseek
+AI_TRPG_CHARACTER_MODEL=deepseek-v4-flash
+AI_TRPG_DEEPSEEK_API_KEY=your-api-key
+AI_TRPG_DEEPSEEK_BASE_URL=https://api.deepseek.com
 ```
 
 运行数据库、上传文件和导出文件必须位于仓库外的 `AI_TRPG_DATA_DIR`，不得提交到 Git。
@@ -178,7 +197,7 @@ uv run alembic upgrade head
 终端一：
 
 ```bash
-uv run uvicorn app.main:app --app-dir backend --reload --host 127.0.0.1 --port 8000
+uv run uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 终端二：
@@ -189,24 +208,25 @@ npm --prefix frontend run dev
 
 随后打开 Vite 输出的本地地址。
 
-### 7. 本地生产模式
+### 7. 构建前端
 
 ```bash
 npm --prefix frontend run build
-uv run uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000
 ```
 
-生产模式下由 FastAPI 提供编译后的前端静态文件。
+当前开发阶段由 Vite 提供前端。FastAPI 同源提供构建产物会在进入可发布版本前接入。
 
 ## 检查与测试
 
 ```bash
 uv run ruff check .
-uv run pyright
+uv run ruff format --check backend scripts
+uv run pyright backend/app
 uv run pytest
+uv run alembic check
 npm --prefix frontend run lint
 npm --prefix frontend run test
-npm --prefix frontend run test:e2e
+npm --prefix frontend run build
 ```
 
 CI 中使用假的 Model Adapter 或 PydanticAI TestModel，不调用真实 Gemini 或 DeepSeek。

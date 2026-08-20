@@ -1,0 +1,340 @@
+.playLayout {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.42fr) minmax(540px, 1fr);
+  min-height: calc(100vh - 72px);
+  margin: -36px -48px;
+  background: var(--surface);
+}
+
+.partyPanel {
+  padding: 42px 30px;
+  background: linear-gradient(180deg, #181611, #12110e);
+  border-right: 1px solid var(--line);
+}
+
+.backLink,
+.eyebrow {
+  display: block;
+  color: var(--gold-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.backLink {
+  margin-bottom: 32px;
+  letter-spacing: 0.06em;
+}
+
+.partyPanel h1,
+.runtimeHeader h2 {
+  margin: 8px 0 10px;
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+}
+
+.partyPanel > p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.partyList {
+  display: grid;
+  gap: 13px;
+  margin-top: 30px;
+}
+
+.partyMember {
+  padding: 15px;
+  background: rgb(255 255 255 / 2%);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+
+.memberHeader,
+.composerActions,
+.runtimeHeader,
+.messageMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.memberHeader {
+  color: var(--paper);
+  font-size: 13px;
+}
+
+.memberHeader span,
+.composerActions span {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.hpTrack {
+  height: 5px;
+  margin: 12px 0;
+  overflow: hidden;
+  background: #090907;
+  border-radius: 999px;
+}
+
+.hpTrack span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #bc745c, #d4ae68);
+}
+
+.hpControl {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.hpControl input,
+.composer textarea {
+  color: var(--paper);
+  background: #11100d;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+}
+
+.hpControl input {
+  min-width: 0;
+  padding: 8px;
+}
+
+.hpControl button,
+.stopButton {
+  padding: 0 11px;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+}
+
+.hpControl button:disabled,
+.stopButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.chatPanel {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  min-height: calc(100vh - 72px);
+}
+
+.runtimeHeader {
+  padding: 32px 42px 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.runtimeHeader h2 {
+  margin-bottom: 0;
+  font-size: 25px;
+}
+
+.stopButton {
+  min-height: 38px;
+}
+
+.waiting,
+.modelNotice {
+  padding: 12px 42px;
+  font-size: 13px;
+}
+
+.waiting {
+  color: #f0ca7f;
+  background: rgb(212 174 104 / 10%);
+  border-bottom: 1px solid rgb(212 174 104 / 22%);
+}
+
+.modelNotice {
+  color: var(--text-muted);
+  background: rgb(255 255 255 / 2%);
+  border-bottom: 1px solid var(--line);
+}
+
+.timeline {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  min-height: 0;
+  padding: 30px 42px;
+  overflow-y: auto;
+}
+
+.emptyTimeline {
+  max-width: 440px;
+  padding: 24px;
+  color: var(--text-muted);
+  background: rgb(255 255 255 / 2%);
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  line-height: 1.65;
+}
+
+.emptyTimeline strong {
+  color: var(--paper);
+}
+
+.message {
+  max-width: min(760px, 90%);
+  padding: 17px 19px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.dmMessage {
+  background: linear-gradient(145deg, rgb(212 174 104 / 12%), rgb(212 174 104 / 3%));
+}
+
+.characterMessage {
+  background: #171511;
+}
+
+.messageMeta {
+  margin-bottom: 8px;
+  color: var(--gold-bright);
+  font-size: 12px;
+}
+
+.messageMeta span {
+  color: var(--text-muted);
+}
+
+.message p {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+.oocButton {
+  margin-top: 12px;
+  padding: 4px 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.oocNote {
+  display: block;
+  margin-top: 10px;
+  color: var(--gold-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.oocForm {
+  display: grid;
+  gap: 10px;
+  padding: 18px 42px;
+  color: var(--paper);
+  background: #211b12;
+  border-top: 1px solid rgb(212 174 104 / 35%);
+}
+
+.oocForm textarea {
+  min-height: 72px;
+  padding: 10px;
+  color: var(--paper);
+  background: #11100d;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  resize: vertical;
+}
+
+.composer {
+  padding: 20px 42px 26px;
+  background: #15130f;
+  border-top: 1px solid var(--line);
+}
+
+.composer label {
+  display: grid;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.privateToggle,
+.recipientList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.recipientList label {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.composer textarea {
+  min-height: 104px;
+  padding: 13px;
+  resize: vertical;
+  line-height: 1.65;
+}
+
+.composerActions {
+  margin-top: 10px;
+}
+
+.composerActions button {
+  min-height: 38px;
+  padding: 0 15px;
+  color: #17130d;
+  font-weight: 700;
+  background: var(--gold-bright);
+  border: 1px solid var(--gold-bright);
+  border-radius: 5px;
+}
+
+.composerActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.error {
+  margin: 8px 0 0;
+  color: #efb0a8;
+}
+
+@media (max-width: 980px) {
+  .playLayout {
+    grid-template-columns: 240px minmax(0, 1fr);
+    margin: -28px -28px;
+  }
+
+  .partyPanel {
+    padding: 30px 20px;
+  }
+
+  .runtimeHeader,
+  .timeline,
+  .composer {
+    padding-left: 26px;
+    padding-right: 26px;
+  }
+
+  .waiting,
+  .modelNotice {
+    padding-left: 26px;
+    padding-right: 26px;
+  }
+}

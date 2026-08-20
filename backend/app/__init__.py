@@ -1,0 +1,1 @@
+"""AI TRPG application package."""

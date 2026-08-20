@@ -1,0 +1,254 @@
+from __future__ import annotations
+
+from datetime import UTC, datetime
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+from backend.app.api.schemas.campaigns import (
+    CampaignCreate,
+    CampaignMembershipUpdate,
+    CampaignUpdate,
+    HpUpdate,
+    SessionCreate,
+)
+from backend.app.core.errors import AppError, ConflictError, NotFoundError
+from backend.app.db.models import (
+    Campaign,
+    CampaignMembership,
+    Character,
+    GameSession,
+    SessionCharacterState,
+    SessionRuntime,
+)
+from backend.app.domain.enums import CampaignLifecycleStatus, RuntimeStatus, SessionStatus
+from backend.app.services.summary_service import SummaryService
+
+
+class CampaignService:
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
+
+    def _detail_query(self):
+        return select(Campaign).options(
+            selectinload(Campaign.memberships).selectinload(CampaignMembership.character),
+            selectinload(Campaign.sessions)
+            .selectinload(GameSession.character_states)
+            .selectinload(SessionCharacterState.character),
+            selectinload(Campaign.sessions).selectinload(GameSession.runtime),
+        )
+
+    async def list(self) -> list[Campaign]:
+        result = await self.session.scalars(
+            self._detail_query().order_by(Campaign.created_at.desc())
+        )
+        return list(result)
+
+    async def get(self, campaign_id: str) -> Campaign:
+        campaign = await self.session.scalar(self._detail_query().where(Campaign.id == campaign_id))
+        if campaign is None:
+            raise NotFoundError("Campaign", campaign_id)
+        return campaign
+
+    async def _load_characters(self, character_ids: list[str]) -> list[Character]:
+        unique_ids = list(dict.fromkeys(character_ids))
+        if len(unique_ids) != len(character_ids):
+            raise AppError("DUPLICATE_CHARACTER", "阵容中不能重复选择同一个角色。")
+        result = await self.session.scalars(select(Character).where(Character.id.in_(unique_ids)))
+        characters = list(result)
+        if len(characters) != len(unique_ids):
+            raise AppError("CHARACTER_NOT_FOUND", "阵容中包含不存在的角色。", status_code=404)
+        normalized_names = [character.name.strip().casefold() for character in characters]
+        if len(set(normalized_names)) != len(normalized_names):
+            raise AppError("DUPLICATE_CHARACTER_NAME", "同一战役中的角色名称不能重复。")
+        return characters
+
+    async def create(self, payload: CampaignCreate) -> Campaign:
+        characters = await self._load_characters(payload.character_ids)
+        campaign = Campaign(name=payload.name.strip(), description=payload.description)
+        campaign.memberships = [CampaignMembership(character=character) for character in characters]
+        self.session.add(campaign)
+        await self.session.commit()
+        return await self.get(campaign.id)
+
+    async def update(self, campaign_id: str, payload: CampaignUpdate) -> Campaign:
+        campaign = await self.get(campaign_id)
+        self._check_revision(campaign, payload.revision)
+        if campaign.lifecycle_status != CampaignLifecycleStatus.PREPARATION:
+            raise ConflictError("CAMPAIGN_NOT_EDITABLE", "只有筹备中的战役可以编辑基本信息。")
+        if payload.name is not None:
+            campaign.name = payload.name.strip()
+        if payload.description is not None:
+            campaign.description = payload.description
+        campaign.revision += 1
+        await self.session.commit()
+        return await self.get(campaign.id)
+
+    async def replace_memberships(
+        self, campaign_id: str, payload: CampaignMembershipUpdate
+    ) -> Campaign:
+        campaign = await self.get(campaign_id)
+        self._check_revision(campaign, payload.revision)
+        if campaign.lifecycle_status != CampaignLifecycleStatus.PREPARATION:
+            raise ConflictError("CAMPAIGN_ROSTER_LOCKED", "战役启动后不能用筹备接口替换整个阵容。")
+        characters = await self._load_characters(payload.character_ids)
+        campaign.memberships.clear()
+        campaign.memberships.extend(
+            CampaignMembership(character=character) for character in characters
+        )
+        campaign.revision += 1
+        await self.session.commit()
+        return await self.get(campaign.id)
+
+    async def activate(self, campaign_id: str) -> Campaign:
+        campaign = await self.get(campaign_id)
+        if campaign.lifecycle_status != CampaignLifecycleStatus.PREPARATION:
+            raise ConflictError("CAMPAIGN_NOT_PREPARATION", "只有筹备中的战役可以启动。")
+        if campaign.archived_at is not None:
+            raise ConflictError("CAMPAIGN_ARCHIVED", "请先恢复归档的战役。")
+        if not 1 <= len(campaign.memberships) <= 6:
+            raise AppError("INVALID_ROSTER_SIZE", "启动战役需要选择 1 至 6 名角色。")
+        incomplete = [
+            membership.character.name
+            for membership in campaign.memberships
+            if not membership.character.roleplay_prompt.strip()
+            or membership.character.active_sheet_version_id is None
+        ]
+        if incomplete:
+            raise AppError(
+                "CHARACTER_CONFIGURATION_INCOMPLETE",
+                "所有角色必须配置 Roleplay Prompt 并激活有效角色卡后才能启动。",
+                details={"characters": incomplete},
+            )
+        existing_active = await self.session.scalar(
+            select(Campaign.id).where(Campaign.lifecycle_status == CampaignLifecycleStatus.ACTIVE)
+        )
+        if existing_active is not None:
+            raise ConflictError("ACTIVE_CAMPAIGN_EXISTS", "当前已有一个正在进行的战役。")
+        campaign.lifecycle_status = CampaignLifecycleStatus.ACTIVE
+        campaign.revision += 1
+        await self.session.commit()
+        return await self.get(campaign.id)
+
+    async def complete(self, campaign_id: str) -> Campaign:
+        campaign = await self.get(campaign_id)
+        if campaign.lifecycle_status != CampaignLifecycleStatus.ACTIVE:
+            raise ConflictError("CAMPAIGN_NOT_ACTIVE", "只有进行中的战役可以完成。")
+        if any(game_session.status == SessionStatus.ACTIVE for game_session in campaign.sessions):
+            raise ConflictError("ACTIVE_SESSION_EXISTS", "请先结束当前 Session。")
+        campaign.lifecycle_status = CampaignLifecycleStatus.COMPLETED
+        campaign.revision += 1
+        await self.session.commit()
+        return await self.get(campaign.id)
+
+    async def reopen(self, campaign_id: str) -> Campaign:
+        campaign = await self.get(campaign_id)
+        if campaign.lifecycle_status != CampaignLifecycleStatus.COMPLETED:
+            raise ConflictError("CAMPAIGN_NOT_COMPLETED", "只有已完成的战役可以重新开启。")
+        existing_active = await self.session.scalar(
+            select(Campaign.id).where(Campaign.lifecycle_status == CampaignLifecycleStatus.ACTIVE)
+        )
+        if existing_active is not None:
+            raise ConflictError("ACTIVE_CAMPAIGN_EXISTS", "当前已有一个正在进行的战役。")
+        campaign.lifecycle_status = CampaignLifecycleStatus.ACTIVE
+        campaign.archived_at = None
+        campaign.revision += 1
+        await self.session.commit()
+        return await self.get(campaign.id)
+
+    async def delete(self, campaign_id: str) -> None:
+        campaign = await self.get(campaign_id)
+        if campaign.lifecycle_status == CampaignLifecycleStatus.ACTIVE:
+            raise ConflictError(
+                "ACTIVE_CAMPAIGN_DELETE_FORBIDDEN",
+                "请先结束 Session 并完成或重开战役后再永久删除。",
+            )
+        await self.session.delete(campaign)
+        await self.session.commit()
+
+    async def create_session(self, campaign_id: str, payload: SessionCreate) -> GameSession:
+        campaign = await self.get(campaign_id)
+        if campaign.lifecycle_status != CampaignLifecycleStatus.ACTIVE:
+            raise ConflictError("CAMPAIGN_NOT_ACTIVE", "只有进行中的战役可以创建 Session。")
+        if any(game_session.status == SessionStatus.ACTIVE for game_session in campaign.sessions):
+            raise ConflictError("ACTIVE_SESSION_EXISTS", "当前战役已有未结束的 Session。")
+
+        previous_session = max(
+            (item for item in campaign.sessions if item.status == SessionStatus.ENDED),
+            key=lambda item: item.started_at,
+            default=None,
+        )
+        previous_hp = (
+            {state.character_id: state.current_hp for state in previous_session.character_states}
+            if previous_session is not None
+            else {}
+        )
+        game_session = GameSession(title=payload.title.strip(), campaign=campaign)
+        game_session.runtime = SessionRuntime(status=RuntimeStatus.IDLE)
+        game_session.character_states = [
+            SessionCharacterState(
+                character=membership.character,
+                current_hp=min(
+                    previous_hp.get(membership.character.id, membership.character.max_hp),
+                    membership.character.max_hp,
+                ),
+                max_hp_snapshot=membership.character.max_hp,
+            )
+            for membership in campaign.memberships
+        ]
+        self.session.add(game_session)
+        await self.session.commit()
+        return game_session
+
+    async def end_session(self, session_id: str) -> GameSession:
+        game_session = await self.get_session(session_id)
+        if game_session.status != SessionStatus.ACTIVE:
+            raise ConflictError("SESSION_ALREADY_ENDED", "Session 已经结束。")
+        game_session.status = SessionStatus.ENDED
+        game_session.ended_at = datetime.now(UTC)
+        game_session.runtime.status = RuntimeStatus.ENDED
+        game_session.runtime.generation += 1
+        game_session.runtime.active_agent_run_id = None
+        await SummaryService(self.session).build_for_session(game_session)
+        await self.session.commit()
+        return game_session
+
+    async def get_session(self, session_id: str) -> GameSession:
+        game_session = await self.session.scalar(
+            select(GameSession)
+            .where(GameSession.id == session_id)
+            .options(
+                selectinload(GameSession.runtime),
+                selectinload(GameSession.character_states).selectinload(
+                    SessionCharacterState.character
+                ),
+            )
+        )
+        if game_session is None:
+            raise NotFoundError("Session", session_id)
+        return game_session
+
+    async def update_hp(self, session_id: str, character_id: str, payload: HpUpdate) -> GameSession:
+        game_session = await self.get_session(session_id)
+        if game_session.status != SessionStatus.ACTIVE:
+            raise ConflictError("SESSION_ENDED", "已结束的 Session 不能修改 HP。")
+        state = next(
+            (item for item in game_session.character_states if item.character_id == character_id),
+            None,
+        )
+        if state is None:
+            raise NotFoundError("SessionCharacterState", character_id)
+        if payload.current_hp > state.max_hp_snapshot:
+            raise AppError("HP_EXCEEDS_MAX", "当前 HP 不能超过最大 HP。")
+        state.current_hp = payload.current_hp
+        await self.session.commit()
+        return game_session
+
+    @staticmethod
+    def _check_revision(campaign: Campaign, expected_revision: int) -> None:
+        if campaign.revision != expected_revision:
+            raise ConflictError(
+                "CAMPAIGN_REVISION_CONFLICT",
+                "战役已在其他页面发生变化，请刷新后重试。",
+            )

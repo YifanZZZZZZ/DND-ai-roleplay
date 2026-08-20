@@ -1,0 +1,33 @@
+.empty {
+  min-height: 300px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  padding: 48px;
+  text-align: center;
+  border: 1px dashed rgb(212 174 104 / 24%);
+  border-radius: 10px;
+  background: rgb(255 255 255 / 1.5%);
+}
+
+.empty > span {
+  color: var(--gold-muted);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.empty h2 {
+  margin: 12px 0 8px;
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-size: 24px;
+}
+
+.empty p {
+  max-width: 480px;
+  margin-bottom: 22px;
+  color: var(--text-muted);
+  line-height: 1.75;
+}
+
