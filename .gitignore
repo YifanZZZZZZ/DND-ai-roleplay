@@ -1,0 +1,31 @@
+# macOS
+.DS_Store
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Runtime data
+AI_TRPG_DATA/
+*.sqlite
+*.sqlite3
+uploads/
+exports/
+temp/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Node.js and frontend builds
+node_modules/
+frontend/dist/
+
+# Test output
+playwright-report/
+test-results/
