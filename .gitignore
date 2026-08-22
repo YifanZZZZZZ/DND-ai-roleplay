@@ -25,6 +25,8 @@ __pycache__/
 # Node.js and frontend builds
 node_modules/
 frontend/dist/
+.pnpm-store/
+.vite/
 
 # Test output
 playwright-report/

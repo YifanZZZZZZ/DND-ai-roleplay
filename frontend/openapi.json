@@ -821,6 +821,58 @@
         }
       }
     },
+    "/api/v1/campaigns/{campaign_id}/members": {
+      "post": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Add Campaign Member",
+        "operationId": "add_campaign_member_api_v1_campaigns__campaign_id__members_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignMemberAdd"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/campaigns/{campaign_id}:activate": {
       "post": {
         "tags": [
@@ -912,6 +964,132 @@
         ],
         "summary": "Reopen Campaign",
         "operationId": "reopen_campaign_api_v1_campaigns__campaign_id__reopen_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}:archive": {
+      "post": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Archive Campaign",
+        "operationId": "archive_campaign_api_v1_campaigns__campaign_id__archive_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}:unarchive": {
+      "post": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Unarchive Campaign",
+        "operationId": "unarchive_campaign_api_v1_campaigns__campaign_id__unarchive_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}:reset": {
+      "post": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Reset Campaign",
+        "operationId": "reset_campaign_api_v1_campaigns__campaign_id__reset_post",
         "parameters": [
           {
             "name": "campaign_id",
@@ -1374,6 +1552,48 @@
         }
       }
     },
+    "/api/v1/sessions/{session_id}/runtime:retry": {
+      "post": {
+        "tags": [
+          "messages"
+        ],
+        "summary": "Retry Runtime",
+        "operationId": "retry_runtime_api_v1_sessions__session_id__runtime_retry_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuntimeState"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/sessions/{session_id}/events": {
       "get": {
         "tags": [
@@ -1625,6 +1845,25 @@
           "isConfigured"
         ],
         "title": "CampaignMember"
+      },
+      "CampaignMemberAdd": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "characterId": {
+            "type": "string",
+            "title": "Characterid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision",
+          "characterId"
+        ],
+        "title": "CampaignMemberAdd"
       },
       "CampaignMembershipUpdate": {
         "properties": {
@@ -2591,6 +2830,28 @@
             ],
             "title": "Waitingrequest"
           },
+          "lastErrorCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lasterrorcode"
+          },
+          "lastErrorMessage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lasterrormessage"
+          },
           "consecutiveAiMessages": {
             "type": "integer",
             "title": "Consecutiveaimessages"
@@ -2602,6 +2863,8 @@
           "generation",
           "activeAgentRunId",
           "waitingRequest",
+          "lastErrorCode",
+          "lastErrorMessage",
           "consecutiveAiMessages"
         ],
         "title": "RuntimeState"
@@ -2679,6 +2942,28 @@
             ],
             "title": "Waitingrequest"
           },
+          "lastErrorCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lasterrorcode"
+          },
+          "lastErrorMessage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lasterrormessage"
+          },
           "consecutiveAiMessages": {
             "type": "integer",
             "title": "Consecutiveaimessages"
@@ -2718,6 +3003,8 @@
           "runtimeGeneration",
           "activeAgentRunId",
           "waitingRequest",
+          "lastErrorCode",
+          "lastErrorMessage",
           "consecutiveAiMessages",
           "hpStates",
           "startedAt",

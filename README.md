@@ -33,7 +33,7 @@
 - OpenAPI 自动生成前端 DTO；
 - 角色、Campaign、Session 与消息可见范围的集成测试。
 
-当前角色卡解析器只支持项目约定的“DND 5E2024 人物卡〈悲灵 v1.0.0〉”固定模板。真实 Character Agent 已优先接入 DeepSeek；未配置 API Key 时，DM 消息会安全保存且不会伪造 AI 回复。尚未实现的主要部分是 Multi-Agent Orchestrator、OOC 修订、记忆自动沉淀和导出。
+当前角色卡解析器只支持项目约定的“DND 5E2024 人物卡〈悲灵 v1.0.0〉”固定模板。真实 Character Agent 已优先接入 DeepSeek；未配置 API Key 时，DM 消息会安全保存且不会伪造 AI 回复。当前仍在完善发布前语义 Validator、模型驱动的摘要/记忆/成长生成，以及统一 OOC 有效消息投影。
 
 - [精简产品需求](./PRD.md)
 - [精简技术架构](./ARCHITECTURE.md)
@@ -170,7 +170,12 @@ AI_TRPG_LLM_PROVIDER=deepseek
 AI_TRPG_CHARACTER_MODEL=deepseek-v4-flash
 AI_TRPG_DEEPSEEK_API_KEY=your-api-key
 AI_TRPG_DEEPSEEK_BASE_URL=https://api.deepseek.com
+AI_TRPG_ENABLE_MESSAGE_VALIDATOR=false
 ```
+
+`AI_TRPG_ENABLE_MESSAGE_VALIDATOR` 默认为 `false`；在校验规则细化完成前，角色候选消息
+不会被 Validator 阻断。运行失败时，Session API 和跑团页面会显示最近一次的错误代码与详情，
+服务器日志同时保留 Run、Session、角色和异常堆栈。
 
 运行数据库、上传文件和导出文件必须位于仓库外的 `AI_TRPG_DATA_DIR`，不得提交到 Git。
 

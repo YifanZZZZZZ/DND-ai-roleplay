@@ -24,6 +24,8 @@ def to_runtime_state(game_session: GameSession) -> RuntimeState:
         generation=runtime.generation,
         active_agent_run_id=runtime.active_agent_run_id,
         waiting_request=runtime.waiting_request,
+        last_error_code=runtime.last_error_code,
+        last_error_message=runtime.last_error_message,
         consecutive_ai_messages=runtime.consecutive_ai_messages,
     )
 
@@ -90,4 +92,13 @@ async def correct_message_with_ooc(
 async def stop_runtime(session_id: str, session: DatabaseSession) -> RuntimeState:
     game_session = await MessageService(session).stop_runtime(session_id)
     await get_session_event_hub().publish("runtime.changed", session_id)
+    return to_runtime_state(game_session)
+
+
+@router.post("/sessions/{session_id}/runtime:retry", response_model=RuntimeState)
+async def retry_runtime(session_id: str, session: DatabaseSession) -> RuntimeState:
+    game_session = await MessageService(session).retry_latest(session_id)
+    await get_session_event_hub().publish("runtime.changed", session_id)
+    if game_session.runtime.active_agent_run_id is not None:
+        get_runtime_supervisor().start(game_session.runtime.active_agent_run_id)
     return to_runtime_state(game_session)

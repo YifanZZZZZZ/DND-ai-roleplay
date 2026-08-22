@@ -29,6 +29,7 @@ from backend.app.domain.enums import (
     RuntimeStatus,
     SessionStatus,
 )
+from backend.app.services.message_projection import EffectiveMessageProjection
 
 
 class MessageService:
@@ -53,20 +54,7 @@ class MessageService:
 
     async def list(self, session_id: str) -> list[Message]:
         await self._get_session(session_id)
-        result = await self.session.scalars(
-            select(Message)
-            .where(
-                Message.session_id == session_id,
-                Message.kind != MessageKind.OOC,
-                Message.invalidated_at.is_(None),
-            )
-            .options(
-                selectinload(Message.sender_character),
-                selectinload(Message.recipients).selectinload(MessageRecipient.character),
-            )
-            .order_by(Message.sequence_no)
-        )
-        return list(result)
+        return await EffectiveMessageProjection.session_messages(self.session, session_id)
 
     async def get(self, message_id: str) -> Message:
         message = await self.session.scalar(
@@ -125,6 +113,8 @@ class MessageService:
 
         runtime.waiting_message_id = None
         runtime.waiting_request = None
+        runtime.last_error_code = None
+        runtime.last_error_message = None
         runtime.last_trigger_message_id = message.id
         runtime.consecutive_ai_messages = 0
         runtime.status = RuntimeStatus.AGENTS_EVALUATING
@@ -209,6 +199,8 @@ class MessageService:
         target.invalidated_by_ooc_id = ooc.id
         runtime.waiting_message_id = None
         runtime.waiting_request = None
+        runtime.last_error_code = None
+        runtime.last_error_message = None
         runtime.consecutive_ai_messages = 0
 
         if target.sender_type == MessageSenderType.DM:
@@ -268,6 +260,43 @@ class MessageService:
         runtime.status = RuntimeStatus.IDLE
         runtime.waiting_message_id = None
         runtime.waiting_request = None
+        runtime.last_error_code = None
+        runtime.last_error_message = None
+        await self.session.commit()
+        return await self._get_session(session_id)
+
+    async def retry_latest(self, session_id: str) -> GameSession:
+        """Retry the last trigger after a complete Agent failure without duplicating DM text."""
+        game_session = await self._get_session(session_id)
+        if game_session.status != SessionStatus.ACTIVE:
+            raise ConflictError("SESSION_ENDED", "已结束的 Session 无法重试 AI。")
+        if game_session.runtime.status != RuntimeStatus.ERROR:
+            raise ConflictError("RUNTIME_NOT_RETRYABLE", "当前 Session 没有可重试的失败事件。")
+        trigger_id = game_session.runtime.last_trigger_message_id
+        if trigger_id is None:
+            raise ConflictError("NO_LATEST_EVENT", "当前 Session 没有可重试的事件。")
+        trigger = await self.get(trigger_id)
+        recipient_ids = [item.character_id for item in trigger.recipients]
+        if not recipient_ids:
+            raise ConflictError("NO_ELIGIBLE_CHARACTERS", "最新事件没有可响应的角色。")
+        runtime = game_session.runtime
+        runtime.generation += 1
+        runtime.waiting_message_id = None
+        runtime.waiting_request = None
+        runtime.last_error_code = None
+        runtime.last_error_message = None
+        runtime.consecutive_ai_messages = 0
+        runtime.status = RuntimeStatus.AGENTS_EVALUATING
+        run = self._new_run(game_session, trigger.id, len(recipient_ids))
+        self.session.add(run)
+        await self.session.flush()
+        if get_settings().character_agent_is_configured:
+            runtime.active_agent_run_id = run.id
+        else:
+            run.status = AgentRunStatus.COMPLETED
+            run.stop_reason = AgentRunStopReason.ALL_SILENT
+            run.finished_at = datetime.now(UTC)
+            runtime.status = RuntimeStatus.IDLE
         await self.session.commit()
         return await self._get_session(session_id)
 

@@ -215,6 +215,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/campaigns/{campaign_id}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Campaign Member */
+        post: operations["add_campaign_member_api_v1_campaigns__campaign_id__members_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/campaigns/{campaign_id}:activate": {
         parameters: {
             query?: never;
@@ -260,6 +277,57 @@ export interface paths {
         put?: never;
         /** Reopen Campaign */
         post: operations["reopen_campaign_api_v1_campaigns__campaign_id__reopen_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/campaigns/{campaign_id}:archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archive Campaign */
+        post: operations["archive_campaign_api_v1_campaigns__campaign_id__archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/campaigns/{campaign_id}:unarchive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unarchive Campaign */
+        post: operations["unarchive_campaign_api_v1_campaigns__campaign_id__unarchive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/campaigns/{campaign_id}:reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reset Campaign */
+        post: operations["reset_campaign_api_v1_campaigns__campaign_id__reset_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -403,6 +471,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/sessions/{session_id}/runtime:retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry Runtime */
+        post: operations["retry_runtime_api_v1_sessions__session_id__runtime_retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/sessions/{session_id}/events": {
         parameters: {
             query?: never;
@@ -492,6 +577,13 @@ export interface components {
             avatarPath: string | null;
             /** Isconfigured */
             isConfigured: boolean;
+        };
+        /** CampaignMemberAdd */
+        CampaignMemberAdd: {
+            /** Revision */
+            revision: number;
+            /** Characterid */
+            characterId: string;
         };
         /** CampaignMembershipUpdate */
         CampaignMembershipUpdate: {
@@ -833,6 +925,10 @@ export interface components {
             activeAgentRunId: string | null;
             /** Waitingrequest */
             waitingRequest: string | null;
+            /** Lasterrorcode */
+            lastErrorCode: string | null;
+            /** Lasterrormessage */
+            lastErrorMessage: string | null;
             /** Consecutiveaimessages */
             consecutiveAiMessages: number;
         };
@@ -862,6 +958,10 @@ export interface components {
             activeAgentRunId: string | null;
             /** Waitingrequest */
             waitingRequest: string | null;
+            /** Lasterrorcode */
+            lastErrorCode: string | null;
+            /** Lasterrormessage */
+            lastErrorMessage: string | null;
             /** Consecutiveaimessages */
             consecutiveAiMessages: number;
             /** Hpstates */
@@ -1569,6 +1669,41 @@ export interface operations {
             };
         };
     };
+    add_campaign_member_api_v1_campaigns__campaign_id__members_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CampaignMemberAdd"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     activate_campaign_api_v1_campaigns__campaign_id__activate_post: {
         parameters: {
             query?: never;
@@ -1632,6 +1767,99 @@ export interface operations {
         };
     };
     reopen_campaign_api_v1_campaigns__campaign_id__reopen_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_campaign_api_v1_campaigns__campaign_id__archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unarchive_campaign_api_v1_campaigns__campaign_id__unarchive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_campaign_api_v1_campaigns__campaign_id__reset_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -1928,6 +2156,37 @@ export interface operations {
         };
     };
     stop_runtime_api_v1_sessions__session_id__runtime_stop_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuntimeState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_runtime_api_v1_sessions__session_id__runtime_retry_post: {
         parameters: {
             query?: never;
             header?: never;

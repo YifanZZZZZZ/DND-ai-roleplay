@@ -1,14 +1,16 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.app.agents.summary_agent import DeepSeekSummaryAgent
+from backend.app.core.config import get_settings
 from backend.app.db.models import (
     CampaignMembership,
+    CharacterMemory,
     GameSession,
-    Message,
-    MessageRecipient,
     SessionSummary,
 )
-from backend.app.domain.enums import MessageKind, SummaryAudience
+from backend.app.domain.enums import MemoryOrigin, SummaryAudience
+from backend.app.services.message_projection import EffectiveMessageProjection
 
 
 class SummaryService:
@@ -33,28 +35,38 @@ class SummaryService:
         )
         for membership in members:
             record = await self._record(game_session.id, membership.character_id)
+            memories: list[str] = []
+            settings = get_settings()
+            if settings.summary_agent_is_configured:
+                try:
+                    result = await DeepSeekSummaryAgent(settings).summarize(record)
+                    record = result.output.summary
+                    memories = [item.strip() for item in result.output.memories if item.strip()]
+                except Exception:
+                    # Session completion must remain successful when the provider is unavailable.
+                    pass
             await self._upsert(
                 game_session.id,
                 membership.character_id,
                 SummaryAudience.CHARACTER,
                 record,
             )
+            for content in memories:
+                self.session.add(
+                    CharacterMemory(
+                        character_id=membership.character_id,
+                        origin=MemoryOrigin.AUTO,
+                        content=content,
+                        source_campaign_id=game_session.campaign_id,
+                        source_session_id=game_session.id,
+                    )
+                )
 
     async def _record(self, session_id: str, character_id: str | None = None) -> str:
-        query = (
-            select(Message)
-            .where(
-                Message.session_id == session_id,
-                Message.kind != MessageKind.OOC,
-                Message.invalidated_at.is_(None),
-            )
-            .order_by(Message.sequence_no)
+        messages = await EffectiveMessageProjection.session_messages(
+            self.session, session_id, character_id
         )
-        if character_id is not None:
-            query = query.join(MessageRecipient).where(
-                MessageRecipient.character_id == character_id
-            )
-        messages = list(await self.session.scalars(query.limit(80)))
+        messages = messages[:80]
         lines = [message.content.strip() for message in messages if message.content.strip()]
         return "本节可见事实记录：\n" + "\n".join(lines)[:12000]
 

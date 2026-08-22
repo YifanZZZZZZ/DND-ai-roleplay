@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import secrets
 import time
 from collections.abc import Callable
@@ -29,6 +30,7 @@ from backend.app.db.models import (
     Message,
     MessageRecipient,
     SessionCharacterState,
+    SessionRuntime,
     SessionSummary,
 )
 from backend.app.domain.enums import (
@@ -45,8 +47,12 @@ from backend.app.domain.enums import (
 )
 from backend.app.events import get_session_event_hub
 from backend.app.runtime.coordinator import Candidate, SpeakerCoordinator
+from backend.app.runtime.message_validator import MessageValidator
+from backend.app.services.message_projection import EffectiveMessageProjection
 
 AgentFactory = Callable[[Settings], CharacterAgent]
+logger = logging.getLogger(__name__)
+MAX_ERROR_MESSAGE_LENGTH = 4000
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,6 +86,7 @@ class RuntimeSupervisor:
         self._agent_factory = agent_factory
         self._settings = settings or get_settings()
         self._coordinator = SpeakerCoordinator()
+        self._validator = MessageValidator()
         self._tasks: dict[str, asyncio.Task[None]] = {}
 
     def start(self, run_id: str) -> None:
@@ -116,30 +123,49 @@ class RuntimeSupervisor:
                 await session.commit()
 
     async def _execute(self, run_id: str) -> None:
-        claimed = await self._claim(run_id)
-        if claimed is None:
-            return
-        started_at = time.monotonic()
         try:
-            agent = self._agent_factory(self._settings)
-        except Exception as error:
-            results: list[CharacterAgentResult | BaseException] = [error] * len(claimed.candidates)
-        else:
-            limiter = asyncio.Semaphore(self._settings.max_parallel_llm_calls)
-
-            async def respond(candidate: _ClaimedCandidate) -> CharacterAgentResult:
-                async with limiter:
-                    return await agent.respond(candidate.context)
-
-            results = list(
-                await asyncio.gather(
-                    *(respond(candidate) for candidate in claimed.candidates),
-                    return_exceptions=True,
+            claimed = await self._claim(run_id)
+            if claimed is None:
+                return
+            started_at = time.monotonic()
+            try:
+                agent = self._agent_factory(self._settings)
+            except Exception as error:
+                logger.exception(
+                    "Character Agent initialization failed: run_id=%s session_id=%s",
+                    run_id,
+                    claimed.session_id,
                 )
-            )
-        next_run_id = await self._commit_results(claimed, results, started_at)
-        if next_run_id is not None:
-            self.start(next_run_id)
+                results: list[CharacterAgentResult | BaseException] = [error] * len(
+                    claimed.candidates
+                )
+            else:
+                limiter = asyncio.Semaphore(self._settings.max_parallel_llm_calls)
+
+                async def respond(candidate: _ClaimedCandidate) -> CharacterAgentResult:
+                    async with limiter:
+                        return await agent.respond(candidate.context)
+
+                results = list(
+                    await asyncio.gather(
+                        *(respond(candidate) for candidate in claimed.candidates),
+                        return_exceptions=True,
+                    )
+                )
+            next_run_id = await self._commit_results(claimed, results, started_at)
+            if next_run_id is not None:
+                self.start(next_run_id)
+        except asyncio.CancelledError:
+            raise
+        except Exception as error:
+            logger.exception("Unhandled character runtime failure: run_id=%s", run_id)
+            try:
+                await self._record_unhandled_failure(run_id, error)
+            except Exception:
+                logger.exception(
+                    "Failed to persist unhandled character runtime failure: run_id=%s",
+                    run_id,
+                )
 
     async def _claim(self, run_id: str) -> _ClaimedRun | None:
         async with self._session_factory() as session:
@@ -201,6 +227,8 @@ class RuntimeSupervisor:
                 if character_id is not None
             }
             run.status = AgentRunStatus.RUNNING
+            game_session.runtime.last_error_code = None
+            game_session.runtime.last_error_message = None
             run.random_seed = (
                 run.random_seed if run.random_seed is not None else secrets.randbits(63)
             )
@@ -280,21 +308,13 @@ class RuntimeSupervisor:
                 .order_by(SessionCharacterState.character_id)
             )
         )
-        visible_messages = list(
-            await session.scalars(
-                select(Message)
-                .join(MessageRecipient)
-                .where(
-                    Message.session_id == run.session_id,
-                    MessageRecipient.character_id == character.id,
-                    Message.kind != MessageKind.OOC,
-                    Message.invalidated_at.is_(None),
-                )
-                .options(selectinload(Message.sender_character))
-                .order_by(Message.sequence_no.desc())
-                .limit(40)
-            )
+        visible_messages = await session.scalars(
+            EffectiveMessageProjection.for_session(run.session_id, character.id)
+            .order_by(None)
+            .order_by(Message.sequence_no.desc())
+            .limit(40)
         )
+        visible_messages = list(visible_messages)
         visible_messages.reverse()
         trigger = await session.get(Message, run.trigger_message_id)
         payload = {
@@ -364,13 +384,27 @@ class RuntimeSupervisor:
 
             candidates: list[Candidate] = []
             successful_calls = 0
+            failed_calls: list[str] = []
             for candidate, result in zip(claimed.candidates, results, strict=True):
                 invocation = invocations[candidate.invocation_id]
                 invocation.duration_ms = elapsed_ms
                 invocation.finished_at = utc_now()
                 if isinstance(result, BaseException):
+                    error_message = self._exception_message(result)
                     invocation.status = LlmInvocationStatus.FAILED
                     invocation.error_code = "CHARACTER_AGENT_FAILED"
+                    invocation.error_message = error_message
+                    failed_calls.append(f"{candidate.character_name}: {error_message}")
+                    logger.error(
+                        "Character Agent call failed: run_id=%s session_id=%s "
+                        "character_id=%s character_name=%s error=%s",
+                        run.id,
+                        claimed.session_id,
+                        candidate.character_id,
+                        candidate.character_name,
+                        error_message,
+                        exc_info=(type(result), result, result.__traceback__),
+                    )
                     continue
                 successful_calls += 1
                 invocation.status = LlmInvocationStatus.COMPLETED
@@ -386,11 +420,25 @@ class RuntimeSupervisor:
                     )
                 )
             if successful_calls == 0:
+                error_message = self._truncate_error(
+                    f"所有 {len(claimed.candidates)} 个角色调用均失败；" + "；".join(failed_calls)
+                )
+                logger.error(
+                    "All Character Agent calls failed: run_id=%s session_id=%s details=%s",
+                    run.id,
+                    claimed.session_id,
+                    error_message,
+                )
                 run.status = AgentRunStatus.FAILED
                 run.stop_reason = AgentRunStopReason.ERROR
                 run.finished_at = utc_now()
                 game_session.runtime.active_agent_run_id = None
                 game_session.runtime.status = RuntimeStatus.ERROR
+                self._set_runtime_error(
+                    game_session.runtime,
+                    "ALL_CHARACTER_AGENTS_FAILED",
+                    error_message,
+                )
                 await session.commit()
                 await get_session_event_hub().publish("runtime.changed", claimed.session_id)
                 return None
@@ -403,6 +451,37 @@ class RuntimeSupervisor:
                 return None
 
             decision = selected.result.decision
+            if self._settings.enable_message_validator:
+                game_session.runtime.status = RuntimeStatus.VALIDATING_MESSAGE
+                validation = self._validator.validate(decision.content)
+                if not validation.approved:
+                    error_message = self._truncate_error(
+                        f"角色“{selected.character_name}”的候选消息未通过校验："
+                        f"{validation.reason or '未知原因'}"
+                    )
+                    logger.warning(
+                        "Character message validation failed: run_id=%s session_id=%s "
+                        "character_id=%s character_name=%s reason=%s content_length=%s",
+                        run.id,
+                        claimed.session_id,
+                        selected.character_id,
+                        selected.character_name,
+                        validation.reason,
+                        len(decision.content),
+                    )
+                    run.status = AgentRunStatus.FAILED
+                    run.stop_reason = AgentRunStopReason.ERROR
+                    run.finished_at = utc_now()
+                    game_session.runtime.active_agent_run_id = None
+                    game_session.runtime.status = RuntimeStatus.ERROR
+                    self._set_runtime_error(
+                        game_session.runtime,
+                        "MESSAGE_VALIDATION_FAILED",
+                        error_message,
+                    )
+                    await session.commit()
+                    await get_session_event_hub().publish("runtime.changed", claimed.session_id)
+                    return None
             run.selected_character_id = selected.character_id
             trigger = await session.get(Message, run.trigger_message_id)
             message = Message(
@@ -469,16 +548,71 @@ class RuntimeSupervisor:
         await get_session_event_hub().publish("runtime.changed", claimed.session_id)
         return next_run_id
 
+    async def _record_unhandled_failure(self, run_id: str, error: BaseException) -> None:
+        error_message = self._exception_message(error)
+        async with self._session_factory() as session:
+            run = await session.get(AgentRun, run_id)
+            if run is None:
+                return
+            game_session = await session.scalar(
+                select(GameSession)
+                .where(GameSession.id == run.session_id)
+                .options(selectinload(GameSession.runtime))
+            )
+            invocations = list(
+                await session.scalars(
+                    select(LlmInvocation).where(
+                        LlmInvocation.agent_run_id == run_id,
+                        LlmInvocation.status == LlmInvocationStatus.RUNNING,
+                    )
+                )
+            )
+            for invocation in invocations:
+                invocation.status = LlmInvocationStatus.FAILED
+                invocation.error_code = "UNHANDLED_RUNTIME_ERROR"
+                invocation.error_message = error_message
+                invocation.finished_at = utc_now()
+            if run.status in {AgentRunStatus.PENDING, AgentRunStatus.RUNNING}:
+                run.status = AgentRunStatus.FAILED
+                run.stop_reason = AgentRunStopReason.ERROR
+                run.finished_at = utc_now()
+            if game_session is not None and self._run_is_current(run, game_session):
+                game_session.runtime.active_agent_run_id = None
+                game_session.runtime.status = RuntimeStatus.ERROR
+                self._set_runtime_error(
+                    game_session.runtime,
+                    "UNHANDLED_RUNTIME_ERROR",
+                    error_message,
+                )
+            await session.commit()
+        await get_session_event_hub().publish("runtime.changed", run.session_id)
+
+    @staticmethod
+    def _truncate_error(message: str) -> str:
+        return message[:MAX_ERROR_MESSAGE_LENGTH]
+
+    @classmethod
+    def _exception_message(cls, error: BaseException) -> str:
+        detail = str(error).strip() or "未提供异常详情"
+        return cls._truncate_error(f"{type(error).__name__}: {detail}")
+
+    @classmethod
+    def _set_runtime_error(
+        cls, runtime: SessionRuntime, error_code: str, error_message: str
+    ) -> None:
+        runtime.last_error_code = error_code
+        runtime.last_error_message = cls._truncate_error(error_message)
+
     @staticmethod
     def _health_label(current_hp: int, max_hp: int) -> str:
-        if current_hp == 0:
+        if current_hp <= 0:
             return "昏迷"
         ratio = current_hp / max_hp
         if ratio <= 0.25:
             return "濒危"
         if ratio <= 0.5:
             return "重伤"
-        if ratio < 1:
+        if ratio <= 0.75:
             return "轻伤"
         return "健康"
 

@@ -69,6 +69,12 @@ class ScriptedCharacterAgent:
         )
 
 
+class FailingCharacterAgent:
+    async def respond(self, context: str) -> CharacterAgentResult:
+        del context
+        raise RuntimeError("模拟供应商超时")
+
+
 @pytest.fixture
 async def runtime_factory(tmp_path: Path) -> AsyncIterator[async_sessionmaker[AsyncSession]]:
     settings = Settings(data_dir=tmp_path / "data")
@@ -324,3 +330,108 @@ async def test_twelfth_published_ai_message_returns_runtime_to_idle(
             await session.scalars(select(AgentRun).where(AgentRun.session_id == session_id))
         )
         assert len(runs) == 1
+
+
+async def test_validator_is_disabled_by_default(
+    runtime_factory: async_sessionmaker[AsyncSession], tmp_path: Path
+) -> None:
+    run_id, session_id, _ = await _seed_run(runtime_factory)
+    agent = FakeCharacterAgent(
+        CharacterAgentResult(
+            decision=CharacterDecision(
+                decision="RESPOND",
+                content="我进行调查检定。\n\n结果是 18。",
+                requires_dm_resolution=True,
+                resolution_request="请 DM 裁定调查结果。",
+            ),
+            input_tokens=5,
+            output_tokens=5,
+        )
+    )
+    supervisor = RuntimeSupervisor(
+        runtime_factory,
+        lambda _: agent,
+        Settings(data_dir=tmp_path / "runtime-data", deepseek_api_key="unused"),
+    )
+
+    await supervisor._execute(run_id)
+
+    async with runtime_factory() as session:
+        game_session = await session.get(GameSession, session_id)
+        assert game_session is not None
+        await session.refresh(game_session, ["runtime"])
+        assert game_session.runtime.status == RuntimeStatus.WAITING_FOR_DM
+        assert game_session.runtime.last_error_code is None
+        messages = list(
+            await session.scalars(
+                select(Message)
+                .where(Message.session_id == session_id)
+                .order_by(Message.sequence_no)
+            )
+        )
+        assert messages[-1].content == "我进行调查检定。\n\n结果是 18。"
+
+
+async def test_enabled_validator_persists_detailed_failure(
+    runtime_factory: async_sessionmaker[AsyncSession], tmp_path: Path
+) -> None:
+    run_id, session_id, _ = await _seed_run(runtime_factory)
+    agent = FakeCharacterAgent(
+        CharacterAgentResult(
+            decision=CharacterDecision(decision="RESPOND", content="我的检定结果是 18。"),
+            input_tokens=5,
+            output_tokens=5,
+        )
+    )
+    supervisor = RuntimeSupervisor(
+        runtime_factory,
+        lambda _: agent,
+        Settings(
+            data_dir=tmp_path / "runtime-data",
+            deepseek_api_key="unused",
+            enable_message_validator=True,
+        ),
+    )
+
+    await supervisor._execute(run_id)
+
+    async with runtime_factory() as session:
+        game_session = await session.get(GameSession, session_id)
+        assert game_session is not None
+        await session.refresh(game_session, ["runtime"])
+        assert game_session.runtime.status == RuntimeStatus.ERROR
+        assert game_session.runtime.last_error_code == "MESSAGE_VALIDATION_FAILED"
+        assert "未通过校验" in (game_session.runtime.last_error_message or "")
+        assert "机械数值" in (game_session.runtime.last_error_message or "")
+
+
+async def test_agent_failure_persists_invocation_and_runtime_details(
+    runtime_factory: async_sessionmaker[AsyncSession],
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    run_id, session_id, _ = await _seed_run(runtime_factory)
+    supervisor = RuntimeSupervisor(
+        runtime_factory,
+        lambda _: FailingCharacterAgent(),
+        Settings(data_dir=tmp_path / "runtime-data", deepseek_api_key="unused"),
+    )
+
+    with caplog.at_level("ERROR"):
+        await supervisor._execute(run_id)
+
+    async with runtime_factory() as session:
+        game_session = await session.get(GameSession, session_id)
+        assert game_session is not None
+        await session.refresh(game_session, ["runtime"])
+        assert game_session.runtime.status == RuntimeStatus.ERROR
+        assert game_session.runtime.last_error_code == "ALL_CHARACTER_AGENTS_FAILED"
+        assert "模拟供应商超时" in (game_session.runtime.last_error_message or "")
+        invocation = await session.scalar(
+            select(LlmInvocation).where(LlmInvocation.agent_run_id == run_id)
+        )
+        assert invocation is not None
+        assert invocation.status == LlmInvocationStatus.FAILED
+        assert invocation.error_code == "CHARACTER_AGENT_FAILED"
+        assert invocation.error_message == "RuntimeError: 模拟供应商超时"
+    assert "Character Agent call failed" in caplog.text

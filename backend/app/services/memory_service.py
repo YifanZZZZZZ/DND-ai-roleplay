@@ -5,6 +5,7 @@ from backend.app.api.schemas.characters import MemoryCreate, MemoryUpdate
 from backend.app.core.errors import NotFoundError
 from backend.app.db.models import Character, CharacterMemory
 from backend.app.domain.enums import MemoryOrigin
+from backend.app.services.edit_lock import ensure_character_editable
 
 
 class MemoryService:
@@ -23,6 +24,7 @@ class MemoryService:
 
     async def create(self, character_id: str, payload: MemoryCreate) -> CharacterMemory:
         await self._character(character_id)
+        await ensure_character_editable(self.session, character_id)
         memory = CharacterMemory(
             character_id=character_id,
             origin=MemoryOrigin.DM,
@@ -37,6 +39,7 @@ class MemoryService:
         self, character_id: str, memory_id: str, payload: MemoryUpdate
     ) -> CharacterMemory:
         memory = await self._memory(character_id, memory_id)
+        await ensure_character_editable(self.session, character_id)
         if payload.content is not None:
             memory.content = payload.content.strip()
         if payload.pinned is not None:
@@ -46,6 +49,7 @@ class MemoryService:
 
     async def delete(self, character_id: str, memory_id: str) -> None:
         memory = await self._memory(character_id, memory_id)
+        await ensure_character_editable(self.session, character_id)
         await self.session.delete(memory)
         await self.session.commit()
 

@@ -269,6 +269,8 @@ class SessionRuntime(Base):
     last_trigger_message_id: Mapped[str | None] = mapped_column(String(36))
     waiting_message_id: Mapped[str | None] = mapped_column(String(36))
     waiting_request: Mapped[str | None] = mapped_column(Text)
+    last_error_code: Mapped[str | None] = mapped_column(String(120))
+    last_error_message: Mapped[str | None] = mapped_column(Text)
     consecutive_ai_messages: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now
@@ -425,6 +427,7 @@ class LlmInvocation(Base):
     output_tokens: Mapped[int | None] = mapped_column(Integer)
     duration_ms: Mapped[int | None] = mapped_column(Integer)
     error_code: Mapped[str | None] = mapped_column(String(120))
+    error_message: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utc_now
     )

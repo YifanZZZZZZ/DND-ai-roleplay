@@ -6,6 +6,7 @@ import {
   correctMessageWithOoc,
   getSession,
   listMessages,
+  retrySessionRuntime,
   sendDmMessage,
   stopSessionRuntime,
   updateSessionHp,
@@ -124,6 +125,12 @@ export function SessionPlayPage() {
       await queryClient.invalidateQueries({ queryKey: queryKeys.session(sessionId!) });
     },
   });
+  const retryMutation = useMutation({
+    mutationFn: () => retrySessionRuntime(sessionId!),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.session(sessionId!) });
+    },
+  });
   const oocMutation = useMutation({
     mutationFn: () =>
       correctMessageWithOoc(sessionId!, {
@@ -192,8 +199,24 @@ export function SessionPlayPage() {
           >
             停止 AI 自动对话
           </button>
+          {session.data.runtimeStatus === "ERROR" && isActive && (
+            <button
+              className={styles.secondary}
+              disabled={retryMutation.isPending}
+              onClick={() => retryMutation.mutate()}
+              type="button"
+            >
+              {retryMutation.isPending ? "重试中…" : "重试最新事件"}
+            </button>
+          )}
         </header>
 
+        {session.data.runtimeStatus === "ERROR" && session.data.lastErrorMessage && (
+          <div className={styles.runtimeError} role="alert">
+            <strong>{session.data.lastErrorCode || "RUNTIME_ERROR"}</strong>
+            <span>{session.data.lastErrorMessage}</span>
+          </div>
+        )}
         {session.data.waitingRequest && (
           <div className={styles.waiting}>等待 DM：{session.data.waitingRequest}</div>
         )}

@@ -97,6 +97,18 @@ export async function deleteMemory(characterId: string, memoryId: string): Promi
   if (error) throw new Error(messageFromError(error));
 }
 
+export async function updateMemory(
+  characterId: string,
+  memoryId: string,
+  payload: { content?: string; pinned?: boolean },
+): Promise<MemoryView> {
+  const { data, error } = await client.PATCH(
+    "/api/v1/characters/{character_id}/memories/{memory_id}",
+    { params: { path: { character_id: characterId, memory_id: memoryId } }, body: payload },
+  );
+  return requireData(data, error);
+}
+
 export async function deleteCampaign(campaignId: string): Promise<void> {
   const { error } = await client.DELETE("/api/v1/campaigns/{campaign_id}", {
     params: { path: { campaign_id: campaignId } },
@@ -221,6 +233,15 @@ export async function stopSessionRuntime(sessionId: string): Promise<RuntimeStat
     params: { path: { session_id: sessionId } },
   });
   return requireData(data, error);
+}
+
+export async function retrySessionRuntime(sessionId: string): Promise<RuntimeState> {
+  const response = await fetch(`/api/v1/sessions/${encodeURIComponent(sessionId)}/runtime:retry`, {
+    method: "POST",
+  });
+  const payload: unknown = await response.json();
+  if (!response.ok) throw new Error(messageFromError(payload));
+  return payload as RuntimeState;
 }
 
 export async function correctMessageWithOoc(

@@ -16,6 +16,7 @@ from backend.app.db.models import (
 )
 from backend.app.domain.enums import CampaignLifecycleStatus, SessionStatus
 from backend.app.files.storage import FileStorage
+from backend.app.services.edit_lock import ensure_character_editable
 
 
 class CharacterService:
@@ -53,6 +54,7 @@ class CharacterService:
 
     async def update(self, character_id: str, payload: CharacterUpdate) -> Character:
         character = await self.get(character_id)
+        await ensure_character_editable(self.session, character_id)
         if character.revision != payload.revision:
             raise ConflictError(
                 "CHARACTER_REVISION_CONFLICT",
@@ -90,8 +92,9 @@ class CharacterService:
         self, character_id: str, storage: FileStorage, upload: UploadFile
     ) -> Character:
         character = await self.get(character_id)
+        await ensure_character_editable(self.session, character_id)
         stored = await storage.save_avatar(upload)
-        character.avatar_path = f"/uploads/{stored.relative_path}"
+        character.avatar_path = f"/uploads/{stored.relative_path.removeprefix('uploads/')}"
         character.revision += 1
         await self.session.commit()
         return await self.get(character.id)

@@ -146,9 +146,24 @@
 }
 
 .waiting,
+.runtimeError,
 .modelNotice {
   padding: 12px 42px;
   font-size: 13px;
+}
+
+.runtimeError {
+  display: grid;
+  gap: 4px;
+  color: #f2b7a4;
+  background: rgb(164 55 34 / 16%);
+  border-bottom: 1px solid rgb(207 91 64 / 35%);
+}
+
+.runtimeError strong {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
 }
 
 .waiting {

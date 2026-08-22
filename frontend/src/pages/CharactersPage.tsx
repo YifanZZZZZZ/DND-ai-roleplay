@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState, type FormEvent } from "react";
 
-import { createCharacter, createMemory, deleteMemory, exportUrl, getCharacter, listCharacters, listMemories, updateCharacter, uploadAvatar } from "../api/client";
+import { createCharacter, createMemory, deleteMemory, exportUrl, getCharacter, listCharacters, listMemories, updateCharacter, updateMemory, uploadAvatar } from "../api/client";
 import { queryKeys } from "../api/queryKeys";
 import { EmptyState } from "../components/EmptyState/EmptyState";
 import { CharacterSheetUpload } from "../features/characterSheets/CharacterSheetUpload";
@@ -10,6 +10,7 @@ import styles from "./Page.module.css";
 function CharacterMemories({ characterId }: { characterId: string }) {
   const queryClient = useQueryClient();
   const [content, setContent] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
   const memories = useQuery({ queryKey: queryKeys.memories(characterId), queryFn: () => listMemories(characterId) });
   const mutation = useMutation({
     mutationFn: () => createMemory(characterId, content.trim(), false),
@@ -22,9 +23,26 @@ function CharacterMemories({ characterId }: { characterId: string }) {
     mutationFn: (memoryId: string) => deleteMemory(characterId, memoryId),
     onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: queryKeys.memories(characterId) }); },
   });
+  const updateMutation = useMutation({
+    mutationFn: ({ memoryId, nextContent, pinned }: { memoryId: string; nextContent: string; pinned: boolean }) =>
+      updateMemory(characterId, memoryId, { content: nextContent, pinned }),
+    onSuccess: async () => {
+      setEditingId(null);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.memories(characterId) });
+    },
+  });
   return <div className={styles.stack}>
     <strong>长期记忆</strong>
-    {memories.data?.map((memory) => <small key={memory.id}>• {memory.content} <button onClick={() => deleteMutation.mutate(memory.id)} type="button">删除</button></small>)}
+    {memories.data?.map((memory) => editingId === memory.id ? (
+      <div className={styles.toolbar} key={memory.id}>
+        <input defaultValue={memory.content} id={`memory-${memory.id}`} />
+        <button type="button" onClick={() => {
+          const input = document.getElementById(`memory-${memory.id}`) as HTMLInputElement | null;
+          if (input?.value.trim()) updateMutation.mutate({ memoryId: memory.id, nextContent: input.value.trim(), pinned: memory.pinned });
+        }}>保存</button>
+        <button type="button" onClick={() => updateMutation.mutate({ memoryId: memory.id, nextContent: memory.content, pinned: !memory.pinned })}>{memory.pinned ? "取消固定" : "固定"}</button>
+      </div>
+    ) : <small key={memory.id}>• {memory.pinned ? "📌 " : ""}{memory.content} <button onClick={() => setEditingId(memory.id)} type="button">编辑</button> <button onClick={() => deleteMutation.mutate(memory.id)} type="button">删除</button></small>)}
     <div className={styles.toolbar}>
       <input placeholder="添加一条角色记忆" value={content} onChange={(event) => setContent(event.target.value)} />
       <button className={styles.secondary} disabled={!content.trim() || mutation.isPending} onClick={() => mutation.mutate()} type="button">添加</button>

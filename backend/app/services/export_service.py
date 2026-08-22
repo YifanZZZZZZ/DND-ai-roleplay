@@ -8,11 +8,9 @@ from backend.app.db.models import (
     Character,
     CharacterMemory,
     CharacterSheetVersion,
-    Message,
-    MessageRecipient,
     SessionSummary,
 )
-from backend.app.domain.enums import MessageKind
+from backend.app.services.message_projection import EffectiveMessageProjection
 
 
 class ExportService:
@@ -51,18 +49,7 @@ class ExportService:
             from backend.app.core.errors import NotFoundError
 
             raise NotFoundError("Campaign", campaign_id)
-        messages = list(
-            await self.session.scalars(
-                select(Message)
-                .where(
-                    Message.session.has(campaign_id=campaign_id),
-                    Message.kind != MessageKind.OOC,
-                    Message.invalidated_at.is_(None),
-                )
-                .options(selectinload(Message.recipients).selectinload(MessageRecipient.character))
-                .order_by(Message.created_at)
-            )
-        )
+        messages = await EffectiveMessageProjection.campaign_messages(self.session, campaign_id)
         summaries = list(
             await self.session.scalars(
                 select(SessionSummary).where(SessionSummary.session.has(campaign_id=campaign_id))
@@ -99,7 +86,7 @@ class ExportService:
                     "audience": item.audience,
                     "content": item.content,
                     "recipients": [recipient.character_id for recipient in item.recipients],
-                    "oocCorrectionNote": item.ooc_correction_note,
+                    "isOocCorrected": item.ooc_correction_note is not None,
                 }
                 for item in messages
             ],

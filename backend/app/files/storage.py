@@ -69,14 +69,19 @@ class FileStorage:
         destination = self.settings.data_dir / "uploads" / "avatars" / f"{file_id}{extension}"
         digest = hashlib.sha256()
         total_size = 0
+        header = bytearray()
         try:
             with destination.open("wb") as target:
                 while chunk := await upload.read(1024 * 1024):
+                    if len(header) < 12:
+                        header.extend(chunk[: 12 - len(header)])
                     total_size += len(chunk)
                     if total_size > MAX_AVATAR_BYTES:
                         raise AppError("AVATAR_FILE_SIZE_INVALID", "头像图片必须小于 5 MB。")
                     digest.update(chunk)
                     target.write(chunk)
+            if not self._matches_image_signature(bytes(header), extension):
+                raise AppError("AVATAR_CONTENT_INVALID", "头像内容不是有效的图片文件。")
         except Exception:
             destination.unlink(missing_ok=True)
             raise
@@ -88,6 +93,14 @@ class FileStorage:
             original_filename=Path(upload.filename or "avatar").name,
             sha256=digest.hexdigest(),
         )
+
+    @staticmethod
+    def _matches_image_signature(header: bytes, extension: str) -> bool:
+        if extension == ".png":
+            return header.startswith(b"\x89PNG\r\n\x1a\n")
+        if extension == ".jpg":
+            return header.startswith(b"\xff\xd8\xff")
+        return header[:4] == b"RIFF" and header[8:12] == b"WEBP"
 
     def resolve(self, relative_path: str) -> Path:
         candidate = (self.settings.data_dir / relative_path).resolve()

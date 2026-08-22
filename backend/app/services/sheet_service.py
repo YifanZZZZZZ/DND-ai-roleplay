@@ -14,6 +14,7 @@ from backend.app.files.sheet_parser import (
     CharacterSheetSnapshot,
 )
 from backend.app.files.storage import FileStorage
+from backend.app.services.edit_lock import ensure_character_editable
 
 
 class SheetService:
@@ -26,6 +27,7 @@ class SheetService:
         character = await self.session.get(Character, character_id)
         if character is None:
             raise NotFoundError("Character", character_id)
+        await ensure_character_editable(self.session, character_id)
 
         stored = await self.storage.save_character_sheet(upload)
         try:
@@ -68,6 +70,7 @@ class SheetService:
         character = await self.session.get(Character, character_id)
         if character is None:
             raise NotFoundError("Character", character_id)
+        await ensure_character_editable(self.session, character_id)
         version = await self.session.scalar(
             select(CharacterSheetVersion).where(
                 CharacterSheetVersion.id == version_id,

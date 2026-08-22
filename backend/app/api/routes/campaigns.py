@@ -6,6 +6,7 @@ from backend.app.api.schemas.campaigns import (
     CampaignCreate,
     CampaignDetail,
     CampaignMember,
+    CampaignMemberAdd,
     CampaignMembershipUpdate,
     CampaignSummary,
     CampaignUpdate,
@@ -80,6 +81,8 @@ def to_session_detail(game_session: GameSession) -> SessionDetail:
         runtime_generation=game_session.runtime.generation,
         active_agent_run_id=game_session.runtime.active_agent_run_id,
         waiting_request=game_session.runtime.waiting_request,
+        last_error_code=game_session.runtime.last_error_code,
+        last_error_message=game_session.runtime.last_error_message,
         consecutive_ai_messages=game_session.runtime.consecutive_ai_messages,
         hp_states=[
             HpState(
@@ -129,6 +132,14 @@ async def replace_memberships(
     return to_campaign_detail(campaign)
 
 
+@router.post("/campaigns/{campaign_id}/members", response_model=CampaignDetail)
+async def add_campaign_member(
+    campaign_id: str, payload: CampaignMemberAdd, session: DatabaseSession
+) -> CampaignDetail:
+    campaign = await CampaignService(session).add_member(campaign_id, payload)
+    return to_campaign_detail(campaign)
+
+
 @router.post("/campaigns/{campaign_id}:activate", response_model=CampaignDetail)
 async def activate_campaign(campaign_id: str, session: DatabaseSession) -> CampaignDetail:
     campaign = await CampaignService(session).activate(campaign_id)
@@ -145,6 +156,21 @@ async def complete_campaign(campaign_id: str, session: DatabaseSession) -> Campa
 async def reopen_campaign(campaign_id: str, session: DatabaseSession) -> CampaignDetail:
     campaign = await CampaignService(session).reopen(campaign_id)
     return to_campaign_detail(campaign)
+
+
+@router.post("/campaigns/{campaign_id}:archive", response_model=CampaignDetail)
+async def archive_campaign(campaign_id: str, session: DatabaseSession) -> CampaignDetail:
+    return to_campaign_detail(await CampaignService(session).archive(campaign_id))
+
+
+@router.post("/campaigns/{campaign_id}:unarchive", response_model=CampaignDetail)
+async def unarchive_campaign(campaign_id: str, session: DatabaseSession) -> CampaignDetail:
+    return to_campaign_detail(await CampaignService(session).unarchive(campaign_id))
+
+
+@router.post("/campaigns/{campaign_id}:reset", response_model=CampaignDetail)
+async def reset_campaign(campaign_id: str, session: DatabaseSession) -> CampaignDetail:
+    return to_campaign_detail(await CampaignService(session).reset(campaign_id))
 
 
 @router.get("/campaigns/{campaign_id}:export")

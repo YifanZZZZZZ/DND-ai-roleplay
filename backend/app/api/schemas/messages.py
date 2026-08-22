@@ -61,6 +61,8 @@ class RuntimeState(ApiSchema):
     generation: int
     active_agent_run_id: str | None
     waiting_request: str | None
+    last_error_code: str | None
+    last_error_message: str | None
     consecutive_ai_messages: int
 
 

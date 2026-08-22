@@ -23,6 +23,11 @@ class CampaignMembershipUpdate(ApiSchema):
     character_ids: list[str] = Field(max_length=6)
 
 
+class CampaignMemberAdd(ApiSchema):
+    revision: int = Field(ge=1)
+    character_id: str
+
+
 class CampaignMember(ApiSchema):
     character_id: str
     name: str
@@ -81,6 +86,8 @@ class SessionDetail(ApiSchema):
     runtime_generation: int
     active_agent_run_id: str | None
     waiting_request: str | None
+    last_error_code: str | None
+    last_error_message: str | None
     consecutive_ai_messages: int
     hp_states: list[HpState]
     started_at: datetime

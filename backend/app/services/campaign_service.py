@@ -8,6 +8,7 @@ from sqlalchemy.orm import selectinload
 
 from backend.app.api.schemas.campaigns import (
     CampaignCreate,
+    CampaignMemberAdd,
     CampaignMembershipUpdate,
     CampaignUpdate,
     HpUpdate,
@@ -18,11 +19,21 @@ from backend.app.db.models import (
     Campaign,
     CampaignMembership,
     Character,
+    CharacterMemory,
+    CharacterProfile,
     GameSession,
+    Message,
     SessionCharacterState,
     SessionRuntime,
 )
-from backend.app.domain.enums import CampaignLifecycleStatus, RuntimeStatus, SessionStatus
+from backend.app.domain.enums import (
+    CampaignLifecycleStatus,
+    MemoryOrigin,
+    ProfileStatus,
+    RuntimeStatus,
+    SessionStatus,
+    UpdatedBy,
+)
 from backend.app.services.summary_service import SummaryService
 
 
@@ -131,12 +142,145 @@ class CampaignService:
         await self.session.commit()
         return await self.get(campaign.id)
 
+    async def add_member(self, campaign_id: str, payload: CampaignMemberAdd) -> Campaign:
+        campaign = await self.get(campaign_id)
+        self._check_revision(campaign, payload.revision)
+        if campaign.lifecycle_status != CampaignLifecycleStatus.ACTIVE:
+            raise ConflictError("CAMPAIGN_NOT_ACTIVE", "只有进行中的战役可以中途加入角色。")
+        if len(campaign.memberships) >= 6:
+            raise AppError("INVALID_ROSTER_SIZE", "战役最多只能有 6 名角色。")
+        if any(item.character_id == payload.character_id for item in campaign.memberships):
+            raise ConflictError("CHARACTER_ALREADY_MEMBER", "该角色已经在战役阵容中。")
+        character = await self.session.get(Character, payload.character_id)
+        if character is None:
+            raise AppError("CHARACTER_NOT_FOUND", "角色不存在。", status_code=404)
+        if any(
+            item.character.name.casefold() == character.name.casefold()
+            for item in campaign.memberships
+        ):
+            raise ConflictError("DUPLICATE_CHARACTER_NAME", "同一战役中的角色名称不能重复。")
+        active_session = next(
+            (item for item in campaign.sessions if item.status == SessionStatus.ACTIVE),
+            None,
+        )
+        membership = CampaignMembership(
+            campaign=campaign,
+            character=character,
+            joined_session_id=active_session.id if active_session else None,
+            joined_after_message_id=(
+                await self.session.scalar(
+                    select(Message.id)
+                    .where(Message.session_id == active_session.id)
+                    .order_by(Message.sequence_no.desc())
+                    .limit(1)
+                )
+                if active_session is not None
+                else None
+            ),
+        )
+        self.session.add(membership)
+        if active_session is not None:
+            active_session.character_states.append(
+                SessionCharacterState(
+                    character=character,
+                    current_hp=character.max_hp,
+                    max_hp_snapshot=character.max_hp,
+                )
+            )
+        campaign.revision += 1
+        await self.session.commit()
+        return await self.get(campaign.id)
+
+    async def archive(self, campaign_id: str) -> Campaign:
+        campaign = await self.get(campaign_id)
+        if campaign.lifecycle_status not in {
+            CampaignLifecycleStatus.PREPARATION,
+            CampaignLifecycleStatus.COMPLETED,
+        }:
+            raise ConflictError("CAMPAIGN_NOT_ARCHIVABLE", "只有筹备中或已完成的战役可以归档。")
+        campaign.archived_at = datetime.now(UTC)
+        campaign.revision += 1
+        await self.session.commit()
+        return await self.get(campaign.id)
+
+    async def unarchive(self, campaign_id: str) -> Campaign:
+        campaign = await self.get(campaign_id)
+        if campaign.archived_at is None:
+            raise ConflictError("CAMPAIGN_NOT_ARCHIVED", "该战役当前没有归档。")
+        campaign.archived_at = None
+        campaign.revision += 1
+        await self.session.commit()
+        return await self.get(campaign.id)
+
+    async def reset(self, campaign_id: str) -> Campaign:
+        campaign = await self.get(campaign_id)
+        for game_session in campaign.sessions:
+            if game_session.runtime is not None:
+                game_session.runtime.generation += 1
+                game_session.runtime.active_agent_run_id = None
+                game_session.runtime.status = RuntimeStatus.ENDED
+        member_ids = [item.character_id for item in campaign.memberships]
+        if member_ids:
+            await self.session.execute(
+                CharacterMemory.__table__.delete().where(
+                    CharacterMemory.character_id.in_(member_ids),
+                    CharacterMemory.source_campaign_id == campaign.id,
+                )
+            )
+            profiles = list(
+                await self.session.scalars(
+                    select(CharacterProfile).where(CharacterProfile.character_id.in_(member_ids))
+                )
+            )
+            for profile in profiles:
+                profile.content = ""
+                profile.status = ProfileStatus.NEEDS_REBUILD
+                profile.revision += 1
+        campaign.sessions.clear()
+        campaign.lifecycle_status = CampaignLifecycleStatus.PREPARATION
+        campaign.archived_at = None
+        campaign.revision += 1
+        await self.session.commit()
+        return await self.get(campaign.id)
+
     async def complete(self, campaign_id: str) -> Campaign:
         campaign = await self.get(campaign_id)
         if campaign.lifecycle_status != CampaignLifecycleStatus.ACTIVE:
             raise ConflictError("CAMPAIGN_NOT_ACTIVE", "只有进行中的战役可以完成。")
         if any(game_session.status == SessionStatus.ACTIVE for game_session in campaign.sessions):
             raise ConflictError("ACTIVE_SESSION_EXISTS", "请先结束当前 Session。")
+        member_ids = [item.character_id for item in campaign.memberships]
+        profiles = {
+            profile.character_id: profile
+            for profile in list(
+                await self.session.scalars(
+                    select(CharacterProfile).where(CharacterProfile.character_id.in_(member_ids))
+                )
+            )
+        }
+        memories = list(
+            await self.session.scalars(
+                select(CharacterMemory)
+                .where(
+                    CharacterMemory.character_id.in_(member_ids),
+                    CharacterMemory.source_campaign_id == campaign.id,
+                    CharacterMemory.origin == MemoryOrigin.AUTO,
+                )
+                .order_by(CharacterMemory.created_at)
+            )
+        )
+        for character_id in member_ids:
+            profile = profiles.get(character_id)
+            items = [item.content for item in memories if item.character_id == character_id]
+            if profile is not None and items:
+                profile.content = (
+                    f"{profile.content.rstrip()}\n\n"
+                    f"【战役 {campaign.name} 的成长记录】\n- "
+                    + "\n- ".join(items)
+                ).strip()
+                profile.status = ProfileStatus.READY
+                profile.updated_by = UpdatedBy.SYSTEM
+                profile.revision += 1
         campaign.lifecycle_status = CampaignLifecycleStatus.COMPLETED
         campaign.revision += 1
         await self.session.commit()
@@ -210,6 +354,7 @@ class CampaignService:
         game_session.runtime.status = RuntimeStatus.ENDED
         game_session.runtime.generation += 1
         game_session.runtime.active_agent_run_id = None
+        await self.session.commit()
         await SummaryService(self.session).build_for_session(game_session)
         await self.session.commit()
         return game_session

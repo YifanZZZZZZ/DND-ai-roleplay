@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     memory_model: str = ""
     profile_model: str = ""
     max_parallel_llm_calls: int = Field(default=6, ge=1, le=12)
+    enable_message_validator: bool = False
     log_level: str = "INFO"
     deepseek_api_key: SecretStr | None = None
     deepseek_base_url: str = "https://api.deepseek.com"
@@ -37,6 +38,15 @@ class Settings(BaseSettings):
         return (
             self.llm_provider == "deepseek"
             and bool(self.character_model.strip())
+            and self.deepseek_api_key is not None
+            and bool(self.deepseek_api_key.get_secret_value().strip())
+        )
+
+    @property
+    def summary_agent_is_configured(self) -> bool:
+        return (
+            self.llm_provider == "deepseek"
+            and bool(self.summary_model.strip())
             and self.deepseek_api_key is not None
             and bool(self.deepseek_api_key.get_secret_value().strip())
         )
