@@ -13,13 +13,13 @@ from backend.app.services.campaign_service import CampaignService
 router = APIRouter(tags=["events"])
 
 
-def serialize_event(event: SessionEvent) -> str:
-    payload = json.dumps({"sessionId": event.session_id}, separators=(",", ":"))
+def serialize_event(event: SessionEvent, campaign_id: str) -> str:
+    payload = json.dumps({"campaignId": campaign_id}, separators=(",", ":"))
     return f"event: {event.event_type}\ndata: {payload}\n\n"
 
 
 async def event_stream(
-    request: Request, session_id: str, hub: SessionEventHub
+    request: Request, session_id: str, campaign_id: str, hub: SessionEventHub
 ) -> AsyncGenerator[str, None]:
     queue = await hub.subscribe(session_id)
     try:
@@ -30,18 +30,18 @@ async def event_stream(
             except TimeoutError:
                 yield ": keep-alive\n\n"
                 continue
-            yield serialize_event(event)
+            yield serialize_event(event, campaign_id)
     finally:
         await hub.unsubscribe(session_id, queue)
 
 
-@router.get("/sessions/{session_id}/events")
-async def get_session_events(
-    session_id: str, request: Request, session: DatabaseSession
+@router.get("/campaigns/{campaign_id}/events")
+async def get_campaign_events(
+    campaign_id: str, request: Request, session: DatabaseSession
 ) -> StreamingResponse:
-    await CampaignService(session).get_session(session_id)
+    game_session = await CampaignService(session).get_campaign_runtime(campaign_id)
     return StreamingResponse(
-        event_stream(request, session_id, get_session_event_hub()),
+        event_stream(request, game_session.id, campaign_id, get_session_event_hub()),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )

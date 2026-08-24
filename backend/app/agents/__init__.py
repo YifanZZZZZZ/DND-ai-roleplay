@@ -3,5 +3,17 @@ from backend.app.agents.character_agent import (
     CharacterDecision,
     DeepSeekCharacterAgent,
 )
+from backend.app.agents.relationship_agent import (
+    DeepSeekRelationshipAgent,
+    RelationshipAgent,
+    RelationshipDecision,
+)
 
-__all__ = ["CharacterAgent", "CharacterDecision", "DeepSeekCharacterAgent"]
+__all__ = [
+    "CharacterAgent",
+    "CharacterDecision",
+    "DeepSeekCharacterAgent",
+    "DeepSeekRelationshipAgent",
+    "RelationshipAgent",
+    "RelationshipDecision",
+]

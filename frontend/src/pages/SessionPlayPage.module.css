@@ -1,13 +1,16 @@
 .playLayout {
   display: grid;
   grid-template-columns: minmax(250px, 0.42fr) minmax(540px, 1fr);
-  min-height: calc(100vh - 72px);
-  margin: -36px -48px;
+  height: 100%;
+  min-height: 0;
   background: var(--surface);
 }
 
 .partyPanel {
+  min-height: 0;
   padding: 42px 30px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: linear-gradient(180deg, #181611, #12110e);
   border-right: 1px solid var(--line);
 }
@@ -47,6 +50,161 @@
   display: grid;
   gap: 13px;
   margin-top: 30px;
+}
+
+.dicePanel {
+  display: grid;
+  gap: 14px;
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.draftPanel {
+  display: grid;
+  gap: 10px;
+  padding: 18px 42px;
+  background: #1a1711;
+  border-top: 1px solid rgb(212 174 104 / 35%);
+}
+
+.draftPanel textarea {
+  min-height: 92px;
+  padding: 12px;
+  color: var(--paper);
+  background: #11100d;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  line-height: 1.65;
+  resize: vertical;
+}
+
+.draftStatus {
+  color: var(--gold-muted);
+  font-size: 12px;
+}
+
+.draftActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.draftActions button,
+.draftButton {
+  min-height: 34px;
+  padding: 0 12px;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+}
+
+.draftButton {
+  color: #17130d;
+  font-weight: 700;
+  background: var(--gold-bright);
+  border-color: var(--gold-bright);
+}
+
+.draftActions button:disabled,
+.draftButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.sectionHeading,
+.rollActions,
+.checkCard > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.sectionHeading h2 {
+  margin: 6px 0 0;
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-size: 22px;
+}
+
+.confirmHint,
+.checkCard span,
+.checkCard small {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.diceForm {
+  display: grid;
+  gap: 9px;
+}
+
+.diceForm label {
+  display: grid;
+  gap: 5px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.diceForm input,
+.diceForm select {
+  min-width: 0;
+  padding: 7px;
+  color: var(--paper);
+  background: #11100d;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+}
+
+.rollActions {
+  align-items: flex-start;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.rollActions button,
+.adjudicationActions button {
+  padding: 7px 9px;
+  color: #17130d;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--gold-bright);
+  border: 1px solid var(--gold-bright);
+  border-radius: 5px;
+}
+
+.rollActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.checkHistory {
+  display: grid;
+  gap: 8px;
+}
+
+.checkCard {
+  padding: 10px;
+  color: var(--paper);
+  background: rgb(255 255 255 / 3%);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  font-size: 11px;
+}
+
+.checkCard p {
+  margin: 7px 0;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.adjudicationActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
 }
 
 .partyMember {
@@ -127,12 +285,17 @@
 
 .chatPanel {
   display: grid;
-  grid-template-rows: auto auto 1fr auto;
-  min-height: calc(100vh - 72px);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .runtimeHeader {
+  position: relative;
+  z-index: 2;
   padding: 32px 42px 24px;
+  background: #1c1916;
   border-bottom: 1px solid var(--line);
 }
 
@@ -147,6 +310,7 @@
 
 .waiting,
 .runtimeError,
+.runtimeWarning,
 .modelNotice {
   padding: 12px 42px;
   font-size: 13px;
@@ -160,6 +324,15 @@
   border-bottom: 1px solid rgb(207 91 64 / 35%);
 }
 
+.runtimeWarning {
+  display: grid;
+  gap: 4px;
+  color: #e2c48b;
+  background: rgb(212 174 104 / 9%);
+  border-bottom: 1px solid rgb(212 174 104 / 20%);
+}
+
+.runtimeWarning strong,
 .runtimeError strong {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 11px;
@@ -178,13 +351,18 @@
   border-bottom: 1px solid var(--line);
 }
 
+.conversationScroll {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
 .timeline {
   display: grid;
   align-content: start;
   gap: 14px;
-  min-height: 0;
   padding: 30px 42px;
-  overflow-y: auto;
 }
 
 .emptyTimeline {
@@ -209,7 +387,11 @@
 }
 
 .dmMessage {
-  background: linear-gradient(145deg, rgb(212 174 104 / 12%), rgb(212 174 104 / 3%));
+  background: linear-gradient(
+    145deg,
+    rgb(212 174 104 / 12%),
+    rgb(212 174 104 / 3%)
+  );
 }
 
 .characterMessage {
@@ -271,7 +453,10 @@
 }
 
 .composer {
+  max-height: 46vh;
   padding: 20px 42px 26px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: #15130f;
   border-top: 1px solid var(--line);
 }
@@ -301,6 +486,7 @@
 
 .composer textarea {
   min-height: 104px;
+  max-height: 180px;
   padding: 13px;
   resize: vertical;
   line-height: 1.65;
@@ -333,7 +519,6 @@
 @media (max-width: 980px) {
   .playLayout {
     grid-template-columns: 240px minmax(0, 1fr);
-    margin: -28px -28px;
   }
 
   .partyPanel {
@@ -352,4 +537,57 @@
     padding-left: 26px;
     padding-right: 26px;
   }
+}
+
+.addressing {
+  display: grid;
+  gap: 6px;
+}
+
+.addressingLabel {
+  display: grid;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.addressingLabel em {
+  color: var(--gold-muted);
+  font-size: 12px;
+  font-style: normal;
+  opacity: 0.85;
+}
+
+.assistModes {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+}
+
+.assistModes label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.improvised {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  color: #d9c391;
+  font-size: 12px;
+  background: rgb(212 174 104 / 8%);
+  border-left: 2px solid var(--gold-muted);
+  border-radius: 4px;
+}
+
+.improvised strong {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+.improvised ul {
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.7;
 }

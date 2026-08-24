@@ -11,12 +11,14 @@ from backend.app.db.models import (
     Campaign,
     Character,
     CharacterProfile,
+    CharacterSkillSet,
     GameSession,
     SessionCharacterState,
 )
 from backend.app.domain.enums import CampaignLifecycleStatus, SessionStatus
 from backend.app.files.storage import FileStorage
 from backend.app.services.edit_lock import ensure_character_editable
+from backend.app.services.skill_service import DEFAULT_SKILL_MODIFIERS
 
 
 class CharacterService:
@@ -45,9 +47,12 @@ class CharacterService:
         character = Character(
             name=payload.name.strip(),
             roleplay_prompt=payload.roleplay_prompt.strip(),
+            voice_samples=payload.voice_samples.strip(),
+            narration_notes=payload.narration_notes.strip(),
             max_hp=payload.max_hp,
         )
         character.profile = CharacterProfile(content="")
+        character.skill_set = CharacterSkillSet(modifiers=dict(DEFAULT_SKILL_MODIFIERS))
         self.session.add(character)
         await self.session.commit()
         return await self.get(character.id)
@@ -65,6 +70,10 @@ class CharacterService:
             character.name = payload.name.strip()
         if payload.roleplay_prompt is not None:
             character.roleplay_prompt = payload.roleplay_prompt.strip()
+        if payload.voice_samples is not None:
+            character.voice_samples = payload.voice_samples.strip()
+        if payload.narration_notes is not None:
+            character.narration_notes = payload.narration_notes.strip()
         if payload.profile_content is not None:
             character.profile.content = payload.profile_content
             character.profile.revision += 1

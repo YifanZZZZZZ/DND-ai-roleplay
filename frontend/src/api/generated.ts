@@ -74,6 +74,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/characters/{character_id}/skills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Skills */
+        get: operations["get_skills_api_v1_characters__character_id__skills_get"];
+        /** Update Skills */
+        put: operations["update_skills_api_v1_characters__character_id__skills_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/characters/{character_id}/memories": {
         parameters: {
             query?: never;
@@ -179,6 +197,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/campaigns/{campaign_id}:export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Campaign */
+        get: operations["export_campaign_api_v1_campaigns__campaign_id__export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/campaigns/{campaign_id}": {
         parameters: {
             query?: never;
@@ -215,6 +250,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/campaigns/{campaign_id}/acquaintances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Campaign Acquaintances */
+        get: operations["list_campaign_acquaintances_api_v1_campaigns__campaign_id__acquaintances_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/campaigns/{campaign_id}/members": {
         parameters: {
             query?: never;
@@ -243,6 +295,40 @@ export interface paths {
         put?: never;
         /** Activate Campaign */
         post: operations["activate_campaign_api_v1_campaigns__campaign_id__activate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/campaigns/{campaign_id}:pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pause Campaign */
+        post: operations["pause_campaign_api_v1_campaigns__campaign_id__pause_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/campaigns/{campaign_id}:resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resume Campaign */
+        post: operations["resume_campaign_api_v1_campaigns__campaign_id__resume_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -334,15 +420,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/campaigns/{campaign_id}:export": {
+    "/api/v1/campaigns/{campaign_id}/play": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Export Campaign */
-        get: operations["export_campaign_api_v1_campaigns__campaign_id__export_get"];
+        /** Get Campaign Play State */
+        get: operations["get_campaign_play_state_api_v1_campaigns__campaign_id__play_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -351,49 +437,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/campaigns/{campaign_id}/sessions": {
+    "/api/v1/campaigns/{campaign_id}/summaries": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
-        /** Create Session */
-        post: operations["create_session_api_v1_campaigns__campaign_id__sessions_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/sessions/{session_id}:end": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** End Session */
-        post: operations["end_session_api_v1_sessions__session_id__end_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/sessions/{session_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Session */
-        get: operations["get_session_api_v1_sessions__session_id__get"];
+        /** List Campaign Summaries */
+        get: operations["list_campaign_summaries_api_v1_campaigns__campaign_id__summaries_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -402,7 +454,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/sessions/{session_id}/characters/{character_id}/hp": {
+    "/api/v1/campaigns/{campaign_id}/characters/{character_id}/hp": {
         parameters: {
             query?: never;
             header?: never;
@@ -416,10 +468,165 @@ export interface paths {
         options?: never;
         head?: never;
         /** Update Hp */
-        patch: operations["update_hp_api_v1_sessions__session_id__characters__character_id__hp_patch"];
+        patch: operations["update_hp_api_v1_campaigns__campaign_id__characters__character_id__hp_patch"];
         trace?: never;
     };
-    "/api/v1/sessions/{session_id}/messages": {
+    "/api/v1/campaigns/{campaign_id}/skills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Campaign Skills */
+        get: operations["list_campaign_skills_api_v1_campaigns__campaign_id__skills_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/campaigns/{campaign_id}/skill-checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Skill Checks */
+        get: operations["list_skill_checks_api_v1_campaigns__campaign_id__skill_checks_get"];
+        put?: never;
+        /** Create Skill Check */
+        post: operations["create_skill_check_api_v1_campaigns__campaign_id__skill_checks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/skill-checks/{check_id}:adjudicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Adjudicate Skill Check */
+        post: operations["adjudicate_skill_check_api_v1_skill_checks__check_id__adjudicate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/skill-checks/{check_id}:void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Void Skill Check */
+        post: operations["void_skill_check_api_v1_skill_checks__check_id__void_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/campaigns/{campaign_id}/dm-drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Drafts */
+        get: operations["list_drafts_api_v1_campaigns__campaign_id__dm_drafts_get"];
+        put?: never;
+        /** Create Draft */
+        post: operations["create_draft_api_v1_campaigns__campaign_id__dm_drafts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/campaigns/{campaign_id}/dm-drafts:generate-opening": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate Opening */
+        post: operations["generate_opening_api_v1_campaigns__campaign_id__dm_drafts_generate_opening_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dm-drafts/{draft_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Draft */
+        patch: operations["update_draft_api_v1_dm_drafts__draft_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/dm-drafts/{draft_id}:discard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Discard Draft */
+        post: operations["discard_draft_api_v1_dm_drafts__draft_id__discard_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dm-drafts/{draft_id}:publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish Draft */
+        post: operations["publish_draft_api_v1_dm_drafts__draft_id__publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/campaigns/{campaign_id}/messages": {
         parameters: {
             query?: never;
             header?: never;
@@ -427,17 +634,17 @@ export interface paths {
             cookie?: never;
         };
         /** List Messages */
-        get: operations["list_messages_api_v1_sessions__session_id__messages_get"];
+        get: operations["list_messages_api_v1_campaigns__campaign_id__messages_get"];
         put?: never;
         /** Send Dm Message */
-        post: operations["send_dm_message_api_v1_sessions__session_id__messages_post"];
+        post: operations["send_dm_message_api_v1_campaigns__campaign_id__messages_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/sessions/{session_id}/messages:ooc": {
+    "/api/v1/campaigns/{campaign_id}/messages:ooc": {
         parameters: {
             query?: never;
             header?: never;
@@ -447,14 +654,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Correct Message With Ooc */
-        post: operations["correct_message_with_ooc_api_v1_sessions__session_id__messages_ooc_post"];
+        post: operations["correct_message_with_ooc_api_v1_campaigns__campaign_id__messages_ooc_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/sessions/{session_id}/runtime:stop": {
+    "/api/v1/campaigns/{campaign_id}/runtime:stop": {
         parameters: {
             query?: never;
             header?: never;
@@ -464,14 +671,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Stop Runtime */
-        post: operations["stop_runtime_api_v1_sessions__session_id__runtime_stop_post"];
+        post: operations["stop_runtime_api_v1_campaigns__campaign_id__runtime_stop_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/sessions/{session_id}/runtime:retry": {
+    "/api/v1/campaigns/{campaign_id}/runtime:retry": {
         parameters: {
             query?: never;
             header?: never;
@@ -481,22 +688,22 @@ export interface paths {
         get?: never;
         put?: never;
         /** Retry Runtime */
-        post: operations["retry_runtime_api_v1_sessions__session_id__runtime_retry_post"];
+        post: operations["retry_runtime_api_v1_campaigns__campaign_id__runtime_retry_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/sessions/{session_id}/events": {
+    "/api/v1/campaigns/{campaign_id}/events": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get Session Events */
-        get: operations["get_session_events_api_v1_sessions__session_id__events_get"];
+        /** Get Campaign Events */
+        get: operations["get_campaign_events_api_v1_campaigns__campaign_id__events_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -525,6 +732,31 @@ export interface components {
             name: string;
             /** Description */
             description?: string | null;
+            /**
+             * Dmguide
+             * @default
+             */
+            dmGuide: string;
+            /**
+             * Scenenotes
+             * @default
+             */
+            sceneNotes: string;
+            /**
+             * Modulecontent
+             * @default
+             */
+            moduleContent: string;
+            /**
+             * Styleinstructions
+             * @default
+             */
+            styleInstructions: string;
+            /**
+             * Openinginstructions
+             * @default
+             */
+            openingInstructions: string;
             /** Characterids */
             characterIds?: string[];
         };
@@ -536,6 +768,17 @@ export interface components {
             name: string;
             /** Description */
             description: string | null;
+            /** Dmguide */
+            dmGuide: string;
+            /** Scenenotes */
+            sceneNotes: string;
+            /** Modulecontent */
+            moduleContent: string;
+            /** Styleinstructions */
+            styleInstructions: string;
+            /** Openinginstructions */
+            openingInstructions: string;
+            playMode: components["schemas"]["CampaignPlayMode"];
             lifecycleStatus: components["schemas"]["CampaignLifecycleStatus"];
             /** Archivedat */
             archivedAt: string | null;
@@ -543,8 +786,8 @@ export interface components {
             revision: number;
             /** Membercount */
             memberCount: number;
-            /** Activesessionid */
-            activeSessionId: string | null;
+            /** Hasruntime */
+            hasRuntime: boolean;
             /**
              * Createdat
              * Format: date-time
@@ -557,14 +800,12 @@ export interface components {
             updatedAt: string;
             /** Members */
             members: components["schemas"]["CampaignMember"][];
-            /** Sessions */
-            sessions: components["schemas"]["SessionSummary"][];
         };
         /**
          * CampaignLifecycleStatus
          * @enum {string}
          */
-        CampaignLifecycleStatus: "PREPARATION" | "ACTIVE" | "COMPLETED";
+        CampaignLifecycleStatus: "PREPARATION" | "ACTIVE" | "PAUSED" | "COMPLETED";
         /** CampaignMember */
         CampaignMember: {
             /** Characterid */
@@ -592,6 +833,50 @@ export interface components {
             /** Characterids */
             characterIds: string[];
         };
+        /**
+         * CampaignPlayMode
+         * @enum {string}
+         */
+        CampaignPlayMode: "NARRATIVE" | "COMBAT";
+        /** CampaignPlayState */
+        CampaignPlayState: {
+            /** Campaignid */
+            campaignId: string;
+            lifecycleStatus: components["schemas"]["CampaignLifecycleStatus"];
+            runtimeStatus: components["schemas"]["RuntimeStatus"];
+            /** Runtimegeneration */
+            runtimeGeneration: number;
+            /** Activeagentrunid */
+            activeAgentRunId: string | null;
+            /** Waitingrequest */
+            waitingRequest: string | null;
+            /** Lasterrorcode */
+            lastErrorCode: string | null;
+            /** Lasterrormessage */
+            lastErrorMessage: string | null;
+            /** Consecutiveaimessages */
+            consecutiveAiMessages: number;
+            /** Hpstates */
+            hpStates: components["schemas"]["HpState"][];
+            /**
+             * Startedat
+             * Format: date-time
+             */
+            startedAt: string;
+            /** Endedat */
+            endedAt: string | null;
+        };
+        /** CampaignSkillMemberView */
+        CampaignSkillMemberView: {
+            /** Characterid */
+            characterId: string;
+            /** Name */
+            name: string;
+            /** Modifiers */
+            modifiers: {
+                [key: string]: number;
+            };
+        };
         /** CampaignSummary */
         CampaignSummary: {
             /** Id */
@@ -600,6 +885,17 @@ export interface components {
             name: string;
             /** Description */
             description: string | null;
+            /** Dmguide */
+            dmGuide: string;
+            /** Scenenotes */
+            sceneNotes: string;
+            /** Modulecontent */
+            moduleContent: string;
+            /** Styleinstructions */
+            styleInstructions: string;
+            /** Openinginstructions */
+            openingInstructions: string;
+            playMode: components["schemas"]["CampaignPlayMode"];
             lifecycleStatus: components["schemas"]["CampaignLifecycleStatus"];
             /** Archivedat */
             archivedAt: string | null;
@@ -607,8 +903,32 @@ export interface components {
             revision: number;
             /** Membercount */
             memberCount: number;
-            /** Activesessionid */
-            activeSessionId: string | null;
+            /** Hasruntime */
+            hasRuntime: boolean;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
+        };
+        /** CampaignSummaryView */
+        CampaignSummaryView: {
+            /** Id */
+            id: string;
+            /** Campaignid */
+            campaignId: string;
+            audience: components["schemas"]["SummaryAudience"];
+            /** Characterid */
+            characterId: string | null;
+            /** Content */
+            content: string;
+            /** Revision */
+            revision: number;
             /**
              * Createdat
              * Format: date-time
@@ -628,6 +948,32 @@ export interface components {
             name?: string | null;
             /** Description */
             description?: string | null;
+            /** Dmguide */
+            dmGuide?: string | null;
+            /** Scenenotes */
+            sceneNotes?: string | null;
+            /** Modulecontent */
+            moduleContent?: string | null;
+            /** Styleinstructions */
+            styleInstructions?: string | null;
+            /** Openinginstructions */
+            openingInstructions?: string | null;
+            playMode?: components["schemas"]["CampaignPlayMode"] | null;
+        };
+        /** CharacterAcquaintanceView */
+        CharacterAcquaintanceView: {
+            /** Characteraid */
+            characterAId: string;
+            /** Characteraname */
+            characterAName: string;
+            /** Characterbid */
+            characterBId: string;
+            /** Characterbname */
+            characterBName: string;
+            /** Acquainted */
+            acquainted: boolean;
+            /** Relationshiphistory */
+            relationshipHistory: string;
         };
         /** CharacterCreate */
         CharacterCreate: {
@@ -635,6 +981,16 @@ export interface components {
             name: string;
             /** Roleplayprompt */
             roleplayPrompt: string;
+            /**
+             * Voicesamples
+             * @default 
+             */
+            voiceSamples: string;
+            /**
+             * Narrationnotes
+             * @default 
+             */
+            narrationNotes: string;
             /** Maxhp */
             maxHp: number;
         };
@@ -666,6 +1022,10 @@ export interface components {
             updatedAt: string;
             /** Roleplayprompt */
             roleplayPrompt: string;
+            /** Voicesamples */
+            voiceSamples: string;
+            /** Narrationnotes */
+            narrationNotes: string;
             /** Profilecontent */
             profileContent: string;
             profileStatus: components["schemas"]["ProfileStatus"];
@@ -707,6 +1067,10 @@ export interface components {
             equipment?: components["schemas"]["NamedDescription"][];
             /** Inventory */
             inventory?: components["schemas"]["NamedDescription"][];
+            /** Skills */
+            skills?: {
+                [key: string]: number;
+            };
         };
         /** CharacterSummary */
         CharacterSummary: {
@@ -743,10 +1107,90 @@ export interface components {
             name?: string | null;
             /** Roleplayprompt */
             roleplayPrompt?: string | null;
+            /** Voicesamples */
+            voiceSamples?: string | null;
+            /** Narrationnotes */
+            narrationNotes?: string | null;
             /** Maxhp */
             maxHp?: number | null;
             /** Profilecontent */
             profileContent?: string | null;
+        };
+        /** DmDraftCreate */
+        DmDraftCreate: {
+            /** Prompt */
+            prompt: string;
+            /** Sourceskillcheckid */
+            sourceSkillCheckId?: string | null;
+            /**
+             * Assistmode
+             * @default POLISH
+             */
+            assistMode: string;
+        };
+        /** DmDraftPublishResult */
+        DmDraftPublishResult: {
+            draft: components["schemas"]["DmDraftView"];
+            message: components["schemas"]["MessageView"];
+        };
+        /**
+         * DmDraftStatus
+         * @enum {string}
+         */
+        DmDraftStatus: "GENERATING" | "READY" | "STALE" | "SENT" | "DRAFT" | "PUBLISHED" | "DISCARDED" | "FAILED";
+        /**
+         * DmDraftTriggerType
+         * @enum {string}
+         */
+        DmDraftTriggerType: "OPENING" | "CHARACTER_REPLY" | "SKILL_CHECK_RESULT" | "MANUAL_ASSIST";
+        /** DmDraftUpdate */
+        DmDraftUpdate: {
+            /** Revision */
+            revision: number;
+            /** Content */
+            content: string;
+            /**
+             * Audience
+             * @default PUBLIC
+             * @enum {string}
+             */
+            audience: "PUBLIC" | "PRIVATE";
+            /** Recipientcharacterids */
+            recipientCharacterIds?: string[];
+        };
+        /** DmDraftView */
+        DmDraftView: {
+            /** Id */
+            id: string;
+            /** Campaignid */
+            campaignId: string;
+            /** Sessionid */
+            sessionId: string | null;
+            /** Content */
+            content: string;
+            audience: components["schemas"]["MessageAudience"];
+            /** Recipientcharacterids */
+            recipientCharacterIds: string[];
+            /** Improvisednotes */
+            improvisedNotes: string[];
+            status: components["schemas"]["DmDraftStatus"];
+            /** Revision */
+            revision: number;
+            /** Sourceskillcheckid */
+            sourceSkillCheckId: string | null;
+            /** Sourcemessageid */
+            sourceMessageId: string | null;
+            triggerType: components["schemas"]["DmDraftTriggerType"];
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
         };
         /** DmMessageCommandResult */
         DmMessageCommandResult: {
@@ -761,6 +1205,8 @@ export interface components {
             audience: components["schemas"]["MessageAudience"];
             /** Recipientcharacterids */
             recipientCharacterIds?: string[];
+            /** Addressedcharacterids */
+            addressedCharacterIds?: string[];
             /**
              * Clientrequestid
              * Format: uuid
@@ -862,8 +1308,8 @@ export interface components {
         MessageView: {
             /** Id */
             id: string;
-            /** Sessionid */
-            sessionId: string;
+            /** Campaignid */
+            campaignId: string;
             /** Sequenceno */
             sequenceNo: number;
             senderType: components["schemas"]["MessageSenderType"];
@@ -875,6 +1321,8 @@ export interface components {
             audience: components["schemas"]["MessageAudience"];
             /** Content */
             content: string;
+            /** Addressedcharacterids */
+            addressedCharacterIds: string[];
             /** Isooccorrected */
             isOocCorrected: boolean;
             /** Ooccorrectionnote */
@@ -916,6 +1364,11 @@ export interface components {
          * @enum {string}
          */
         ProfileStatus: "READY" | "NEEDS_REBUILD" | "GENERATING" | "FAILED";
+        /**
+         * RollMode
+         * @enum {string}
+         */
+        RollMode: "NORMAL" | "ADVANTAGE" | "DISADVANTAGE";
         /** RuntimeState */
         RuntimeState: {
             status: components["schemas"]["RuntimeStatus"];
@@ -937,63 +1390,6 @@ export interface components {
          * @enum {string}
          */
         RuntimeStatus: "IDLE" | "AGENTS_EVALUATING" | "VALIDATING_MESSAGE" | "WAITING_FOR_DM" | "ERROR" | "ENDED";
-        /** SessionCreate */
-        SessionCreate: {
-            /** Title */
-            title: string;
-        };
-        /** SessionDetail */
-        SessionDetail: {
-            /** Id */
-            id: string;
-            /** Campaignid */
-            campaignId: string;
-            /** Title */
-            title: string;
-            status: components["schemas"]["SessionStatus"];
-            runtimeStatus: components["schemas"]["RuntimeStatus"];
-            /** Runtimegeneration */
-            runtimeGeneration: number;
-            /** Activeagentrunid */
-            activeAgentRunId: string | null;
-            /** Waitingrequest */
-            waitingRequest: string | null;
-            /** Lasterrorcode */
-            lastErrorCode: string | null;
-            /** Lasterrormessage */
-            lastErrorMessage: string | null;
-            /** Consecutiveaimessages */
-            consecutiveAiMessages: number;
-            /** Hpstates */
-            hpStates: components["schemas"]["HpState"][];
-            /**
-             * Startedat
-             * Format: date-time
-             */
-            startedAt: string;
-            /** Endedat */
-            endedAt: string | null;
-        };
-        /**
-         * SessionStatus
-         * @enum {string}
-         */
-        SessionStatus: "ACTIVE" | "ENDED";
-        /** SessionSummary */
-        SessionSummary: {
-            /** Id */
-            id: string;
-            /** Title */
-            title: string;
-            status: components["schemas"]["SessionStatus"];
-            /**
-             * Startedat
-             * Format: date-time
-             */
-            startedAt: string;
-            /** Endedat */
-            endedAt: string | null;
-        };
         /** SheetActivation */
         SheetActivation: {
             /** Characterid */
@@ -1020,6 +1416,116 @@ export interface components {
              * Format: date-time
              */
             createdAt: string;
+        };
+        /** SkillCheckAdjudicate */
+        SkillCheckAdjudicate: {
+            outcome: components["schemas"]["SkillCheckDmAdjudication"];
+        };
+        /** SkillCheckCreate */
+        SkillCheckCreate: {
+            /** Characterid */
+            characterId: string;
+            skill: components["schemas"]["SkillName"];
+            /** @default NORMAL */
+            rollMode: components["schemas"]["RollMode"];
+            /** Dc */
+            dc?: number | null;
+            /** Reason */
+            reason?: string | null;
+            /**
+             * Clientrequestid
+             * Format: uuid
+             */
+            clientRequestId: string;
+        };
+        /**
+         * SkillCheckDmAdjudication
+         * @enum {string}
+         */
+        SkillCheckDmAdjudication: "SUCCESS" | "FAILURE" | "PARTIAL_SUCCESS";
+        /**
+         * SkillCheckStatus
+         * @enum {string}
+         */
+        SkillCheckStatus: "VALID" | "VOID";
+        /**
+         * SkillCheckSystemOutcome
+         * @enum {string}
+         */
+        SkillCheckSystemOutcome: "PASS" | "FAIL" | "UNRESOLVED";
+        /** SkillCheckView */
+        SkillCheckView: {
+            /** Id */
+            id: string;
+            /** Campaignid */
+            campaignId: string;
+            /** Characterid */
+            characterId: string;
+            /** Charactername */
+            characterName: string;
+            skill: components["schemas"]["SkillName"];
+            /** Modifiersnapshot */
+            modifierSnapshot: number;
+            rollMode: components["schemas"]["RollMode"];
+            /** Dieone */
+            dieOne: number;
+            /** Dietwo */
+            dieTwo: number | null;
+            /** Selecteddie */
+            selectedDie: number;
+            /** Total */
+            total: number;
+            /** Dc */
+            dc: number | null;
+            systemOutcome: components["schemas"]["SkillCheckSystemOutcome"];
+            dmAdjudication: components["schemas"]["SkillCheckDmAdjudication"] | null;
+            /** Reason */
+            reason: string | null;
+            status: components["schemas"]["SkillCheckStatus"];
+            /** Voidreason */
+            voidReason: string | null;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Adjudicatedat */
+            adjudicatedAt: string | null;
+        };
+        /** SkillCheckVoid */
+        SkillCheckVoid: {
+            /** Reason */
+            reason: string;
+        };
+        /**
+         * SkillName
+         * @enum {string}
+         */
+        SkillName: "athletics" | "acrobatics" | "sleight_of_hand" | "stealth" | "arcana" | "history" | "investigation" | "nature" | "religion" | "animal_handling" | "insight" | "medicine" | "perception" | "survival" | "deception" | "intimidation" | "performance" | "persuasion";
+        /** SkillSetUpdate */
+        SkillSetUpdate: {
+            /** Revision */
+            revision: number;
+            /** Modifiers */
+            modifiers: {
+                [key: string]: number;
+            };
+        };
+        /** SkillSetView */
+        SkillSetView: {
+            /** Characterid */
+            characterId: string;
+            /** Revision */
+            revision: number;
+            /** Modifiers */
+            modifiers: {
+                [key: string]: number;
+            };
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
         };
         /** SpellSnapshot */
         SpellSnapshot: {
@@ -1058,6 +1564,11 @@ export interface components {
              */
             components: string;
         };
+        /**
+         * SummaryAudience
+         * @enum {string}
+         */
+        SummaryAudience: "DM" | "CHARACTER";
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -1243,6 +1754,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CharacterDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_skills_api_v1_characters__character_id__skills_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                character_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SkillSetView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_skills_api_v1_characters__character_id__skills_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                character_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SkillSetUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SkillSetView"];
                 };
             };
             /** @description Validation Error */
@@ -1539,6 +2116,37 @@ export interface operations {
             };
         };
     };
+    export_campaign_api_v1_campaigns__campaign_id__export_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_campaign_api_v1_campaigns__campaign_id__get: {
         parameters: {
             query?: never;
@@ -1669,6 +2277,37 @@ export interface operations {
             };
         };
     };
+    list_campaign_acquaintances_api_v1_campaigns__campaign_id__acquaintances_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CharacterAcquaintanceView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     add_campaign_member_api_v1_campaigns__campaign_id__members_post: {
         parameters: {
             query?: never;
@@ -1705,6 +2344,68 @@ export interface operations {
         };
     };
     activate_campaign_api_v1_campaigns__campaign_id__activate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pause_campaign_api_v1_campaigns__campaign_id__pause_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resume_campaign_api_v1_campaigns__campaign_id__resume_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -1890,7 +2591,7 @@ export interface operations {
             };
         };
     };
-    export_campaign_api_v1_campaigns__campaign_id__export_get: {
+    get_campaign_play_state_api_v1_campaigns__campaign_id__play_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1907,7 +2608,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["CampaignPlayState"];
                 };
             };
             /** @description Validation Error */
@@ -1921,7 +2622,7 @@ export interface operations {
             };
         };
     };
-    create_session_api_v1_campaigns__campaign_id__sessions_post: {
+    list_campaign_summaries_api_v1_campaigns__campaign_id__summaries_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1930,41 +2631,6 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SessionCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SessionDetail"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    end_session_api_v1_sessions__session_id__end_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                session_id: string;
-            };
-            cookie?: never;
-        };
         requestBody?: never;
         responses: {
             /** @description Successful Response */
@@ -1973,7 +2639,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SessionDetail"];
+                    "application/json": components["schemas"]["CampaignSummaryView"][];
                 };
             };
             /** @description Validation Error */
@@ -1987,43 +2653,12 @@ export interface operations {
             };
         };
     };
-    get_session_api_v1_sessions__session_id__get: {
+    update_hp_api_v1_campaigns__campaign_id__characters__character_id__hp_patch: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                session_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SessionDetail"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_hp_api_v1_sessions__session_id__characters__character_id__hp_patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                session_id: string;
+                campaign_id: string;
                 character_id: string;
             };
             cookie?: never;
@@ -2040,7 +2675,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SessionDetail"];
+                    "application/json": components["schemas"]["CampaignPlayState"];
                 };
             };
             /** @description Validation Error */
@@ -2054,12 +2689,373 @@ export interface operations {
             };
         };
     };
-    list_messages_api_v1_sessions__session_id__messages_get: {
+    list_campaign_skills_api_v1_campaigns__campaign_id__skills_get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                session_id: string;
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignSkillMemberView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_skill_checks_api_v1_campaigns__campaign_id__skill_checks_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SkillCheckView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_skill_check_api_v1_campaigns__campaign_id__skill_checks_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SkillCheckCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SkillCheckView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    adjudicate_skill_check_api_v1_skill_checks__check_id__adjudicate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                check_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SkillCheckAdjudicate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SkillCheckView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    void_skill_check_api_v1_skill_checks__check_id__void_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                check_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SkillCheckVoid"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SkillCheckView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_drafts_api_v1_campaigns__campaign_id__dm_drafts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DmDraftView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_draft_api_v1_campaigns__campaign_id__dm_drafts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DmDraftCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DmDraftView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_opening_api_v1_campaigns__campaign_id__dm_drafts_generate_opening_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DmDraftView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_draft_api_v1_dm_drafts__draft_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DmDraftUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DmDraftView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    discard_draft_api_v1_dm_drafts__draft_id__discard_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DmDraftView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    publish_draft_api_v1_dm_drafts__draft_id__publish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DmDraftPublishResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_messages_api_v1_campaigns__campaign_id__messages_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
             };
             cookie?: never;
         };
@@ -2085,12 +3081,12 @@ export interface operations {
             };
         };
     };
-    send_dm_message_api_v1_sessions__session_id__messages_post: {
+    send_dm_message_api_v1_campaigns__campaign_id__messages_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                session_id: string;
+                campaign_id: string;
             };
             cookie?: never;
         };
@@ -2120,12 +3116,12 @@ export interface operations {
             };
         };
     };
-    correct_message_with_ooc_api_v1_sessions__session_id__messages_ooc_post: {
+    correct_message_with_ooc_api_v1_campaigns__campaign_id__messages_ooc_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                session_id: string;
+                campaign_id: string;
             };
             cookie?: never;
         };
@@ -2155,12 +3151,12 @@ export interface operations {
             };
         };
     };
-    stop_runtime_api_v1_sessions__session_id__runtime_stop_post: {
+    stop_runtime_api_v1_campaigns__campaign_id__runtime_stop_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                session_id: string;
+                campaign_id: string;
             };
             cookie?: never;
         };
@@ -2186,12 +3182,12 @@ export interface operations {
             };
         };
     };
-    retry_runtime_api_v1_sessions__session_id__runtime_retry_post: {
+    retry_runtime_api_v1_campaigns__campaign_id__runtime_retry_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                session_id: string;
+                campaign_id: string;
             };
             cookie?: never;
         };
@@ -2217,12 +3213,12 @@ export interface operations {
             };
         };
     };
-    get_session_events_api_v1_sessions__session_id__events_get: {
+    get_campaign_events_api_v1_campaigns__campaign_id__events_get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                session_id: string;
+                campaign_id: string;
             };
             cookie?: never;
         };

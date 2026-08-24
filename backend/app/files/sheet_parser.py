@@ -6,9 +6,33 @@ from openpyxl.worksheet.worksheet import Worksheet
 from pydantic import BaseModel, ConfigDict, Field
 
 from backend.app.core.errors import AppError
+from backend.app.domain.enums import SkillName
 
 PARSER_VERSION = "sad-spirit-v1"
 REQUIRED_SHEETS = {"主要", "起源", "背包", "法术大全"}
+
+SKILL_LABELS: dict[str, SkillName] = {
+    "运动": SkillName.ATHLETICS,
+    "特技": SkillName.ACROBATICS,
+    "巧手": SkillName.SLEIGHT_OF_HAND,
+    "隐匿": SkillName.STEALTH,
+    "调查": SkillName.INVESTIGATION,
+    "奥秘": SkillName.ARCANA,
+    "历史": SkillName.HISTORY,
+    "自然": SkillName.NATURE,
+    "宗教": SkillName.RELIGION,
+    "察觉": SkillName.PERCEPTION,
+    "洞悉": SkillName.INSIGHT,
+    "驯兽": SkillName.ANIMAL_HANDLING,
+    "医药": SkillName.MEDICINE,
+    "医疗": SkillName.MEDICINE,
+    "求生": SkillName.SURVIVAL,
+    "游说": SkillName.PERSUASION,
+    "欺瞒": SkillName.DECEPTION,
+    "威吓": SkillName.INTIMIDATION,
+    "表演": SkillName.PERFORMANCE,
+}
+SKILL_ROW_RANGE = (28, 58)
 
 
 def _to_camel(value: str) -> str:
@@ -59,6 +83,7 @@ class CharacterSheetSnapshot(SnapshotModel):
     spells: list[SpellSnapshot] = Field(default_factory=_spell_list)
     equipment: list[NamedDescription] = Field(default_factory=_named_description_list)
     inventory: list[NamedDescription] = Field(default_factory=_named_description_list)
+    skills: dict[SkillName, int] = Field(default_factory=dict)
 
 
 def _text(value: Any) -> str:
@@ -155,6 +180,30 @@ def _equipment(main: Worksheet) -> list[NamedDescription]:
     return items
 
 
+def _skill_modifier(value: Any) -> int | None:
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return int(round(value))
+    try:
+        return int(str(value).strip())
+    except ValueError:
+        return None
+
+
+def _skills(main: Worksheet) -> dict[SkillName, int]:
+    start, end = SKILL_ROW_RANGE
+    skills: dict[SkillName, int] = {}
+    for row in range(start, end + 1):
+        skill = SKILL_LABELS.get(_cell_text(main, f"C{row}"))
+        if skill is None or skill in skills:
+            continue
+        modifier = _skill_modifier(main[f"I{row}"].value)
+        if modifier is not None:
+            skills[skill] = modifier
+    return skills
+
+
 def _inventory(backpack: Worksheet) -> list[NamedDescription]:
     items: list[NamedDescription] = []
     for start, end in ((5, 14), (16, 25), (29, 38), (40, 49)):
@@ -207,6 +256,7 @@ class CharacterSheetParser:
                 spells=_selected_spells(main, _spell_catalog(spell_database)),
                 equipment=_equipment(main),
                 inventory=_inventory(backpack),
+                skills=_skills(main),
             )
             if not snapshot.character_name or not snapshot.species or not snapshot.classes:
                 raise AppError("SHEET_REQUIRED_DATA_MISSING", "角色卡缺少姓名、种族或职业。")

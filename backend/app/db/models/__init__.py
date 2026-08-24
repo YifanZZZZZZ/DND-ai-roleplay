@@ -1,11 +1,15 @@
 from backend.app.db.models.entities import (
     AgentRun,
     Campaign,
+    CampaignDmDraft,
     CampaignMembership,
+    CampaignNpc,
     Character,
+    CharacterAcquaintance,
     CharacterMemory,
     CharacterProfile,
     CharacterSheetVersion,
+    CharacterSkillSet,
     GameSession,
     LlmInvocation,
     Message,
@@ -13,16 +17,21 @@ from backend.app.db.models.entities import (
     SessionCharacterState,
     SessionRuntime,
     SessionSummary,
+    SkillCheck,
 )
 
 __all__ = [
     "AgentRun",
     "Campaign",
     "CampaignMembership",
+    "CampaignNpc",
+    "CharacterAcquaintance",
     "CharacterMemory",
     "Character",
     "CharacterProfile",
     "CharacterSheetVersion",
+    "CharacterSkillSet",
+    "CampaignDmDraft",
     "GameSession",
     "LlmInvocation",
     "Message",
@@ -30,4 +39,5 @@ __all__ = [
     "SessionCharacterState",
     "SessionSummary",
     "SessionRuntime",
+    "SkillCheck",
 ]

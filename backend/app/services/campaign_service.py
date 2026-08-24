@@ -77,7 +77,15 @@ class CampaignService:
 
     async def create(self, payload: CampaignCreate) -> Campaign:
         characters = await self._load_characters(payload.character_ids)
-        campaign = Campaign(name=payload.name.strip(), description=payload.description)
+        campaign = Campaign(
+            name=payload.name.strip(),
+            description=payload.description,
+            dm_guide=payload.dm_guide,
+            scene_notes=payload.scene_notes,
+            module_content=payload.module_content,
+            style_instructions=payload.style_instructions,
+            opening_instructions=payload.opening_instructions,
+        )
         campaign.memberships = [CampaignMembership(character=character) for character in characters]
         self.session.add(campaign)
         await self.session.commit()
@@ -86,12 +94,26 @@ class CampaignService:
     async def update(self, campaign_id: str, payload: CampaignUpdate) -> Campaign:
         campaign = await self.get(campaign_id)
         self._check_revision(campaign, payload.revision)
-        if campaign.lifecycle_status != CampaignLifecycleStatus.PREPARATION:
+        if campaign.lifecycle_status != CampaignLifecycleStatus.PREPARATION and (
+            payload.name is not None or payload.description is not None
+        ):
             raise ConflictError("CAMPAIGN_NOT_EDITABLE", "只有筹备中的战役可以编辑基本信息。")
         if payload.name is not None:
             campaign.name = payload.name.strip()
         if payload.description is not None:
             campaign.description = payload.description
+        if payload.dm_guide is not None:
+            campaign.dm_guide = payload.dm_guide
+        if payload.scene_notes is not None:
+            campaign.scene_notes = payload.scene_notes
+        if payload.module_content is not None:
+            campaign.module_content = payload.module_content
+        if payload.style_instructions is not None:
+            campaign.style_instructions = payload.style_instructions
+        if payload.opening_instructions is not None:
+            campaign.opening_instructions = payload.opening_instructions
+        if payload.play_mode is not None:
+            campaign.play_mode = payload.play_mode
         campaign.revision += 1
         await self.session.commit()
         return await self.get(campaign.id)
@@ -132,6 +154,52 @@ class CampaignService:
                 "所有角色必须配置 Roleplay Prompt 并激活有效角色卡后才能启动。",
                 details={"characters": incomplete},
             )
+        existing_active = await self.session.scalar(
+            select(Campaign.id).where(Campaign.lifecycle_status == CampaignLifecycleStatus.ACTIVE)
+        )
+        if existing_active is not None:
+            raise ConflictError("ACTIVE_CAMPAIGN_EXISTS", "当前已有一个正在进行的战役。")
+        campaign.lifecycle_status = CampaignLifecycleStatus.ACTIVE
+        game_session = GameSession(title=campaign.name, campaign=campaign)
+        game_session.runtime = SessionRuntime(status=RuntimeStatus.IDLE)
+        game_session.character_states = [
+            SessionCharacterState(
+                character=membership.character,
+                current_hp=membership.character.max_hp,
+                max_hp_snapshot=membership.character.max_hp,
+            )
+            for membership in campaign.memberships
+        ]
+        self.session.add(game_session)
+        await self.session.flush()
+        for membership in campaign.memberships:
+            membership.joined_session_id = game_session.id
+        campaign.revision += 1
+        await self.session.commit()
+        return await self.get(campaign.id)
+
+    async def pause(self, campaign_id: str) -> Campaign:
+        campaign = await self.get(campaign_id)
+        if campaign.lifecycle_status != CampaignLifecycleStatus.ACTIVE:
+            raise ConflictError("CAMPAIGN_NOT_ACTIVE", "只有进行中的战役可以暂停。")
+        runtime = next(
+            (item.runtime for item in campaign.sessions if item.runtime is not None),
+            None,
+        )
+        if runtime is not None:
+            runtime.generation += 1
+            runtime.active_agent_run_id = None
+            if runtime.status != RuntimeStatus.WAITING_FOR_DM:
+                runtime.status = RuntimeStatus.IDLE
+        campaign.lifecycle_status = CampaignLifecycleStatus.PAUSED
+        campaign.revision += 1
+        await self.session.commit()
+        return await self.get(campaign.id)
+
+    async def resume(self, campaign_id: str) -> Campaign:
+        campaign = await self.get(campaign_id)
+        if campaign.lifecycle_status != CampaignLifecycleStatus.PAUSED:
+            raise ConflictError("CAMPAIGN_NOT_PAUSED", "只有已暂停的战役可以继续。")
         existing_active = await self.session.scalar(
             select(Campaign.id).where(Campaign.lifecycle_status == CampaignLifecycleStatus.ACTIVE)
         )
@@ -245,10 +313,11 @@ class CampaignService:
 
     async def complete(self, campaign_id: str) -> Campaign:
         campaign = await self.get(campaign_id)
-        if campaign.lifecycle_status != CampaignLifecycleStatus.ACTIVE:
-            raise ConflictError("CAMPAIGN_NOT_ACTIVE", "只有进行中的战役可以完成。")
-        if any(game_session.status == SessionStatus.ACTIVE for game_session in campaign.sessions):
-            raise ConflictError("ACTIVE_SESSION_EXISTS", "请先结束当前 Session。")
+        if campaign.lifecycle_status not in {
+            CampaignLifecycleStatus.ACTIVE,
+            CampaignLifecycleStatus.PAUSED,
+        }:
+            raise ConflictError("CAMPAIGN_NOT_RUNNABLE", "只有进行中或已暂停的战役可以完成。")
         member_ids = [item.character_id for item in campaign.memberships]
         profiles = {
             profile.character_id: profile
@@ -275,15 +344,25 @@ class CampaignService:
             if profile is not None and items:
                 profile.content = (
                     f"{profile.content.rstrip()}\n\n"
-                    f"【战役 {campaign.name} 的成长记录】\n- "
-                    + "\n- ".join(items)
+                    f"【战役 {campaign.name} 的成长记录】\n- " + "\n- ".join(items)
                 ).strip()
                 profile.status = ProfileStatus.READY
                 profile.updated_by = UpdatedBy.SYSTEM
                 profile.revision += 1
         campaign.lifecycle_status = CampaignLifecycleStatus.COMPLETED
+        for game_session in campaign.sessions:
+            game_session.status = SessionStatus.ENDED
+            game_session.ended_at = datetime.now(UTC)
+            if game_session.runtime is not None:
+                game_session.runtime.status = RuntimeStatus.ENDED
+                game_session.runtime.generation += 1
+                game_session.runtime.active_agent_run_id = None
         campaign.revision += 1
         await self.session.commit()
+        game_session = next(iter(campaign.sessions), None)
+        if game_session is not None:
+            await SummaryService(self.session).build_for_campaign(game_session)
+            await self.session.commit()
         return await self.get(campaign.id)
 
     async def reopen(self, campaign_id: str) -> Campaign:
@@ -297,16 +376,24 @@ class CampaignService:
             raise ConflictError("ACTIVE_CAMPAIGN_EXISTS", "当前已有一个正在进行的战役。")
         campaign.lifecycle_status = CampaignLifecycleStatus.ACTIVE
         campaign.archived_at = None
+        for game_session in campaign.sessions:
+            game_session.status = SessionStatus.ACTIVE
+            game_session.ended_at = None
+            if game_session.runtime is not None:
+                game_session.runtime.status = RuntimeStatus.IDLE
         campaign.revision += 1
         await self.session.commit()
         return await self.get(campaign.id)
 
     async def delete(self, campaign_id: str) -> None:
         campaign = await self.get(campaign_id)
-        if campaign.lifecycle_status == CampaignLifecycleStatus.ACTIVE:
+        if campaign.lifecycle_status in {
+            CampaignLifecycleStatus.ACTIVE,
+            CampaignLifecycleStatus.PAUSED,
+        }:
             raise ConflictError(
                 "ACTIVE_CAMPAIGN_DELETE_FORBIDDEN",
-                "请先结束 Session 并完成或重开战役后再永久删除。",
+                "请先完成战役后再永久删除。",
             )
         await self.session.delete(campaign)
         await self.session.commit()
@@ -355,7 +442,7 @@ class CampaignService:
         game_session.runtime.generation += 1
         game_session.runtime.active_agent_run_id = None
         await self.session.commit()
-        await SummaryService(self.session).build_for_session(game_session)
+        await SummaryService(self.session).build_for_campaign(game_session)
         await self.session.commit()
         return game_session
 
@@ -364,6 +451,7 @@ class CampaignService:
             select(GameSession)
             .where(GameSession.id == session_id)
             .options(
+                selectinload(GameSession.campaign),
                 selectinload(GameSession.runtime),
                 selectinload(GameSession.character_states).selectinload(
                     SessionCharacterState.character
@@ -374,10 +462,26 @@ class CampaignService:
             raise NotFoundError("Session", session_id)
         return game_session
 
+    async def get_campaign_runtime(self, campaign_id: str) -> GameSession:
+        campaign = await self.get(campaign_id)
+        game_session = campaign.sessions[0] if campaign.sessions else None
+        if game_session is None:
+            raise ConflictError(
+                "CAMPAIGN_NOT_STARTED",
+                "战役尚未启动，启动后才能进入连续跑团页面。",
+            )
+        return await self.get_session(game_session.id)
+
+    async def update_campaign_hp(
+        self, campaign_id: str, character_id: str, payload: HpUpdate
+    ) -> GameSession:
+        game_session = await self.get_campaign_runtime(campaign_id)
+        return await self.update_hp(game_session.id, character_id, payload)
+
     async def update_hp(self, session_id: str, character_id: str, payload: HpUpdate) -> GameSession:
         game_session = await self.get_session(session_id)
-        if game_session.status != SessionStatus.ACTIVE:
-            raise ConflictError("SESSION_ENDED", "已结束的 Session 不能修改 HP。")
+        if game_session.campaign.lifecycle_status != CampaignLifecycleStatus.ACTIVE:
+            raise ConflictError("CAMPAIGN_NOT_ACTIVE", "只有进行中的战役可以修改 HP。")
         state = next(
             (item for item in game_session.character_states if item.character_id == character_id),
             None,

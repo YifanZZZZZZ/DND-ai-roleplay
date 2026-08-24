@@ -30,6 +30,7 @@ from backend.app.domain.enums import (
     SessionStatus,
 )
 from backend.app.services.message_projection import EffectiveMessageProjection
+from backend.app.services.relationship_service import RelationshipService
 
 
 class MessageService:
@@ -52,6 +53,38 @@ class MessageService:
             raise NotFoundError("Session", session_id)
         return game_session
 
+    async def _get_campaign_session(self, campaign_id: str) -> GameSession:
+        game_session = await self.session.scalar(
+            self._session_query().where(GameSession.campaign_id == campaign_id)
+        )
+        if game_session is None:
+            raise NotFoundError("CampaignRuntime", campaign_id)
+        return game_session
+
+    async def list_for_campaign(self, campaign_id: str) -> list[Message]:
+        game_session = await self._get_campaign_session(campaign_id)
+        return await self.list(game_session.id)
+
+    async def send_dm_message_for_campaign(
+        self, campaign_id: str, payload: DmMessageCreate
+    ) -> tuple[Message, GameSession]:
+        game_session = await self._get_campaign_session(campaign_id)
+        return await self.send_dm_message(game_session.id, payload)
+
+    async def correct_with_ooc_for_campaign(
+        self, campaign_id: str, payload: OocCorrectionCreate
+    ) -> GameSession:
+        game_session = await self._get_campaign_session(campaign_id)
+        return await self.correct_with_ooc(game_session.id, payload)
+
+    async def stop_runtime_for_campaign(self, campaign_id: str) -> GameSession:
+        game_session = await self._get_campaign_session(campaign_id)
+        return await self.stop_runtime(game_session.id)
+
+    async def retry_latest_for_campaign(self, campaign_id: str) -> GameSession:
+        game_session = await self._get_campaign_session(campaign_id)
+        return await self.retry_latest(game_session.id)
+
     async def list(self, session_id: str) -> list[Message]:
         await self._get_session(session_id)
         return await EffectiveMessageProjection.session_messages(self.session, session_id)
@@ -61,6 +94,7 @@ class MessageService:
             select(Message)
             .where(Message.id == message_id)
             .options(
+                selectinload(Message.session),
                 selectinload(Message.sender_character),
                 selectinload(Message.recipients).selectinload(MessageRecipient.character),
             )
@@ -91,6 +125,7 @@ class MessageService:
             raise ConflictError("CAMPAIGN_NOT_ACTIVE", "只有进行中的战役可以发送消息。")
 
         recipient_ids = self._resolve_recipient_ids(game_session, payload)
+        addressed_ids = self._resolve_addressed_ids(game_session, payload, recipient_ids)
         runtime = game_session.runtime
         runtime.generation += 1
         await self._cancel_active_run(runtime, AgentRunStopReason.DM_PREEMPTED)
@@ -102,6 +137,7 @@ class MessageService:
             kind=MessageKind.IN_GAME,
             audience=payload.audience,
             content=payload.content.strip(),
+            addressed_character_ids=addressed_ids,
             client_request_id=request_id,
         )
         message.recipients = [
@@ -141,6 +177,7 @@ class MessageService:
             run.finished_at = datetime.now(UTC)
             runtime.status = RuntimeStatus.IDLE
         await self.session.commit()
+        await RelationshipService(self.session).refresh_for_campaign(game_session.campaign_id)
         return await self.get(message.id), await self._get_session(session_id)
 
     async def correct_with_ooc(self, session_id: str, payload: OocCorrectionCreate) -> GameSession:
@@ -247,6 +284,7 @@ class MessageService:
             run.finished_at = datetime.now(UTC)
             runtime.status = RuntimeStatus.IDLE
         await self.session.commit()
+        await RelationshipService(self.session).refresh_for_campaign(game_session.campaign_id)
         return await self._get_session(session_id)
 
     async def stop_runtime(self, session_id: str) -> GameSession:
@@ -331,6 +369,24 @@ class MessageService:
             replacement_for_message_id=replacement_for_message_id,
             random_seed=secrets.randbits(63),
         )
+
+    @staticmethod
+    def _resolve_addressed_ids(
+        game_session: GameSession, payload: DmMessageCreate, recipient_ids: list[str]
+    ) -> list[str]:
+        """Explicit addressing survives pronouns, which name matching cannot."""
+        selected_ids = list(dict.fromkeys(payload.addressed_character_ids))
+        if not selected_ids:
+            return []
+        if len(selected_ids) != len(payload.addressed_character_ids):
+            raise AppError("DUPLICATE_ADDRESSEE", "同一角色不能被重复点名。")
+        member_ids = {membership.character_id for membership in game_session.campaign.memberships}
+        if any(character_id not in member_ids for character_id in selected_ids):
+            raise AppError("ADDRESSEE_NOT_IN_CAMPAIGN", "被点名的角色必须是当前战役成员。")
+        # A character who cannot see the message cannot be addressed by it.
+        if any(character_id not in set(recipient_ids) for character_id in selected_ids):
+            raise AppError("ADDRESSEE_NOT_RECIPIENT", "被点名的角色必须能看到这条消息。")
+        return selected_ids
 
     @staticmethod
     def _resolve_recipient_ids(game_session: GameSession, payload: DmMessageCreate) -> list[str]:

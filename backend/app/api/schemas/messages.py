@@ -11,6 +11,9 @@ class DmMessageCreate(ApiSchema):
     content: str = Field(min_length=1, max_length=3000)
     audience: MessageAudience = MessageAudience.PUBLIC
     recipient_character_ids: list[str] = Field(default_factory=list, max_length=6)
+    # Optional explicit addressing. Lets the DM point at characters with pronouns
+    # ("你们两个先进去") without relying on name substring matching.
+    addressed_character_ids: list[str] = Field(default_factory=list, max_length=6)
     client_request_id: UUID
 
     @field_validator("content")
@@ -42,7 +45,7 @@ class MessageRecipientView(ApiSchema):
 
 class MessageView(ApiSchema):
     id: str
-    session_id: str
+    campaign_id: str
     sequence_no: int
     sender_type: MessageSenderType
     sender_character_id: str | None
@@ -50,6 +53,7 @@ class MessageView(ApiSchema):
     kind: MessageKind
     audience: MessageAudience
     content: str
+    addressed_character_ids: list[str]
     is_ooc_corrected: bool
     ooc_correction_note: str | None
     recipients: list[MessageRecipientView]

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 
-import { createCharacter, createMemory, deleteMemory, exportUrl, getCharacter, listCharacters, listMemories, updateCharacter, updateMemory, uploadAvatar } from "../api/client";
+import { createCharacter, createMemory, deleteMemory, exportUrl, getCharacter, getSkillSet, listCharacters, listMemories, updateCharacter, updateMemory, updateSkillSet, uploadAvatar, type SkillSetView } from "../api/client";
 import { queryKeys } from "../api/queryKeys";
 import { EmptyState } from "../components/EmptyState/EmptyState";
 import { CharacterSheetUpload } from "../features/characterSheets/CharacterSheetUpload";
@@ -50,19 +50,76 @@ function CharacterMemories({ characterId }: { characterId: string }) {
   </div>;
 }
 
+const VOICE_SAMPLE_PLACEHOLDER = "情境：队友受了伤，卡莱拉在给他包扎。\n卡莱拉：（把药膏塞进他手里，视线移开）“自己涂。”停了一下，“……别死在半路上，我懒得埋人。”";
+
 function CharacterEditor({ characterId }: { characterId: string }) {
   const queryClient = useQueryClient();
   const detail = useQuery({ queryKey: ["characters", characterId, "detail"], queryFn: () => getCharacter(characterId) });
   const [prompt, setPrompt] = useState("");
   const [profile, setProfile] = useState("");
+  const [voice, setVoice] = useState("");
+  const [narration, setNarration] = useState("");
   const mutation = useMutation({
-    mutationFn: () => updateCharacter(characterId, { revision: detail.data!.revision, roleplayPrompt: prompt, profileContent: profile }),
+    mutationFn: () => updateCharacter(characterId, { revision: detail.data!.revision, roleplayPrompt: prompt, profileContent: profile, voiceSamples: voice, narrationNotes: narration }),
     onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: queryKeys.characters }); },
   });
   if (!detail.data) return null;
   const editedPrompt = prompt || detail.data.roleplayPrompt;
   const editedProfile = profile || detail.data.profileContent;
-  return <details className={styles.stack}><summary>编辑角色扮演资料</summary><label>Roleplay Prompt<textarea value={editedPrompt} onChange={(event) => setPrompt(event.target.value)} /></label><label>成长档案<textarea value={editedProfile} onChange={(event) => setProfile(event.target.value)} /></label><button className={styles.secondary} disabled={mutation.isPending} onClick={() => mutation.mutate()} type="button">保存资料</button></details>;
+  const editedVoice = voice || detail.data.voiceSamples;
+  const editedNarration = narration || detail.data.narrationNotes;
+  return <details className={styles.stack}><summary>编辑角色扮演资料</summary><label>Roleplay Prompt<textarea value={editedPrompt} onChange={(event) => setPrompt(event.target.value)} /></label><label>说话范例<span className={styles.hint}>3～5 组「情境 → 这个角色会怎么说」。模型模仿的是这里的语气，不是人设里的形容词。</span><textarea placeholder={VOICE_SAMPLE_PLACEHOLDER} value={editedVoice} onChange={(event) => setVoice(event.target.value)} /></label><label>用词约定<span className={styles.hint}>叙述必须遵守的说法，优先于角色卡。例：他的武器一律称作“长剑”，不要说弯刀。</span><textarea value={editedNarration} onChange={(event) => setNarration(event.target.value)} /></label><label>成长档案<textarea value={editedProfile} onChange={(event) => setProfile(event.target.value)} /></label><button className={styles.secondary} disabled={mutation.isPending} onClick={() => mutation.mutate()} type="button">保存资料</button></details>;
+}
+
+const skillNames = [
+  "athletics", "acrobatics", "sleight_of_hand", "stealth", "arcana", "history",
+  "investigation", "nature", "religion", "animal_handling", "insight", "medicine",
+  "perception", "survival", "deception", "intimidation", "performance", "persuasion",
+] as const;
+
+const skillLabels: Record<(typeof skillNames)[number], string> = {
+  athletics: "运动", acrobatics: "体操", sleight_of_hand: "巧手", stealth: "隐匿",
+  arcana: "奥秘", history: "历史", investigation: "调查", nature: "自然", religion: "宗教",
+  animal_handling: "驯兽", insight: "洞悉", medicine: "医疗", perception: "察觉", survival: "生存",
+  deception: "欺瞒", intimidation: "威吓", performance: "表演", persuasion: "游说",
+};
+
+function CharacterSkillsEditor({ characterId }: { characterId: string }) {
+  const queryClient = useQueryClient();
+  const skills = useQuery({ queryKey: queryKeys.skills(characterId), queryFn: () => getSkillSet(characterId) });
+  const [modifiers, setModifiers] = useState<SkillSetView["modifiers"]>({});
+  useEffect(() => {
+    if (skills.data) setModifiers(skills.data.modifiers);
+  }, [skills.data]);
+  const mutation = useMutation({
+    mutationFn: () => updateSkillSet(characterId, { revision: skills.data!.revision, modifiers }),
+    onSuccess: async (data) => {
+      queryClient.setQueryData(queryKeys.skills(characterId), data);
+    },
+  });
+  if (skills.isLoading) return <small>正在读取技能加值…</small>;
+  if (skills.error) return <small className={styles.error}>{skills.error.message}</small>;
+  if (!skills.data) return null;
+  return <details className={styles.stack}>
+    <summary>十八项技能加值</summary>
+    <div className={styles.skillGrid}>
+      {skillNames.map((skill) => (
+        <label className={styles.skillItem} key={skill}>
+          <span>{skillLabels[skill]}</span>
+          <input
+            aria-label={`${skillLabels[skill]}加值`}
+            type="number"
+            value={modifiers[skill] ?? 0}
+            onChange={(event) => setModifiers((current) => ({ ...current, [skill]: Number(event.target.value) }))}
+          />
+        </label>
+      ))}
+    </div>
+    {mutation.error && <p className={styles.error}>{mutation.error.message}</p>}
+    <button className={styles.secondary} disabled={mutation.isPending} onClick={() => mutation.mutate()} type="button">
+      {mutation.isPending ? "保存中…" : "保存技能加值"}
+    </button>
+  </details>;
 }
 
 function AvatarUpload({ characterId, avatarPath }: { characterId: string; avatarPath: string | null }) {
@@ -78,6 +135,8 @@ export function CharactersPage() {
   const [name, setName] = useState("");
   const [maxHp, setMaxHp] = useState("");
   const [prompt, setPrompt] = useState("");
+  const [voice, setVoice] = useState("");
+  const [narration, setNarration] = useState("");
   const characters = useQuery({ queryKey: queryKeys.characters, queryFn: listCharacters });
   const createMutation = useMutation({
     mutationFn: createCharacter,
@@ -85,6 +144,8 @@ export function CharactersPage() {
       setName("");
       setMaxHp("");
       setPrompt("");
+      setVoice("");
+      setNarration("");
       setShowForm(false);
       await queryClient.invalidateQueries({ queryKey: queryKeys.characters });
     },
@@ -96,6 +157,8 @@ export function CharactersPage() {
       name: name.trim(),
       maxHp: Number(maxHp),
       roleplayPrompt: prompt.trim(),
+      voiceSamples: voice.trim(),
+      narrationNotes: narration.trim(),
     });
   }
 
@@ -142,6 +205,27 @@ export function CharactersPage() {
               required
               value={prompt}
               onChange={(event) => setPrompt(event.target.value)}
+            />
+          </label>
+          <label>
+            说话范例（可选）
+            <span className={styles.hint}>
+              3～5 组「情境 → 这个角色会怎么说」。人设描述的是性格，范例决定语气——模型模仿的是后者。
+            </span>
+            <textarea
+              placeholder={VOICE_SAMPLE_PLACEHOLDER}
+              value={voice}
+              onChange={(event) => setVoice(event.target.value)}
+            />
+          </label>
+          <label>
+            用词约定（可选）
+            <span className={styles.hint}>
+              叙述必须遵守的说法，优先于角色卡上的记录。例：他的武器一律称作“长剑”，不要说弯刀。
+            </span>
+            <textarea
+              value={narration}
+              onChange={(event) => setNarration(event.target.value)}
             />
           </label>
           {createMutation.error && <p className={styles.error}>{createMutation.error.message}</p>}
@@ -192,6 +276,7 @@ export function CharactersPage() {
               />
               <CharacterMemories characterId={character.id} />
               <CharacterEditor characterId={character.id} />
+              <CharacterSkillsEditor characterId={character.id} />
               <a className={styles.secondary} href={exportUrl("character", character.id)}>
                 导出角色资料
               </a>

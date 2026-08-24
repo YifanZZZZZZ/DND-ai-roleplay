@@ -1,8 +1,15 @@
 export const queryKeys = {
   characters: ["characters"] as const,
   memories: (characterId: string) => ["characters", characterId, "memories"] as const,
+  skills: (characterId: string) => ["characters", characterId, "skills"] as const,
   campaigns: ["campaigns"] as const,
   campaign: (campaignId: string) => ["campaigns", campaignId] as const,
-  session: (sessionId: string) => ["sessions", sessionId] as const,
-  messages: (sessionId: string) => ["sessions", sessionId, "messages"] as const,
+  play: (campaignId: string) => ["campaigns", campaignId, "play"] as const,
+  messages: (campaignId: string) => ["campaigns", campaignId, "messages"] as const,
+  campaignSkills: (campaignId: string) => ["campaigns", campaignId, "skills"] as const,
+  skillChecks: (campaignId: string) => ["campaigns", campaignId, "skill-checks"] as const,
+  summaries: (campaignId: string) => ["campaigns", campaignId, "summaries"] as const,
+  npcs: (campaignId: string) => ["campaigns", campaignId, "npcs"] as const,
+  dmDrafts: (campaignId: string) => ["campaigns", campaignId, "dm-drafts"] as const,
+  acquaintances: (campaignId: string) => ["campaigns", campaignId, "acquaintances"] as const,
 };

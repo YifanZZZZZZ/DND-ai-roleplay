@@ -24,6 +24,9 @@ from backend.app.domain.enums import (
     AgentRunStatus,
     AgentRunStopReason,
     CampaignLifecycleStatus,
+    CampaignPlayMode,
+    DmDraftStatus,
+    DmDraftTriggerType,
     LlmInvocationStatus,
     LlmPurpose,
     MemoryOrigin,
@@ -31,9 +34,13 @@ from backend.app.domain.enums import (
     MessageKind,
     MessageSenderType,
     ProfileStatus,
+    RollMode,
     RuntimeStatus,
     SessionStatus,
     SheetParseStatus,
+    SkillCheckDmAdjudication,
+    SkillCheckStatus,
+    SkillCheckSystemOutcome,
     SummaryAudience,
     UpdatedBy,
 )
@@ -49,6 +56,14 @@ class Character(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     roleplay_prompt: Mapped[str] = mapped_column(Text, nullable=False)
+    # Few-shot speech samples written by the DM. Injected into the character's
+    # system prompt so the model imitates a concrete voice instead of an
+    # abstract personality description.
+    voice_samples: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    # Wording the narration must follow regardless of what the sheet says — e.g.
+    # a weapon the sheet records as a scimitar that is always called a longsword.
+    # Read by both this character's own agent and the AI DM.
+    narration_notes: Mapped[str] = mapped_column(Text, nullable=False, default="")
     avatar_path: Mapped[str | None] = mapped_column(String(500))
     max_hp: Mapped[int] = mapped_column(Integer, nullable=False)
     # Application-validated to avoid a circular SQLite DDL dependency with
@@ -70,12 +85,40 @@ class Character(Base):
     profile: Mapped[CharacterProfile] = relationship(
         back_populates="character", cascade="all, delete-orphan", uselist=False
     )
+    skill_set: Mapped[CharacterSkillSet] = relationship(
+        back_populates="character", cascade="all, delete-orphan", uselist=False
+    )
     memberships: Mapped[list[CampaignMembership]] = relationship(back_populates="character")
     memories: Mapped[list[CharacterMemory]] = relationship(
         back_populates="character", cascade="all, delete-orphan"
     )
 
     __table_args__ = (CheckConstraint("max_hp > 0", name="positive_max_hp"),)
+
+
+class CharacterAcquaintance(Base):
+    __tablename__ = "character_acquaintances"
+
+    character_a_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), primary_key=True
+    )
+    character_b_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), primary_key=True
+    )
+    met_campaign_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="SET NULL"), index=True
+    )
+    relationship_history: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now
+    )
+
+    __table_args__ = (
+        CheckConstraint("character_a_id < character_b_id", name="ordered_character_pair"),
+    )
 
 
 class CharacterSheetVersion(Base):
@@ -124,12 +167,43 @@ class CharacterProfile(Base):
     character: Mapped[Character] = relationship(back_populates="profile")
 
 
+class CharacterSkillSet(Base):
+    __tablename__ = "character_skill_sets"
+
+    character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), primary_key=True
+    )
+    modifiers: Mapped[dict[str, int]] = mapped_column(JSON, nullable=False)
+    revision: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now
+    )
+
+    character: Mapped[Character] = relationship(back_populates="skill_set")
+
+
 class Campaign(Base):
     __tablename__ = "campaigns"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     name: Mapped[str] = mapped_column(String(160), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
+    dm_guide: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    scene_notes: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    module_content: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    style_instructions: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    opening_instructions: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    play_mode: Mapped[CampaignPlayMode] = mapped_column(
+        Enum(
+            CampaignPlayMode,
+            name="campaign_play_mode",
+            native_enum=False,
+            length=32,
+            validate_strings=True,
+        ),
+        nullable=False,
+        default=CampaignPlayMode.NARRATIVE,
+    )
     lifecycle_status: Mapped[CampaignLifecycleStatus] = mapped_column(
         enum_column(CampaignLifecycleStatus, "campaign_lifecycle_status"),
         nullable=False,
@@ -144,6 +218,9 @@ class Campaign(Base):
         DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now
     )
 
+    npcs: Mapped[list[CampaignNpc]] = relationship(
+        back_populates="campaign", cascade="all, delete-orphan"
+    )
     memberships: Mapped[list[CampaignMembership]] = relationship(
         back_populates="campaign", cascade="all, delete-orphan"
     )
@@ -158,6 +235,45 @@ class Campaign(Base):
             unique=True,
             sqlite_where=text("lifecycle_status = 'ACTIVE'"),
         ),
+    )
+
+
+class CampaignNpc(Base):
+    """A named NPC lifted out of the module text.
+
+    Extracted once when the campaign is prepared, then owned by the DM. The AI
+    DM reads these instead of hunting for a personality in the raw module every
+    turn, which is what let NPC voices drift between scenes.
+    """
+
+    __tablename__ = "campaign_npcs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    role: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    personality: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    ideal: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    bond: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    flaw: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    knows: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    wants: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    voice: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    source: Mapped[str] = mapped_column(String(10), nullable=False, default="AUTO")
+    revision: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now
+    )
+
+    campaign: Mapped[Campaign] = relationship(back_populates="npcs")
+
+    __table_args__ = (
+        Index("ux_campaign_npcs_campaign_name", "campaign_id", "name", unique=True),
     )
 
 
@@ -215,17 +331,15 @@ class GameSession(Base):
     llm_invocations: Mapped[list[LlmInvocation]] = relationship(
         back_populates="session", cascade="all, delete-orphan"
     )
+    skill_checks: Mapped[list[SkillCheck]] = relationship(
+        back_populates="session", cascade="all, delete-orphan"
+    )
     summaries: Mapped[list[SessionSummary]] = relationship(
         back_populates="session", cascade="all, delete-orphan"
     )
 
     __table_args__ = (
-        Index(
-            "ux_session_single_active_per_campaign",
-            "campaign_id",
-            unique=True,
-            sqlite_where=text("status = 'ACTIVE'"),
-        ),
+        Index("ux_session_single_per_campaign", "campaign_id", unique=True),
         CheckConstraint("next_sequence_no > 0", name="positive_next_sequence_no"),
     )
 
@@ -281,9 +395,117 @@ class SessionRuntime(Base):
     __table_args__ = (
         CheckConstraint("generation >= 0", name="non_negative_generation"),
         CheckConstraint(
-            "consecutive_ai_messages >= 0 AND consecutive_ai_messages <= 12",
+            "consecutive_ai_messages >= 0 AND consecutive_ai_messages <= 5",
             name="valid_consecutive_ai_messages",
         ),
+    )
+
+
+class SkillCheck(Base):
+    __tablename__ = "skill_checks"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    session_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("sessions.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="RESTRICT"), nullable=False, index=True
+    )
+    skill: Mapped[str] = mapped_column(String(40), nullable=False)
+    modifier_snapshot: Mapped[int] = mapped_column(Integer, nullable=False)
+    roll_mode: Mapped[RollMode] = mapped_column(enum_column(RollMode, "roll_mode"), nullable=False)
+    die_one: Mapped[int] = mapped_column(Integer, nullable=False)
+    die_two: Mapped[int | None] = mapped_column(Integer)
+    selected_die: Mapped[int] = mapped_column(Integer, nullable=False)
+    total: Mapped[int] = mapped_column(Integer, nullable=False)
+    dc: Mapped[int | None] = mapped_column(Integer)
+    system_outcome: Mapped[SkillCheckSystemOutcome] = mapped_column(
+        enum_column(SkillCheckSystemOutcome, "skill_check_system_outcome"), nullable=False
+    )
+    dm_adjudication: Mapped[SkillCheckDmAdjudication | None] = mapped_column(
+        enum_column(SkillCheckDmAdjudication, "skill_check_dm_adjudication")
+    )
+    reason: Mapped[str | None] = mapped_column(String(1000))
+    client_request_id: Mapped[str] = mapped_column(String(36), nullable=False, unique=True)
+    status: Mapped[SkillCheckStatus] = mapped_column(
+        enum_column(SkillCheckStatus, "skill_check_status"), nullable=False
+    )
+    void_reason: Mapped[str | None] = mapped_column(String(1000))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now
+    )
+    adjudicated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    session: Mapped[GameSession] = relationship(back_populates="skill_checks")
+    character: Mapped[Character] = relationship()
+
+    __table_args__ = (
+        CheckConstraint("die_one BETWEEN 1 AND 20", name="skill_check_die_one_range"),
+        CheckConstraint(
+            "die_two IS NULL OR die_two BETWEEN 1 AND 20", name="skill_check_die_two_range"
+        ),
+        CheckConstraint("selected_die BETWEEN 1 AND 20", name="skill_check_selected_range"),
+        CheckConstraint("dc IS NULL OR dc >= 0", name="non_negative_skill_check_dc"),
+    )
+
+
+class CampaignDmDraft(Base):
+    __tablename__ = "campaign_dm_drafts"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    session_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("sessions.id", ondelete="CASCADE"), index=True
+    )
+    source_message_id: Mapped[str | None] = mapped_column(String(36), index=True)
+    source_skill_check_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("skill_checks.id", ondelete="SET NULL")
+    )
+    trigger_type: Mapped[DmDraftTriggerType] = mapped_column(
+        Enum(
+            DmDraftTriggerType,
+            name="dm_draft_trigger_type",
+            native_enum=False,
+            length=32,
+            validate_strings=True,
+        ),
+        nullable=False,
+    )
+    prompt: Mapped[str | None] = mapped_column(Text)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    audience: Mapped[MessageAudience] = mapped_column(
+        enum_column(MessageAudience, "dm_draft_audience"),
+        nullable=False,
+        default=MessageAudience.PUBLIC,
+    )
+    recipient_character_ids: Mapped[list[str]] = mapped_column(
+        JSON, nullable=False, default=list
+    )
+    # What the model added beyond the DM's own draft, so reviewing a permissive
+    # draft stays a glance rather than a re-read of the module.
+    improvised_notes: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    status: Mapped[DmDraftStatus] = mapped_column(
+        Enum(
+            DmDraftStatus,
+            name="dm_draft_status",
+            native_enum=False,
+            length=32,
+            validate_strings=True,
+        ),
+        nullable=False,
+        default=DmDraftStatus.DRAFT,
+    )
+    revision: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now
     )
 
 
@@ -308,6 +530,12 @@ class Message(Base):
         enum_column(MessageAudience, "message_audience"), nullable=False
     )
     content: Mapped[str] = mapped_column(Text, nullable=False)
+    # Characters this message explicitly speaks to. Set by the DM composer or
+    # carried over from the publishing character's own candidate, so the
+    # Speaker Coordinator no longer depends on name substring matching.
+    addressed_character_ids: Mapped[list[str]] = mapped_column(
+        JSON, nullable=False, default=list
+    )
     client_request_id: Mapped[str | None] = mapped_column(String(36), unique=True)
     # Agent runs and messages point to each other. The link is application-validated
     # so SQLite migration order remains acyclic.

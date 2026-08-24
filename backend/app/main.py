@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from backend.app.api.router import api_router
 from backend.app.core.config import get_settings
 from backend.app.core.errors import AppError
-from backend.app.runtime import get_runtime_supervisor
+from backend.app.runtime import get_dm_draft_supervisor, get_runtime_supervisor
 
 
 @asynccontextmanager
@@ -18,6 +18,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     del app
     get_settings().ensure_data_directories()
     await get_runtime_supervisor().recover_interrupted_runs()
+    await get_dm_draft_supervisor().recover_interrupted_drafts()
     yield
 
 

@@ -136,6 +136,11 @@
   font-size: 13px;
 }
 
+.muted {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
 .form input,
 .form textarea {
   width: 100%;
@@ -204,6 +209,36 @@
   gap: 10px;
 }
 
+.tableScroll {
+  overflow-x: auto;
+}
+
+.matrix {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.matrix th,
+.matrix td {
+  min-width: 90px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  text-align: center;
+}
+
+.matrix th {
+  color: var(--paper);
+  background: #151310;
+}
+
+.matrix input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--gold-bright);
+}
+
 .checkItem {
   display: flex;
   align-items: center;
@@ -224,6 +259,30 @@
   color: var(--text-muted);
 }
 
+.skillGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.skillItem {
+  display: grid;
+  grid-template-columns: 1fr 70px;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.skillItem input {
+  width: 100%;
+  padding: 8px;
+  color: var(--paper);
+  background: #151310;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+}
+
 .hpRow {
   display: grid;
   grid-template-columns: minmax(140px, 1fr) 100px auto;
@@ -242,7 +301,18 @@
 
 @media (max-width: 760px) {
   .checklist,
+  .skillGrid,
   .hpRow {
     grid-template-columns: 1fr;
   }
+}
+
+.hint {
+  display: block;
+  margin: 4px 0 6px;
+  color: var(--gold-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.6;
+  opacity: 0.85;
 }

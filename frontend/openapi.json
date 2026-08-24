@@ -238,6 +238,98 @@
         }
       }
     },
+    "/api/v1/characters/{character_id}/skills": {
+      "get": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Get Skills",
+        "operationId": "get_skills_api_v1_characters__character_id__skills_get",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillSetView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Update Skills",
+        "operationId": "update_skills_api_v1_characters__character_id__skills_put",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SkillSetUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillSetView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/characters/{character_id}/memories": {
       "get": {
         "tags": [
@@ -644,6 +736,46 @@
         }
       }
     },
+    "/api/v1/campaigns/{campaign_id}:export": {
+      "get": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Export Campaign",
+        "operationId": "export_campaign_api_v1_campaigns__campaign_id__export_get",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/campaigns/{campaign_id}": {
       "get": {
         "tags": [
@@ -821,6 +953,52 @@
         }
       }
     },
+    "/api/v1/campaigns/{campaign_id}/acquaintances": {
+      "get": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "List Campaign Acquaintances",
+        "operationId": "list_campaign_acquaintances_api_v1_campaigns__campaign_id__acquaintances_get",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CharacterAcquaintanceView"
+                  },
+                  "title": "Response List Campaign Acquaintances Api V1 Campaigns  Campaign Id  Acquaintances Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/campaigns/{campaign_id}/members": {
       "post": {
         "tags": [
@@ -880,6 +1058,90 @@
         ],
         "summary": "Activate Campaign",
         "operationId": "activate_campaign_api_v1_campaigns__campaign_id__activate_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}:pause": {
+      "post": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Pause Campaign",
+        "operationId": "pause_campaign_api_v1_campaigns__campaign_id__pause_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}:resume": {
+      "post": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Resume Campaign",
+        "operationId": "resume_campaign_api_v1_campaigns__campaign_id__resume_post",
         "parameters": [
           {
             "name": "campaign_id",
@@ -1125,13 +1387,13 @@
         }
       }
     },
-    "/api/v1/campaigns/{campaign_id}:export": {
+    "/api/v1/campaigns/{campaign_id}/play": {
       "get": {
         "tags": [
           "campaigns"
         ],
-        "summary": "Export Campaign",
-        "operationId": "export_campaign_api_v1_campaigns__campaign_id__export_get",
+        "summary": "Get Campaign Play State",
+        "operationId": "get_campaign_play_state_api_v1_campaigns__campaign_id__play_get",
         "parameters": [
           {
             "name": "campaign_id",
@@ -1148,7 +1410,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignPlayState"
+                }
               }
             }
           },
@@ -1165,13 +1429,13 @@
         }
       }
     },
-    "/api/v1/campaigns/{campaign_id}/sessions": {
-      "post": {
+    "/api/v1/campaigns/{campaign_id}/summaries": {
+      "get": {
         "tags": [
           "campaigns"
         ],
-        "summary": "Create Session",
-        "operationId": "create_session_api_v1_campaigns__campaign_id__sessions_post",
+        "summary": "List Campaign Summaries",
+        "operationId": "list_campaign_summaries_api_v1_campaigns__campaign_id__summaries_get",
         "parameters": [
           {
             "name": "campaign_id",
@@ -1183,65 +1447,17 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SessionCreate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SessionDetail"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/sessions/{session_id}:end": {
-      "post": {
-        "tags": [
-          "campaigns"
-        ],
-        "summary": "End Session",
-        "operationId": "end_session_api_v1_sessions__session_id__end_post",
-        "parameters": [
-          {
-            "name": "session_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Session Id"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SessionDetail"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CampaignSummaryView"
+                  },
+                  "title": "Response List Campaign Summaries Api V1 Campaigns  Campaign Id  Summaries Get"
                 }
               }
             }
@@ -1259,63 +1475,21 @@
         }
       }
     },
-    "/api/v1/sessions/{session_id}": {
-      "get": {
-        "tags": [
-          "campaigns"
-        ],
-        "summary": "Get Session",
-        "operationId": "get_session_api_v1_sessions__session_id__get",
-        "parameters": [
-          {
-            "name": "session_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Session Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SessionDetail"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/sessions/{session_id}/characters/{character_id}/hp": {
+    "/api/v1/campaigns/{campaign_id}/characters/{character_id}/hp": {
       "patch": {
         "tags": [
           "campaigns"
         ],
         "summary": "Update Hp",
-        "operationId": "update_hp_api_v1_sessions__session_id__characters__character_id__hp_patch",
+        "operationId": "update_hp_api_v1_campaigns__campaign_id__characters__character_id__hp_patch",
         "parameters": [
           {
-            "name": "session_id",
+            "name": "campaign_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Session Id"
+              "title": "Campaign Id"
             }
           },
           {
@@ -1344,7 +1518,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SessionDetail"
+                  "$ref": "#/components/schemas/CampaignPlayState"
                 }
               }
             }
@@ -1362,21 +1536,768 @@
         }
       }
     },
-    "/api/v1/sessions/{session_id}/messages": {
+    "/api/v1/campaigns/{campaign_id}/skills": {
+      "get": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "List Campaign Skills",
+        "operationId": "list_campaign_skills_api_v1_campaigns__campaign_id__skills_get",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CampaignSkillMemberView"
+                  },
+                  "title": "Response List Campaign Skills Api V1 Campaigns  Campaign Id  Skills Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/skill-checks": {
+      "get": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "List Skill Checks",
+        "operationId": "list_skill_checks_api_v1_campaigns__campaign_id__skill_checks_get",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SkillCheckView"
+                  },
+                  "title": "Response List Skill Checks Api V1 Campaigns  Campaign Id  Skill Checks Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Create Skill Check",
+        "operationId": "create_skill_check_api_v1_campaigns__campaign_id__skill_checks_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SkillCheckCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillCheckView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/skill-checks/{check_id}:adjudicate": {
+      "post": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Adjudicate Skill Check",
+        "operationId": "adjudicate_skill_check_api_v1_skill_checks__check_id__adjudicate_post",
+        "parameters": [
+          {
+            "name": "check_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Check Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SkillCheckAdjudicate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillCheckView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/skill-checks/{check_id}:void": {
+      "post": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Void Skill Check",
+        "operationId": "void_skill_check_api_v1_skill_checks__check_id__void_post",
+        "parameters": [
+          {
+            "name": "check_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Check Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SkillCheckVoid"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillCheckView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/dm-drafts": {
+      "post": {
+        "tags": [
+          "dm-drafts"
+        ],
+        "summary": "Create Draft",
+        "operationId": "create_draft_api_v1_campaigns__campaign_id__dm_drafts_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DmDraftCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DmDraftView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "dm-drafts"
+        ],
+        "summary": "List Drafts",
+        "operationId": "list_drafts_api_v1_campaigns__campaign_id__dm_drafts_get",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DmDraftView"
+                  },
+                  "title": "Response List Drafts Api V1 Campaigns  Campaign Id  Dm Drafts Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/dm-drafts:generate-opening": {
+      "post": {
+        "tags": [
+          "dm-drafts"
+        ],
+        "summary": "Generate Opening",
+        "operationId": "generate_opening_api_v1_campaigns__campaign_id__dm_drafts_generate_opening_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DmDraftView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dm-drafts/{draft_id}": {
+      "patch": {
+        "tags": [
+          "dm-drafts"
+        ],
+        "summary": "Update Draft",
+        "operationId": "update_draft_api_v1_dm_drafts__draft_id__patch",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Draft Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DmDraftUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DmDraftView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dm-drafts/{draft_id}:discard": {
+      "post": {
+        "tags": [
+          "dm-drafts"
+        ],
+        "summary": "Discard Draft",
+        "operationId": "discard_draft_api_v1_dm_drafts__draft_id__discard_post",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Draft Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DmDraftView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dm-drafts/{draft_id}:publish": {
+      "post": {
+        "tags": [
+          "dm-drafts"
+        ],
+        "summary": "Publish Draft",
+        "operationId": "publish_draft_api_v1_dm_drafts__draft_id__publish_post",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Draft Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DmDraftPublishResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/npcs": {
+      "get": {
+        "tags": [
+          "campaign-npcs"
+        ],
+        "summary": "List Npcs",
+        "operationId": "list_npcs_api_v1_campaigns__campaign_id__npcs_get",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NpcView"
+                  },
+                  "title": "Response List Npcs Api V1 Campaigns  Campaign Id  Npcs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "campaign-npcs"
+        ],
+        "summary": "Create Npc",
+        "operationId": "create_npc_api_v1_campaigns__campaign_id__npcs_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NpcCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NpcView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/npcs:extract": {
+      "post": {
+        "tags": [
+          "campaign-npcs"
+        ],
+        "summary": "Extract Npcs",
+        "operationId": "extract_npcs_api_v1_campaigns__campaign_id__npcs_extract_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NpcView"
+                  },
+                  "title": "Response Extract Npcs Api V1 Campaigns  Campaign Id  Npcs Extract Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/npcs/{npc_id}": {
+      "patch": {
+        "tags": [
+          "campaign-npcs"
+        ],
+        "summary": "Update Npc",
+        "operationId": "update_npc_api_v1_npcs__npc_id__patch",
+        "parameters": [
+          {
+            "name": "npc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Npc Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NpcUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NpcView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "campaign-npcs"
+        ],
+        "summary": "Delete Npc",
+        "operationId": "delete_npc_api_v1_npcs__npc_id__delete",
+        "parameters": [
+          {
+            "name": "npc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Npc Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/messages": {
       "get": {
         "tags": [
           "messages"
         ],
         "summary": "List Messages",
-        "operationId": "list_messages_api_v1_sessions__session_id__messages_get",
+        "operationId": "list_messages_api_v1_campaigns__campaign_id__messages_get",
         "parameters": [
           {
-            "name": "session_id",
+            "name": "campaign_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Session Id"
+              "title": "Campaign Id"
             }
           }
         ],
@@ -1390,7 +2311,7 @@
                   "items": {
                     "$ref": "#/components/schemas/MessageView"
                   },
-                  "title": "Response List Messages Api V1 Sessions  Session Id  Messages Get"
+                  "title": "Response List Messages Api V1 Campaigns  Campaign Id  Messages Get"
                 }
               }
             }
@@ -1412,15 +2333,15 @@
           "messages"
         ],
         "summary": "Send Dm Message",
-        "operationId": "send_dm_message_api_v1_sessions__session_id__messages_post",
+        "operationId": "send_dm_message_api_v1_campaigns__campaign_id__messages_post",
         "parameters": [
           {
-            "name": "session_id",
+            "name": "campaign_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Session Id"
+              "title": "Campaign Id"
             }
           }
         ],
@@ -1458,21 +2379,21 @@
         }
       }
     },
-    "/api/v1/sessions/{session_id}/messages:ooc": {
+    "/api/v1/campaigns/{campaign_id}/messages:ooc": {
       "post": {
         "tags": [
           "messages"
         ],
         "summary": "Correct Message With Ooc",
-        "operationId": "correct_message_with_ooc_api_v1_sessions__session_id__messages_ooc_post",
+        "operationId": "correct_message_with_ooc_api_v1_campaigns__campaign_id__messages_ooc_post",
         "parameters": [
           {
-            "name": "session_id",
+            "name": "campaign_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Session Id"
+              "title": "Campaign Id"
             }
           }
         ],
@@ -1510,21 +2431,21 @@
         }
       }
     },
-    "/api/v1/sessions/{session_id}/runtime:stop": {
+    "/api/v1/campaigns/{campaign_id}/runtime:stop": {
       "post": {
         "tags": [
           "messages"
         ],
         "summary": "Stop Runtime",
-        "operationId": "stop_runtime_api_v1_sessions__session_id__runtime_stop_post",
+        "operationId": "stop_runtime_api_v1_campaigns__campaign_id__runtime_stop_post",
         "parameters": [
           {
-            "name": "session_id",
+            "name": "campaign_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Session Id"
+              "title": "Campaign Id"
             }
           }
         ],
@@ -1552,21 +2473,21 @@
         }
       }
     },
-    "/api/v1/sessions/{session_id}/runtime:retry": {
+    "/api/v1/campaigns/{campaign_id}/runtime:retry": {
       "post": {
         "tags": [
           "messages"
         ],
         "summary": "Retry Runtime",
-        "operationId": "retry_runtime_api_v1_sessions__session_id__runtime_retry_post",
+        "operationId": "retry_runtime_api_v1_campaigns__campaign_id__runtime_retry_post",
         "parameters": [
           {
-            "name": "session_id",
+            "name": "campaign_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Session Id"
+              "title": "Campaign Id"
             }
           }
         ],
@@ -1594,21 +2515,21 @@
         }
       }
     },
-    "/api/v1/sessions/{session_id}/events": {
+    "/api/v1/campaigns/{campaign_id}/events": {
       "get": {
         "tags": [
           "events"
         ],
-        "summary": "Get Session Events",
-        "operationId": "get_session_events_api_v1_sessions__session_id__events_get",
+        "summary": "Get Campaign Events",
+        "operationId": "get_campaign_events_api_v1_campaigns__campaign_id__events_get",
         "parameters": [
           {
-            "name": "session_id",
+            "name": "campaign_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Session Id"
+              "title": "Campaign Id"
             }
           }
         ],
@@ -1685,6 +2606,36 @@
             ],
             "title": "Description"
           },
+          "dmGuide": {
+            "type": "string",
+            "maxLength": 100000,
+            "title": "Dmguide",
+            "default": ""
+          },
+          "sceneNotes": {
+            "type": "string",
+            "maxLength": 100000,
+            "title": "Scenenotes",
+            "default": ""
+          },
+          "moduleContent": {
+            "type": "string",
+            "maxLength": 500000,
+            "title": "Modulecontent",
+            "default": ""
+          },
+          "styleInstructions": {
+            "type": "string",
+            "maxLength": 20000,
+            "title": "Styleinstructions",
+            "default": ""
+          },
+          "openingInstructions": {
+            "type": "string",
+            "maxLength": 20000,
+            "title": "Openinginstructions",
+            "default": ""
+          },
           "characterIds": {
             "items": {
               "type": "string"
@@ -1721,6 +2672,29 @@
             ],
             "title": "Description"
           },
+          "dmGuide": {
+            "type": "string",
+            "title": "Dmguide"
+          },
+          "sceneNotes": {
+            "type": "string",
+            "title": "Scenenotes"
+          },
+          "moduleContent": {
+            "type": "string",
+            "title": "Modulecontent"
+          },
+          "styleInstructions": {
+            "type": "string",
+            "title": "Styleinstructions"
+          },
+          "openingInstructions": {
+            "type": "string",
+            "title": "Openinginstructions"
+          },
+          "playMode": {
+            "$ref": "#/components/schemas/CampaignPlayMode"
+          },
           "lifecycleStatus": {
             "$ref": "#/components/schemas/CampaignLifecycleStatus"
           },
@@ -1744,16 +2718,9 @@
             "type": "integer",
             "title": "Membercount"
           },
-          "activeSessionId": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Activesessionid"
+          "hasRuntime": {
+            "type": "boolean",
+            "title": "Hasruntime"
           },
           "createdAt": {
             "type": "string",
@@ -1771,13 +2738,6 @@
             },
             "type": "array",
             "title": "Members"
-          },
-          "sessions": {
-            "items": {
-              "$ref": "#/components/schemas/SessionSummary"
-            },
-            "type": "array",
-            "title": "Sessions"
           }
         },
         "type": "object",
@@ -1785,15 +2745,20 @@
           "id",
           "name",
           "description",
+          "dmGuide",
+          "sceneNotes",
+          "moduleContent",
+          "styleInstructions",
+          "openingInstructions",
+          "playMode",
           "lifecycleStatus",
           "archivedAt",
           "revision",
           "memberCount",
-          "activeSessionId",
+          "hasRuntime",
           "createdAt",
           "updatedAt",
-          "members",
-          "sessions"
+          "members"
         ],
         "title": "CampaignDetail"
       },
@@ -1802,6 +2767,7 @@
         "enum": [
           "PREPARATION",
           "ACTIVE",
+          "PAUSED",
           "COMPLETED"
         ],
         "title": "CampaignLifecycleStatus"
@@ -1888,6 +2854,149 @@
         ],
         "title": "CampaignMembershipUpdate"
       },
+      "CampaignPlayMode": {
+        "type": "string",
+        "enum": [
+          "NARRATIVE",
+          "COMBAT"
+        ],
+        "title": "CampaignPlayMode"
+      },
+      "CampaignPlayState": {
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "title": "Campaignid"
+          },
+          "lifecycleStatus": {
+            "$ref": "#/components/schemas/CampaignLifecycleStatus"
+          },
+          "runtimeStatus": {
+            "$ref": "#/components/schemas/RuntimeStatus"
+          },
+          "runtimeGeneration": {
+            "type": "integer",
+            "title": "Runtimegeneration"
+          },
+          "activeAgentRunId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activeagentrunid"
+          },
+          "waitingRequest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Waitingrequest"
+          },
+          "lastErrorCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lasterrorcode"
+          },
+          "lastErrorMessage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lasterrormessage"
+          },
+          "consecutiveAiMessages": {
+            "type": "integer",
+            "title": "Consecutiveaimessages"
+          },
+          "hpStates": {
+            "items": {
+              "$ref": "#/components/schemas/HpState"
+            },
+            "type": "array",
+            "title": "Hpstates"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Startedat"
+          },
+          "endedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "campaignId",
+          "lifecycleStatus",
+          "runtimeStatus",
+          "runtimeGeneration",
+          "activeAgentRunId",
+          "waitingRequest",
+          "lastErrorCode",
+          "lastErrorMessage",
+          "consecutiveAiMessages",
+          "hpStates",
+          "startedAt",
+          "endedAt"
+        ],
+        "title": "CampaignPlayState"
+      },
+      "CampaignSkillMemberView": {
+        "properties": {
+          "characterId": {
+            "type": "string",
+            "title": "Characterid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "modifiers": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "$ref": "#/components/schemas/SkillName"
+            },
+            "type": "object",
+            "title": "Modifiers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "characterId",
+          "name",
+          "modifiers"
+        ],
+        "title": "CampaignSkillMemberView"
+      },
       "CampaignSummary": {
         "properties": {
           "id": {
@@ -1908,6 +3017,29 @@
               }
             ],
             "title": "Description"
+          },
+          "dmGuide": {
+            "type": "string",
+            "title": "Dmguide"
+          },
+          "sceneNotes": {
+            "type": "string",
+            "title": "Scenenotes"
+          },
+          "moduleContent": {
+            "type": "string",
+            "title": "Modulecontent"
+          },
+          "styleInstructions": {
+            "type": "string",
+            "title": "Styleinstructions"
+          },
+          "openingInstructions": {
+            "type": "string",
+            "title": "Openinginstructions"
+          },
+          "playMode": {
+            "$ref": "#/components/schemas/CampaignPlayMode"
           },
           "lifecycleStatus": {
             "$ref": "#/components/schemas/CampaignLifecycleStatus"
@@ -1932,16 +3064,9 @@
             "type": "integer",
             "title": "Membercount"
           },
-          "activeSessionId": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Activesessionid"
+          "hasRuntime": {
+            "type": "boolean",
+            "title": "Hasruntime"
           },
           "createdAt": {
             "type": "string",
@@ -1959,15 +3084,77 @@
           "id",
           "name",
           "description",
+          "dmGuide",
+          "sceneNotes",
+          "moduleContent",
+          "styleInstructions",
+          "openingInstructions",
+          "playMode",
           "lifecycleStatus",
           "archivedAt",
           "revision",
           "memberCount",
-          "activeSessionId",
+          "hasRuntime",
           "createdAt",
           "updatedAt"
         ],
         "title": "CampaignSummary"
+      },
+      "CampaignSummaryView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "campaignId": {
+            "type": "string",
+            "title": "Campaignid"
+          },
+          "audience": {
+            "$ref": "#/components/schemas/SummaryAudience"
+          },
+          "characterId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Characterid"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "campaignId",
+          "audience",
+          "characterId",
+          "content",
+          "revision",
+          "createdAt",
+          "updatedAt"
+        ],
+        "title": "CampaignSummaryView"
       },
       "CampaignUpdate": {
         "properties": {
@@ -2000,6 +3187,76 @@
               }
             ],
             "title": "Description"
+          },
+          "dmGuide": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dmguide"
+          },
+          "sceneNotes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenenotes"
+          },
+          "moduleContent": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modulecontent"
+          },
+          "styleInstructions": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Styleinstructions"
+          },
+          "openingInstructions": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Openinginstructions"
+          },
+          "playMode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CampaignPlayMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -2007,6 +3264,44 @@
           "revision"
         ],
         "title": "CampaignUpdate"
+      },
+      "CharacterAcquaintanceView": {
+        "properties": {
+          "characterAId": {
+            "type": "string",
+            "title": "Characteraid"
+          },
+          "characterAName": {
+            "type": "string",
+            "title": "Characteraname"
+          },
+          "characterBId": {
+            "type": "string",
+            "title": "Characterbid"
+          },
+          "characterBName": {
+            "type": "string",
+            "title": "Characterbname"
+          },
+          "acquainted": {
+            "type": "boolean",
+            "title": "Acquainted"
+          },
+          "relationshipHistory": {
+            "type": "string",
+            "title": "Relationshiphistory"
+          }
+        },
+        "type": "object",
+        "required": [
+          "characterAId",
+          "characterAName",
+          "characterBId",
+          "characterBName",
+          "acquainted",
+          "relationshipHistory"
+        ],
+        "title": "CharacterAcquaintanceView"
       },
       "CharacterCreate": {
         "properties": {
@@ -2021,6 +3316,18 @@
             "maxLength": 200000,
             "minLength": 1,
             "title": "Roleplayprompt"
+          },
+          "voiceSamples": {
+            "type": "string",
+            "maxLength": 20000,
+            "title": "Voicesamples",
+            "default": ""
+          },
+          "narrationNotes": {
+            "type": "string",
+            "maxLength": 4000,
+            "title": "Narrationnotes",
+            "default": ""
           },
           "maxHp": {
             "type": "integer",
@@ -2088,6 +3395,14 @@
             "type": "string",
             "title": "Roleplayprompt"
           },
+          "voiceSamples": {
+            "type": "string",
+            "title": "Voicesamples"
+          },
+          "narrationNotes": {
+            "type": "string",
+            "title": "Narrationnotes"
+          },
           "profileContent": {
             "type": "string",
             "title": "Profilecontent"
@@ -2108,8 +3423,10 @@
           "createdAt",
           "updatedAt",
           "roleplayPrompt",
+          "voiceSamples",
           "profileContent",
-          "profileStatus"
+          "profileStatus",
+          "narrationNotes"
         ],
         "title": "CharacterDetail"
       },
@@ -2223,6 +3540,16 @@
             },
             "type": "array",
             "title": "Inventory"
+          },
+          "skills": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "$ref": "#/components/schemas/SkillName"
+            },
+            "type": "object",
+            "title": "Skills"
           }
         },
         "type": "object",
@@ -2330,6 +3657,30 @@
             ],
             "title": "Roleplayprompt"
           },
+          "voiceSamples": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voicesamples"
+          },
+          "narrationNotes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Narrationnotes"
+          },
           "maxHp": {
             "anyOf": [
               {
@@ -2361,6 +3712,221 @@
           "revision"
         ],
         "title": "CharacterUpdate"
+      },
+      "DmDraftCreate": {
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "maxLength": 6000,
+            "minLength": 1,
+            "title": "Prompt"
+          },
+          "sourceSkillCheckId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sourceskillcheckid"
+          },
+          "assistMode": {
+            "type": "string",
+            "pattern": "^(POLISH|EXPAND|REWRITE)$",
+            "title": "Assistmode",
+            "default": "POLISH"
+          }
+        },
+        "type": "object",
+        "required": [
+          "prompt"
+        ],
+        "title": "DmDraftCreate",
+        "description": "`prompt` is the DM's own rough reply or a one-line intent."
+      },
+      "DmDraftPublishResult": {
+        "properties": {
+          "draft": {
+            "$ref": "#/components/schemas/DmDraftView"
+          },
+          "message": {
+            "$ref": "#/components/schemas/MessageView"
+          }
+        },
+        "type": "object",
+        "required": [
+          "draft",
+          "message"
+        ],
+        "title": "DmDraftPublishResult"
+      },
+      "DmDraftStatus": {
+        "type": "string",
+        "enum": [
+          "GENERATING",
+          "READY",
+          "STALE",
+          "SENT",
+          "DRAFT",
+          "PUBLISHED",
+          "DISCARDED",
+          "FAILED"
+        ],
+        "title": "DmDraftStatus"
+      },
+      "DmDraftTriggerType": {
+        "type": "string",
+        "enum": [
+          "OPENING",
+          "CHARACTER_REPLY",
+          "SKILL_CHECK_RESULT",
+          "MANUAL_ASSIST"
+        ],
+        "title": "DmDraftTriggerType"
+      },
+      "DmDraftUpdate": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Content"
+          },
+          "audience": {
+            "type": "string",
+            "enum": [
+              "PUBLIC",
+              "PRIVATE"
+            ],
+            "title": "Audience",
+            "default": "PUBLIC"
+          },
+          "recipientCharacterIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Recipientcharacterids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision",
+          "content"
+        ],
+        "title": "DmDraftUpdate"
+      },
+      "DmDraftView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "campaignId": {
+            "type": "string",
+            "title": "Campaignid"
+          },
+          "sessionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sessionid"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "audience": {
+            "$ref": "#/components/schemas/MessageAudience"
+          },
+          "recipientCharacterIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Recipientcharacterids"
+          },
+          "improvisedNotes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Improvisednotes"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DmDraftStatus"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "sourceSkillCheckId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sourceskillcheckid"
+          },
+          "sourceMessageId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sourcemessageid"
+          },
+          "triggerType": {
+            "$ref": "#/components/schemas/DmDraftTriggerType"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "campaignId",
+          "sessionId",
+          "content",
+          "audience",
+          "recipientCharacterIds",
+          "improvisedNotes",
+          "status",
+          "revision",
+          "sourceSkillCheckId",
+          "sourceMessageId",
+          "triggerType",
+          "createdAt",
+          "updatedAt"
+        ],
+        "title": "DmDraftView"
       },
       "DmMessageCommandResult": {
         "properties": {
@@ -2397,6 +3963,14 @@
             "type": "array",
             "maxItems": 6,
             "title": "Recipientcharacterids"
+          },
+          "addressedCharacterIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Addressedcharacterids"
           },
           "clientRequestId": {
             "type": "string",
@@ -2644,9 +4218,9 @@
             "type": "string",
             "title": "Id"
           },
-          "sessionId": {
+          "campaignId": {
             "type": "string",
-            "title": "Sessionid"
+            "title": "Campaignid"
           },
           "sequenceNo": {
             "type": "integer",
@@ -2687,6 +4261,13 @@
             "type": "string",
             "title": "Content"
           },
+          "addressedCharacterIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Addressedcharacterids"
+          },
           "isOocCorrected": {
             "type": "boolean",
             "title": "Isooccorrected"
@@ -2718,7 +4299,7 @@
         "type": "object",
         "required": [
           "id",
-          "sessionId",
+          "campaignId",
           "sequenceNo",
           "senderType",
           "senderCharacterId",
@@ -2726,6 +4307,7 @@
           "kind",
           "audience",
           "content",
+          "addressedCharacterIds",
           "isOocCorrected",
           "oocCorrectionNote",
           "recipients",
@@ -2750,6 +4332,277 @@
           "name"
         ],
         "title": "NamedDescription"
+      },
+      "NpcCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "maxLength": 400,
+            "title": "Role",
+            "default": ""
+          },
+          "personality": {
+            "type": "string",
+            "maxLength": 800,
+            "title": "Personality",
+            "default": ""
+          },
+          "ideal": {
+            "type": "string",
+            "maxLength": 400,
+            "title": "Ideal",
+            "default": ""
+          },
+          "bond": {
+            "type": "string",
+            "maxLength": 400,
+            "title": "Bond",
+            "default": ""
+          },
+          "flaw": {
+            "type": "string",
+            "maxLength": 400,
+            "title": "Flaw",
+            "default": ""
+          },
+          "knows": {
+            "type": "string",
+            "maxLength": 1200,
+            "title": "Knows",
+            "default": ""
+          },
+          "wants": {
+            "type": "string",
+            "maxLength": 600,
+            "title": "Wants",
+            "default": ""
+          },
+          "voice": {
+            "type": "string",
+            "maxLength": 600,
+            "title": "Voice",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "NpcCreate"
+      },
+      "NpcUpdate": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 400
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "personality": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 800
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Personality"
+          },
+          "ideal": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 400
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ideal"
+          },
+          "bond": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 400
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bond"
+          },
+          "flaw": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 400
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flaw"
+          },
+          "knows": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Knows"
+          },
+          "wants": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 600
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wants"
+          },
+          "voice": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 600
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision"
+        ],
+        "title": "NpcUpdate"
+      },
+      "NpcView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "campaignId": {
+            "type": "string",
+            "title": "Campaignid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "personality": {
+            "type": "string",
+            "title": "Personality"
+          },
+          "ideal": {
+            "type": "string",
+            "title": "Ideal"
+          },
+          "bond": {
+            "type": "string",
+            "title": "Bond"
+          },
+          "flaw": {
+            "type": "string",
+            "title": "Flaw"
+          },
+          "knows": {
+            "type": "string",
+            "title": "Knows"
+          },
+          "wants": {
+            "type": "string",
+            "title": "Wants"
+          },
+          "voice": {
+            "type": "string",
+            "title": "Voice"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "campaignId",
+          "name",
+          "role",
+          "personality",
+          "ideal",
+          "bond",
+          "flaw",
+          "knows",
+          "wants",
+          "voice",
+          "source",
+          "revision",
+          "createdAt",
+          "updatedAt"
+        ],
+        "title": "NpcView"
       },
       "OocCorrectionCreate": {
         "properties": {
@@ -2798,6 +4651,15 @@
           "FAILED"
         ],
         "title": "ProfileStatus"
+      },
+      "RollMode": {
+        "type": "string",
+        "enum": [
+          "NORMAL",
+          "ADVANTAGE",
+          "DISADVANTAGE"
+        ],
+        "title": "RollMode"
       },
       "RuntimeState": {
         "properties": {
@@ -2881,186 +4743,6 @@
         ],
         "title": "RuntimeStatus"
       },
-      "SessionCreate": {
-        "properties": {
-          "title": {
-            "type": "string",
-            "maxLength": 160,
-            "minLength": 1,
-            "title": "Title"
-          }
-        },
-        "type": "object",
-        "required": [
-          "title"
-        ],
-        "title": "SessionCreate"
-      },
-      "SessionDetail": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "campaignId": {
-            "type": "string",
-            "title": "Campaignid"
-          },
-          "title": {
-            "type": "string",
-            "title": "Title"
-          },
-          "status": {
-            "$ref": "#/components/schemas/SessionStatus"
-          },
-          "runtimeStatus": {
-            "$ref": "#/components/schemas/RuntimeStatus"
-          },
-          "runtimeGeneration": {
-            "type": "integer",
-            "title": "Runtimegeneration"
-          },
-          "activeAgentRunId": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Activeagentrunid"
-          },
-          "waitingRequest": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Waitingrequest"
-          },
-          "lastErrorCode": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Lasterrorcode"
-          },
-          "lastErrorMessage": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Lasterrormessage"
-          },
-          "consecutiveAiMessages": {
-            "type": "integer",
-            "title": "Consecutiveaimessages"
-          },
-          "hpStates": {
-            "items": {
-              "$ref": "#/components/schemas/HpState"
-            },
-            "type": "array",
-            "title": "Hpstates"
-          },
-          "startedAt": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Startedat"
-          },
-          "endedAt": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Endedat"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "campaignId",
-          "title",
-          "status",
-          "runtimeStatus",
-          "runtimeGeneration",
-          "activeAgentRunId",
-          "waitingRequest",
-          "lastErrorCode",
-          "lastErrorMessage",
-          "consecutiveAiMessages",
-          "hpStates",
-          "startedAt",
-          "endedAt"
-        ],
-        "title": "SessionDetail"
-      },
-      "SessionStatus": {
-        "type": "string",
-        "enum": [
-          "ACTIVE",
-          "ENDED"
-        ],
-        "title": "SessionStatus"
-      },
-      "SessionSummary": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "title": {
-            "type": "string",
-            "title": "Title"
-          },
-          "status": {
-            "$ref": "#/components/schemas/SessionStatus"
-          },
-          "startedAt": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Startedat"
-          },
-          "endedAt": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Endedat"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "title",
-          "status",
-          "startedAt",
-          "endedAt"
-        ],
-        "title": "SessionSummary"
-      },
       "SheetActivation": {
         "properties": {
           "characterId": {
@@ -3124,6 +4806,337 @@
         ],
         "title": "SheetPreview"
       },
+      "SkillCheckAdjudicate": {
+        "properties": {
+          "outcome": {
+            "$ref": "#/components/schemas/SkillCheckDmAdjudication"
+          }
+        },
+        "type": "object",
+        "required": [
+          "outcome"
+        ],
+        "title": "SkillCheckAdjudicate"
+      },
+      "SkillCheckCreate": {
+        "properties": {
+          "characterId": {
+            "type": "string",
+            "title": "Characterid"
+          },
+          "skill": {
+            "$ref": "#/components/schemas/SkillName"
+          },
+          "rollMode": {
+            "$ref": "#/components/schemas/RollMode",
+            "default": "NORMAL"
+          },
+          "dc": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dc"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "clientRequestId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Clientrequestid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "characterId",
+          "skill",
+          "clientRequestId"
+        ],
+        "title": "SkillCheckCreate"
+      },
+      "SkillCheckDmAdjudication": {
+        "type": "string",
+        "enum": [
+          "SUCCESS",
+          "FAILURE",
+          "PARTIAL_SUCCESS"
+        ],
+        "title": "SkillCheckDmAdjudication"
+      },
+      "SkillCheckStatus": {
+        "type": "string",
+        "enum": [
+          "VALID",
+          "VOID"
+        ],
+        "title": "SkillCheckStatus"
+      },
+      "SkillCheckSystemOutcome": {
+        "type": "string",
+        "enum": [
+          "PASS",
+          "FAIL",
+          "UNRESOLVED"
+        ],
+        "title": "SkillCheckSystemOutcome"
+      },
+      "SkillCheckView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "campaignId": {
+            "type": "string",
+            "title": "Campaignid"
+          },
+          "characterId": {
+            "type": "string",
+            "title": "Characterid"
+          },
+          "characterName": {
+            "type": "string",
+            "title": "Charactername"
+          },
+          "skill": {
+            "$ref": "#/components/schemas/SkillName"
+          },
+          "modifierSnapshot": {
+            "type": "integer",
+            "title": "Modifiersnapshot"
+          },
+          "rollMode": {
+            "$ref": "#/components/schemas/RollMode"
+          },
+          "dieOne": {
+            "type": "integer",
+            "title": "Dieone"
+          },
+          "dieTwo": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dietwo"
+          },
+          "selectedDie": {
+            "type": "integer",
+            "title": "Selecteddie"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "dc": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dc"
+          },
+          "systemOutcome": {
+            "$ref": "#/components/schemas/SkillCheckSystemOutcome"
+          },
+          "dmAdjudication": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SkillCheckDmAdjudication"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SkillCheckStatus"
+          },
+          "voidReason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voidreason"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "adjudicatedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adjudicatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "campaignId",
+          "characterId",
+          "characterName",
+          "skill",
+          "modifierSnapshot",
+          "rollMode",
+          "dieOne",
+          "dieTwo",
+          "selectedDie",
+          "total",
+          "dc",
+          "systemOutcome",
+          "dmAdjudication",
+          "reason",
+          "status",
+          "voidReason",
+          "createdAt",
+          "adjudicatedAt"
+        ],
+        "title": "SkillCheckView"
+      },
+      "SkillCheckVoid": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "title": "SkillCheckVoid"
+      },
+      "SkillName": {
+        "type": "string",
+        "enum": [
+          "athletics",
+          "acrobatics",
+          "sleight_of_hand",
+          "stealth",
+          "arcana",
+          "history",
+          "investigation",
+          "nature",
+          "religion",
+          "animal_handling",
+          "insight",
+          "medicine",
+          "perception",
+          "survival",
+          "deception",
+          "intimidation",
+          "performance",
+          "persuasion"
+        ],
+        "title": "SkillName"
+      },
+      "SkillSetUpdate": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "modifiers": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "$ref": "#/components/schemas/SkillName"
+            },
+            "type": "object",
+            "title": "Modifiers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision",
+          "modifiers"
+        ],
+        "title": "SkillSetUpdate"
+      },
+      "SkillSetView": {
+        "properties": {
+          "characterId": {
+            "type": "string",
+            "title": "Characterid"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "modifiers": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "$ref": "#/components/schemas/SkillName"
+            },
+            "type": "object",
+            "title": "Modifiers"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "characterId",
+          "revision",
+          "modifiers",
+          "updatedAt"
+        ],
+        "title": "SkillSetView"
+      },
       "SpellSnapshot": {
         "properties": {
           "name": {
@@ -3171,6 +5184,14 @@
           "category"
         ],
         "title": "SpellSnapshot"
+      },
+      "SummaryAudience": {
+        "type": "string",
+        "enum": [
+          "DM",
+          "CHARACTER"
+        ],
+        "title": "SummaryAudience"
       },
       "ValidationError": {
         "properties": {

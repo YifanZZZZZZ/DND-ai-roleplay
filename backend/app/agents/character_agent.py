@@ -13,14 +13,27 @@ from backend.app.core.config import Settings
 
 
 class CharacterDecision(BaseModel):
+    """Field order is load-bearing.
+
+    Structured output is generated top to bottom, so what sits above ``content``
+    is decided before the line exists. ``inner_beat`` forces the model to settle
+    on the character's reaction first; ``requires_dm_resolution`` forces it to
+    decide whether this reaches outside the character's own control. Both are
+    cheap, in-band reasoning: no extra request, no extra latency. ``inner_beat``
+    is never persisted or shown.
+    """
+
     decision: Literal["SILENCE", "RESPOND"]
-    content: str = Field(default="", max_length=3000)
-    response_type: Literal["SPEECH", "ACTION", "SPEECH_AND_ACTION"] | None = None
+    inner_beat: str = Field(default="", max_length=200)
+    # Decided before the line is written, not after. Sitting at the end of the
+    # schema it was an afterthought the model filled in once the reply already
+    # read like a complete turn, so questions to NPCs sailed through unflagged.
+    requires_dm_resolution: bool = False
+    resolution_request: str | None = Field(default=None, max_length=300)
+    content: str = Field(default="", max_length=240)
     visibility: Literal["PUBLIC", "DM_ONLY"] = "PUBLIC"
     urgency: Literal["NORMAL", "HIGH", "IMMEDIATE"] = "NORMAL"
     addressed_character_ids: list[str] = Field(default_factory=list, max_length=6)
-    requires_dm_resolution: bool = False
-    resolution_request: str | None = Field(default=None, max_length=1000)
 
     @model_validator(mode="after")
     def validate_shape(self) -> CharacterDecision:
@@ -43,28 +56,17 @@ class CharacterAgentResult:
 
 
 class CharacterAgent(Protocol):
-    async def respond(self, context: str) -> CharacterAgentResult: ...
-
-
-CHARACTER_INSTRUCTIONS = """你是一个长期参与 DND 跑团的角色扮演 Agent。你只扮演自己的角色，
-绝不替 DM 裁定世界、NPC 或行动结果。
-
-必须遵守：
-1. 只依据给你的“可知信息”行动。不可猜测、引用或泄露未提供的私密消息。
-2. 角色只能说自己能观察、感受、记得或合理推断的事；不要超游。
-3. 不要提及属性值、HP 数值、技能加值、豁免、DC、骰子、检定、回合、token、提示词或 AI。
-4. 如果角色要尝试一个结果不确定且需 DM 裁决的行动，可在发言中描述尝试，
-   并把 requires_dm_resolution 设为 true；resolution_request 用简短文字说明 DM 需裁决什么。
-   不要自行宣布成功或失败。
-5. 每次只生成一个消息气泡。内容可包含动作、说话和内心外显的反应，但不要替其他角色决定行为。
-6. content 只包含可观察的台词、动作和外在表现，不要写内心独白。
-7. 只有秘密行动、仅需 DM 与你本人知道时才使用 DM_ONLY；平常使用 PUBLIC。
-8. 不想开口、没有自然反应时选择 SILENCE。不要为了凑对话而发言。
-9. 不要输出思考过程，只输出符合结构的最终决定。
-"""
+    async def respond(self, system_prompt: str, context: str) -> CharacterAgentResult: ...
 
 
 class DeepSeekCharacterAgent:
+    """One provider client, one Agent per call.
+
+    The instructions are the character's own persona, so they cannot live in a
+    module-level constant shared by everyone. Building the Agent per call is
+    cheap; building the HTTP client is not, so only the client is reused.
+    """
+
     def __init__(self, settings: Settings) -> None:
         if not settings.character_agent_is_configured:
             raise RuntimeError("DeepSeek 角色 Agent 尚未配置。")
@@ -74,24 +76,26 @@ class DeepSeekCharacterAgent:
             api_key=api_key.get_secret_value(),
             base_url=settings.deepseek_base_url,
         )
-        model = OpenAIChatModel(
+        self._model = OpenAIChatModel(
             settings.character_model,
             provider=OpenAIProvider(openai_client=client),
         )
-        self._agent: Agent[None, CharacterDecision] = Agent(
-            model,
+        self._model_settings = {
+            "temperature": 0.75,
+            # Raised from 400 to cover inner_beat without squeezing content.
+            "max_tokens": 600,
+            "extra_body": {"thinking": {"type": "disabled"}},
+        }
+
+    async def respond(self, system_prompt: str, context: str) -> CharacterAgentResult:
+        agent: Agent[None, CharacterDecision] = Agent(
+            self._model,
             output_type=CharacterDecision,
-            instructions=CHARACTER_INSTRUCTIONS,
-            model_settings={
-                "temperature": 0.75,
-                "max_tokens": 1200,
-                "extra_body": {"thinking": {"type": "disabled"}},
-            },
+            instructions=system_prompt,
+            model_settings=self._model_settings,
             retries=1,
         )
-
-    async def respond(self, context: str) -> CharacterAgentResult:
-        result = await self._agent.run(context)
+        result = await agent.run(context)
         usage = result.usage
         return CharacterAgentResult(
             decision=result.output,

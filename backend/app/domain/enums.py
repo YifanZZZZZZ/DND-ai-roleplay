@@ -4,6 +4,7 @@ from enum import StrEnum
 class CampaignLifecycleStatus(StrEnum):
     PREPARATION = "PREPARATION"
     ACTIVE = "ACTIVE"
+    PAUSED = "PAUSED"
     COMPLETED = "COMPLETED"
 
 
@@ -19,6 +20,11 @@ class RuntimeStatus(StrEnum):
     WAITING_FOR_DM = "WAITING_FOR_DM"
     ERROR = "ERROR"
     ENDED = "ENDED"
+
+
+class CampaignPlayMode(StrEnum):
+    NARRATIVE = "NARRATIVE"
+    COMBAT = "COMBAT"
 
 
 class SheetParseStatus(StrEnum):
@@ -37,6 +43,68 @@ class ProfileStatus(StrEnum):
 class UpdatedBy(StrEnum):
     DM = "DM"
     SYSTEM = "SYSTEM"
+
+
+class SkillName(StrEnum):
+    ATHLETICS = "athletics"
+    ACROBATICS = "acrobatics"
+    SLEIGHT_OF_HAND = "sleight_of_hand"
+    STEALTH = "stealth"
+    ARCANA = "arcana"
+    HISTORY = "history"
+    INVESTIGATION = "investigation"
+    NATURE = "nature"
+    RELIGION = "religion"
+    ANIMAL_HANDLING = "animal_handling"
+    INSIGHT = "insight"
+    MEDICINE = "medicine"
+    PERCEPTION = "perception"
+    SURVIVAL = "survival"
+    DECEPTION = "deception"
+    INTIMIDATION = "intimidation"
+    PERFORMANCE = "performance"
+    PERSUASION = "persuasion"
+
+
+class RollMode(StrEnum):
+    NORMAL = "NORMAL"
+    ADVANTAGE = "ADVANTAGE"
+    DISADVANTAGE = "DISADVANTAGE"
+
+
+class SkillCheckStatus(StrEnum):
+    VALID = "VALID"
+    VOID = "VOID"
+
+
+class SkillCheckSystemOutcome(StrEnum):
+    PASS = "PASS"
+    FAIL = "FAIL"
+    UNRESOLVED = "UNRESOLVED"
+
+
+class SkillCheckDmAdjudication(StrEnum):
+    SUCCESS = "SUCCESS"
+    FAILURE = "FAILURE"
+    PARTIAL_SUCCESS = "PARTIAL_SUCCESS"
+
+
+class DmDraftStatus(StrEnum):
+    GENERATING = "GENERATING"
+    READY = "READY"
+    STALE = "STALE"
+    SENT = "SENT"
+    DRAFT = "DRAFT"
+    PUBLISHED = "PUBLISHED"
+    DISCARDED = "DISCARDED"
+    FAILED = "FAILED"
+
+
+class DmDraftTriggerType(StrEnum):
+    OPENING = "OPENING"
+    CHARACTER_REPLY = "CHARACTER_REPLY"
+    SKILL_CHECK_RESULT = "SKILL_CHECK_RESULT"
+    MANUAL_ASSIST = "MANUAL_ASSIST"
 
 
 class MessageSenderType(StrEnum):

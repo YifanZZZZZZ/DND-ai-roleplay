@@ -21,6 +21,7 @@ class EffectiveMessageProjection:
                 Message.invalidated_at.is_(None),
             )
             .options(
+                selectinload(Message.session),
                 selectinload(Message.sender_character),
                 selectinload(Message.recipients).selectinload(MessageRecipient.character),
             )
@@ -41,7 +42,10 @@ class EffectiveMessageProjection:
                 Message.kind != MessageKind.OOC,
                 Message.invalidated_at.is_(None),
             )
-            .options(selectinload(Message.recipients).selectinload(MessageRecipient.character))
+            .options(
+                selectinload(Message.session),
+                selectinload(Message.recipients).selectinload(MessageRecipient.character),
+            )
             .order_by(Message.created_at)
         )
 

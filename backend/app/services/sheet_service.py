@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.api.schemas.sheets import SheetActivation, SheetPreview
 from backend.app.core.errors import AppError, NotFoundError
-from backend.app.db.models import Character, CharacterSheetVersion
-from backend.app.domain.enums import SheetParseStatus
+from backend.app.db.models import Character, CharacterSheetVersion, CharacterSkillSet
+from backend.app.domain.enums import SheetParseStatus, SkillName
 from backend.app.files.sheet_parser import (
     PARSER_VERSION,
     CharacterSheetParser,
@@ -15,6 +15,7 @@ from backend.app.files.sheet_parser import (
 )
 from backend.app.files.storage import FileStorage
 from backend.app.services.edit_lock import ensure_character_editable
+from backend.app.services.skill_service import DEFAULT_SKILL_MODIFIERS
 
 
 class SheetService:
@@ -82,6 +83,8 @@ class SheetService:
         if version.parse_status != SheetParseStatus.VALID or version.parsed_snapshot is None:
             raise AppError("SHEET_VERSION_NOT_VALID", "只有解析成功的角色卡可以激活。")
 
+        snapshot = CharacterSheetSnapshot.model_validate(version.parsed_snapshot)
+
         old_versions = list(
             await self.session.scalars(
                 select(CharacterSheetVersion).where(
@@ -92,6 +95,19 @@ class SheetService:
         )
         character.active_sheet_version_id = version.id
         character.revision += 1
+
+        if len(snapshot.skills) == len(SkillName):
+            skill_set = await self.session.get(CharacterSkillSet, character_id)
+            if skill_set is None:
+                skill_set = CharacterSkillSet(
+                    character_id=character_id, modifiers=dict(DEFAULT_SKILL_MODIFIERS)
+                )
+                self.session.add(skill_set)
+            skill_set.modifiers = {
+                skill.value: modifier for skill, modifier in snapshot.skills.items()
+            }
+            skill_set.revision += 1
+
         if old_versions:
             await self.session.execute(
                 delete(CharacterSheetVersion).where(
@@ -107,7 +123,7 @@ class SheetService:
         return SheetActivation(
             character_id=character.id,
             active_version_id=version.id,
-            snapshot=CharacterSheetSnapshot.model_validate(version.parsed_snapshot),
+            snapshot=snapshot,
         )
 
     @property

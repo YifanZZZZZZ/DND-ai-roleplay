@@ -23,14 +23,8 @@ async def test_private_message_keeps_a_recipient_snapshot(
     assert (
         await api_client.post(f"/api/v1/campaigns/{campaign['id']}:activate")
     ).status_code == 200
-    game_session = (
-        await api_client.post(
-            f"/api/v1/campaigns/{campaign['id']}/sessions", json={"title": "密谈"}
-        )
-    ).json()
-
     message = await api_client.post(
-        f"/api/v1/sessions/{game_session['id']}/messages",
+        f"/api/v1/campaigns/{campaign['id']}/messages",
         json={
             "content": "只有艾拉注意到壁炉后的暗门。",
             "audience": "PRIVATE",

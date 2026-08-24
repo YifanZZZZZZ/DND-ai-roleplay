@@ -12,6 +12,8 @@ from backend.app.api.schemas.characters import (
     MemoryCreate,
     MemoryUpdate,
     MemoryView,
+    SkillSetUpdate,
+    SkillSetView,
 )
 from backend.app.api.schemas.sheets import SheetActivation, SheetPreview
 from backend.app.db.models import Character, CharacterMemory
@@ -19,6 +21,7 @@ from backend.app.services.character_service import CharacterService
 from backend.app.services.export_service import ExportService
 from backend.app.services.memory_service import MemoryService
 from backend.app.services.sheet_service import SheetService
+from backend.app.services.skill_service import SkillService
 
 router = APIRouter(prefix="/characters", tags=["characters"])
 
@@ -42,6 +45,8 @@ def to_detail(character: Character) -> CharacterDetail:
     return CharacterDetail(
         **summary.model_dump(),
         roleplay_prompt=character.roleplay_prompt,
+        voice_samples=character.voice_samples,
+        narration_notes=character.narration_notes,
         profile_content=character.profile.content,
         profile_status=character.profile.status,
     )
@@ -85,6 +90,20 @@ async def upload_avatar(
     file: Annotated[UploadFile, File()],
 ) -> CharacterDetail:
     return to_detail(await CharacterService(session).set_avatar(character_id, storage, file))
+
+
+@router.get("/{character_id}/skills", response_model=SkillSetView)
+async def get_skills(character_id: str, session: DatabaseSession) -> SkillSetView:
+    skill_set = await SkillService(session).get(character_id)
+    return SkillSetView.model_validate(skill_set)
+
+
+@router.put("/{character_id}/skills", response_model=SkillSetView)
+async def update_skills(
+    character_id: str, payload: SkillSetUpdate, session: DatabaseSession
+) -> SkillSetView:
+    skill_set = await SkillService(session).update(character_id, payload)
+    return SkillSetView.model_validate(skill_set)
 
 
 @router.get("/{character_id}/memories", response_model=list[MemoryView])

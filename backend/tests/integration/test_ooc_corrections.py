@@ -18,13 +18,8 @@ async def test_ooc_replaces_latest_dm_message_in_effective_timeline(
     ).json()
     activation = await api_client.post(f"/api/v1/campaigns/{campaign['id']}:activate")
     assert activation.status_code == 200
-    game_session = (
-        await api_client.post(
-            f"/api/v1/campaigns/{campaign['id']}/sessions", json={"title": "第一节"}
-        )
-    ).json()
     original = await api_client.post(
-        f"/api/v1/sessions/{game_session['id']}/messages",
+        f"/api/v1/campaigns/{campaign['id']}/messages",
         json={
             "content": "走廊里有三扇门。",
             "audience": "PUBLIC",
@@ -33,7 +28,7 @@ async def test_ooc_replaces_latest_dm_message_in_effective_timeline(
     )
     assert original.status_code == 201
     correction = await api_client.post(
-        f"/api/v1/sessions/{game_session['id']}/messages:ooc",
+        f"/api/v1/campaigns/{campaign['id']}/messages:ooc",
         json={
             "targetMessageId": original.json()["message"]["id"],
             "correction": "更正：这里只有两扇门。",
@@ -42,7 +37,7 @@ async def test_ooc_replaces_latest_dm_message_in_effective_timeline(
         },
     )
     assert correction.status_code == 200
-    effective = await api_client.get(f"/api/v1/sessions/{game_session['id']}/messages")
+    effective = await api_client.get(f"/api/v1/campaigns/{campaign['id']}/messages")
     assert effective.status_code == 200
     messages = effective.json()
     assert len(messages) == 1

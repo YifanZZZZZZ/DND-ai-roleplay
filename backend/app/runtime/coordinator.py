@@ -21,10 +21,13 @@ class SpeakerCoordinator:
     _URGENCY_ORDER = {"IMMEDIATE": 0, "HIGH": 1, "NORMAL": 2}
 
     def select(self, candidates: list[Candidate], seed: int) -> Candidate | None:
+        ranked = self.rank(candidates, seed)
+        return ranked[0] if ranked else None
+
+    def rank(self, candidates: list[Candidate], seed: int) -> list[Candidate]:
+        """Full priority order, so a rejected candidate can fall through to the next."""
         responders = [item for item in candidates if item.result.decision.decision == "RESPOND"]
-        if not responders:
-            return None
-        return min(responders, key=lambda item: self._priority(item, seed))
+        return sorted(responders, key=lambda item: self._priority(item, seed))
 
     def _priority(self, candidate: Candidate, seed: int) -> tuple[int, int, int, float]:
         decision = candidate.result.decision

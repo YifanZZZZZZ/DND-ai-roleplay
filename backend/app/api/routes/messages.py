@@ -33,7 +33,7 @@ def to_runtime_state(game_session: GameSession) -> RuntimeState:
 def to_message_view(message: Message) -> MessageView:
     return MessageView(
         id=message.id,
-        session_id=message.session_id,
+        campaign_id=message.session.campaign_id,
         sequence_no=message.sequence_no,
         sender_type=message.sender_type,
         sender_character_id=message.sender_character_id,
@@ -41,6 +41,7 @@ def to_message_view(message: Message) -> MessageView:
         kind=message.kind,
         audience=message.audience,
         content=message.content,
+        addressed_character_ids=list(message.addressed_character_ids or []),
         is_ooc_corrected=message.ooc_correction_note is not None,
         ooc_correction_note=message.ooc_correction_note,
         recipients=[
@@ -51,24 +52,26 @@ def to_message_view(message: Message) -> MessageView:
     )
 
 
-@router.get("/sessions/{session_id}/messages", response_model=list[MessageView])
-async def list_messages(session_id: str, session: DatabaseSession) -> list[MessageView]:
-    messages = await MessageService(session).list(session_id)
+@router.get("/campaigns/{campaign_id}/messages", response_model=list[MessageView])
+async def list_messages(campaign_id: str, session: DatabaseSession) -> list[MessageView]:
+    messages = await MessageService(session).list_for_campaign(campaign_id)
     return [to_message_view(message) for message in messages]
 
 
 @router.post(
-    "/sessions/{session_id}/messages",
+    "/campaigns/{campaign_id}/messages",
     response_model=DmMessageCommandResult,
     status_code=status.HTTP_201_CREATED,
 )
 async def send_dm_message(
-    session_id: str, payload: DmMessageCreate, session: DatabaseSession
+    campaign_id: str, payload: DmMessageCreate, session: DatabaseSession
 ) -> DmMessageCommandResult:
-    message, game_session = await MessageService(session).send_dm_message(session_id, payload)
+    message, game_session = await MessageService(session).send_dm_message_for_campaign(
+        campaign_id, payload
+    )
     event_hub = get_session_event_hub()
-    await event_hub.publish("message.created", session_id)
-    await event_hub.publish("runtime.changed", session_id)
+    await event_hub.publish("message.created", game_session.id)
+    await event_hub.publish("runtime.changed", game_session.id)
     if game_session.runtime.active_agent_run_id is not None:
         get_runtime_supervisor().start(game_session.runtime.active_agent_run_id)
     return DmMessageCommandResult(
@@ -76,29 +79,29 @@ async def send_dm_message(
     )
 
 
-@router.post("/sessions/{session_id}/messages:ooc", response_model=RuntimeState)
+@router.post("/campaigns/{campaign_id}/messages:ooc", response_model=RuntimeState)
 async def correct_message_with_ooc(
-    session_id: str, payload: OocCorrectionCreate, session: DatabaseSession
+    campaign_id: str, payload: OocCorrectionCreate, session: DatabaseSession
 ) -> RuntimeState:
-    game_session = await MessageService(session).correct_with_ooc(session_id, payload)
-    await get_session_event_hub().publish("message.created", session_id)
-    await get_session_event_hub().publish("runtime.changed", session_id)
+    game_session = await MessageService(session).correct_with_ooc_for_campaign(campaign_id, payload)
+    await get_session_event_hub().publish("message.created", game_session.id)
+    await get_session_event_hub().publish("runtime.changed", game_session.id)
     if game_session.runtime.active_agent_run_id is not None:
         get_runtime_supervisor().start(game_session.runtime.active_agent_run_id)
     return to_runtime_state(game_session)
 
 
-@router.post("/sessions/{session_id}/runtime:stop", response_model=RuntimeState)
-async def stop_runtime(session_id: str, session: DatabaseSession) -> RuntimeState:
-    game_session = await MessageService(session).stop_runtime(session_id)
-    await get_session_event_hub().publish("runtime.changed", session_id)
+@router.post("/campaigns/{campaign_id}/runtime:stop", response_model=RuntimeState)
+async def stop_runtime(campaign_id: str, session: DatabaseSession) -> RuntimeState:
+    game_session = await MessageService(session).stop_runtime_for_campaign(campaign_id)
+    await get_session_event_hub().publish("runtime.changed", game_session.id)
     return to_runtime_state(game_session)
 
 
-@router.post("/sessions/{session_id}/runtime:retry", response_model=RuntimeState)
-async def retry_runtime(session_id: str, session: DatabaseSession) -> RuntimeState:
-    game_session = await MessageService(session).retry_latest(session_id)
-    await get_session_event_hub().publish("runtime.changed", session_id)
+@router.post("/campaigns/{campaign_id}/runtime:retry", response_model=RuntimeState)
+async def retry_runtime(campaign_id: str, session: DatabaseSession) -> RuntimeState:
+    game_session = await MessageService(session).retry_latest_for_campaign(campaign_id)
+    await get_session_event_hub().publish("runtime.changed", game_session.id)
     if game_session.runtime.active_agent_run_id is not None:
         get_runtime_supervisor().start(game_session.runtime.active_agent_run_id)
     return to_runtime_state(game_session)

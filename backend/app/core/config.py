@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     data_dir: Path = Field(default_factory=default_data_dir)
     llm_provider: Literal["google", "deepseek"] = "deepseek"
     character_model: str = "deepseek-v4-flash"
+    # The AI DM carries the module, the NPC cards and the whole recent log, so it
+    # benefits from a stronger model than the characters. Falls back to
+    # character_model when unset, which keeps existing .env files working.
+    dm_model: str = ""
+    relationship_model: str = ""
     validator_model: str = ""
     summary_model: str = ""
     memory_model: str = ""
@@ -43,10 +48,36 @@ class Settings(BaseSettings):
         )
 
     @property
+    def dm_model_name(self) -> str:
+        return self.dm_model.strip() or self.character_model.strip()
+
+    @property
+    def dm_agent_is_configured(self) -> bool:
+        return (
+            self.llm_provider == "deepseek"
+            and bool(self.dm_model_name)
+            and self.deepseek_api_key is not None
+            and bool(self.deepseek_api_key.get_secret_value().strip())
+        )
+
+    @property
     def summary_agent_is_configured(self) -> bool:
         return (
             self.llm_provider == "deepseek"
             and bool(self.summary_model.strip())
+            and self.deepseek_api_key is not None
+            and bool(self.deepseek_api_key.get_secret_value().strip())
+        )
+
+    @property
+    def relationship_model_name(self) -> str:
+        return self.relationship_model.strip() or self.summary_model.strip() or self.character_model
+
+    @property
+    def relationship_agent_is_configured(self) -> bool:
+        return (
+            self.llm_provider == "deepseek"
+            and bool(self.relationship_model_name)
             and self.deepseek_api_key is not None
             and bool(self.deepseek_api_key.get_secret_value().strip())
         )

@@ -8,7 +8,7 @@ export type CharacterCreate = components["schemas"]["CharacterCreate"];
 export type CampaignSummary = components["schemas"]["CampaignSummary"];
 export type CampaignDetail = components["schemas"]["CampaignDetail"];
 export type CampaignCreate = components["schemas"]["CampaignCreate"];
-export type SessionDetail = components["schemas"]["SessionDetail"];
+export type CampaignPlayState = components["schemas"]["CampaignPlayState"];
 export type MessageView = components["schemas"]["MessageView"];
 export type RuntimeState = components["schemas"]["RuntimeState"];
 export type DmMessageCreate = components["schemas"]["DmMessageCreate"];
@@ -16,6 +16,14 @@ export type OocCorrectionCreate = components["schemas"]["OocCorrectionCreate"];
 export type SheetPreview = components["schemas"]["SheetPreview"];
 export type SheetActivation = components["schemas"]["SheetActivation"];
 export type MemoryView = components["schemas"]["MemoryView"];
+export type SkillSetView = components["schemas"]["SkillSetView"];
+export type CampaignSkillMemberView = components["schemas"]["CampaignSkillMemberView"];
+export type SkillCheckView = components["schemas"]["SkillCheckView"];
+export type SkillName = components["schemas"]["SkillName"];
+export type RollMode = components["schemas"]["RollMode"];
+export type DmDraftView = components["schemas"]["DmDraftView"];
+export type CampaignSummaryView = components["schemas"]["CampaignSummaryView"];
+export type CharacterAcquaintanceView = components["schemas"]["CharacterAcquaintanceView"];
 
 const client = createClient<paths>({ baseUrl: "" });
 
@@ -54,6 +62,24 @@ export async function updateCharacter(
   payload: components["schemas"]["CharacterUpdate"],
 ): Promise<CharacterDetail> {
   const { data, error } = await client.PATCH("/api/v1/characters/{character_id}", {
+    params: { path: { character_id: characterId } },
+    body: payload,
+  });
+  return requireData(data, error);
+}
+
+export async function getSkillSet(characterId: string): Promise<SkillSetView> {
+  const { data, error } = await client.GET("/api/v1/characters/{character_id}/skills", {
+    params: { path: { character_id: characterId } },
+  });
+  return requireData(data, error);
+}
+
+export async function updateSkillSet(
+  characterId: string,
+  payload: components["schemas"]["SkillSetUpdate"],
+): Promise<SkillSetView> {
+  const { data, error } = await client.PUT("/api/v1/characters/{character_id}/skills", {
     params: { path: { character_id: characterId } },
     body: payload,
   });
@@ -149,8 +175,42 @@ export async function replaceCampaignMemberships(
   return requireData(data, error);
 }
 
+export async function listCampaignAcquaintances(
+  campaignId: string,
+): Promise<CharacterAcquaintanceView[]> {
+  const { data, error } = await client.GET("/api/v1/campaigns/{campaign_id}/acquaintances", {
+    params: { path: { campaign_id: campaignId } },
+  });
+  return requireData(data, error);
+}
+
+export async function updateCampaign(
+  campaignId: string,
+  payload: components["schemas"]["CampaignUpdate"],
+): Promise<CampaignDetail> {
+  const { data, error } = await client.PATCH("/api/v1/campaigns/{campaign_id}", {
+    params: { path: { campaign_id: campaignId } },
+    body: payload,
+  });
+  return requireData(data, error);
+}
+
 export async function activateCampaign(campaignId: string): Promise<CampaignDetail> {
   const { data, error } = await client.POST("/api/v1/campaigns/{campaign_id}:activate", {
+    params: { path: { campaign_id: campaignId } },
+  });
+  return requireData(data, error);
+}
+
+export async function pauseCampaign(campaignId: string): Promise<CampaignDetail> {
+  const { data, error } = await client.POST("/api/v1/campaigns/{campaign_id}:pause", {
+    params: { path: { campaign_id: campaignId } },
+  });
+  return requireData(data, error);
+}
+
+export async function resumeCampaign(campaignId: string): Promise<CampaignDetail> {
+  const { data, error } = await client.POST("/api/v1/campaigns/{campaign_id}:resume", {
     params: { path: { campaign_id: campaignId } },
   });
   return requireData(data, error);
@@ -163,80 +223,157 @@ export async function completeCampaign(campaignId: string): Promise<CampaignDeta
   return requireData(data, error);
 }
 
-export async function reopenCampaign(campaignId: string): Promise<CampaignDetail> {
-  const { data, error } = await client.POST("/api/v1/campaigns/{campaign_id}:reopen", {
+export async function getCampaignPlayState(campaignId: string): Promise<CampaignPlayState> {
+  const { data, error } = await client.GET("/api/v1/campaigns/{campaign_id}/play", {
     params: { path: { campaign_id: campaignId } },
   });
   return requireData(data, error);
 }
 
-export async function createSession(
+export async function updateCampaignHp(
   campaignId: string,
-  title: string,
-): Promise<SessionDetail> {
-  const { data, error } = await client.POST("/api/v1/campaigns/{campaign_id}/sessions", {
-    params: { path: { campaign_id: campaignId } },
-    body: { title },
-  });
-  return requireData(data, error);
-}
-
-export async function getSession(sessionId: string): Promise<SessionDetail> {
-  const { data, error } = await client.GET("/api/v1/sessions/{session_id}", {
-    params: { path: { session_id: sessionId } },
-  });
-  return requireData(data, error);
-}
-
-export async function endSession(sessionId: string): Promise<SessionDetail> {
-  const { data, error } = await client.POST("/api/v1/sessions/{session_id}:end", {
-    params: { path: { session_id: sessionId } },
-  });
-  return requireData(data, error);
-}
-
-export async function updateSessionHp(
-  sessionId: string,
   characterId: string,
   currentHp: number,
-): Promise<SessionDetail> {
+): Promise<CampaignPlayState> {
   const { data, error } = await client.PATCH(
-    "/api/v1/sessions/{session_id}/characters/{character_id}/hp",
+    "/api/v1/campaigns/{campaign_id}/characters/{character_id}/hp",
     {
-      params: { path: { session_id: sessionId, character_id: characterId } },
+      params: { path: { campaign_id: campaignId, character_id: characterId } },
       body: { currentHp },
     },
   );
   return requireData(data, error);
 }
 
-export async function listMessages(sessionId: string): Promise<MessageView[]> {
-  const { data, error } = await client.GET("/api/v1/sessions/{session_id}/messages", {
-    params: { path: { session_id: sessionId } },
+export async function listCampaignSkills(campaignId: string): Promise<CampaignSkillMemberView[]> {
+  const { data, error } = await client.GET("/api/v1/campaigns/{campaign_id}/skills", {
+    params: { path: { campaign_id: campaignId } },
   });
   return requireData(data, error);
 }
 
-export async function sendDmMessage(
-  sessionId: string,
-  payload: DmMessageCreate,
-): Promise<components["schemas"]["DmMessageCommandResult"]> {
-  const { data, error } = await client.POST("/api/v1/sessions/{session_id}/messages", {
-    params: { path: { session_id: sessionId } },
+export async function listSkillChecks(campaignId: string): Promise<SkillCheckView[]> {
+  const { data, error } = await client.GET("/api/v1/campaigns/{campaign_id}/skill-checks", {
+    params: { path: { campaign_id: campaignId } },
+  });
+  return requireData(data, error);
+}
+
+export async function listCampaignSummaries(campaignId: string): Promise<CampaignSummaryView[]> {
+  const { data, error } = await client.GET("/api/v1/campaigns/{campaign_id}/summaries", {
+    params: { path: { campaign_id: campaignId } },
+  });
+  return requireData(data, error);
+}
+
+export async function createDmDraft(
+  campaignId: string,
+  payload: components["schemas"]["DmDraftCreate"],
+): Promise<DmDraftView> {
+  const { data, error } = await client.POST("/api/v1/campaigns/{campaign_id}/dm-drafts", {
+    params: { path: { campaign_id: campaignId } },
     body: payload,
   });
   return requireData(data, error);
 }
 
-export async function stopSessionRuntime(sessionId: string): Promise<RuntimeState> {
-  const { data, error } = await client.POST("/api/v1/sessions/{session_id}/runtime:stop", {
-    params: { path: { session_id: sessionId } },
+export async function listDmDrafts(campaignId: string): Promise<DmDraftView[]> {
+  const { data, error } = await client.GET("/api/v1/campaigns/{campaign_id}/dm-drafts", {
+    params: { path: { campaign_id: campaignId } },
   });
   return requireData(data, error);
 }
 
-export async function retrySessionRuntime(sessionId: string): Promise<RuntimeState> {
-  const response = await fetch(`/api/v1/sessions/${encodeURIComponent(sessionId)}/runtime:retry`, {
+export async function generateOpeningDraft(campaignId: string): Promise<DmDraftView> {
+  const { data, error } = await client.POST(
+    "/api/v1/campaigns/{campaign_id}/dm-drafts:generate-opening",
+    { params: { path: { campaign_id: campaignId } } },
+  );
+  return requireData(data, error);
+}
+
+export async function updateDmDraft(
+  draftId: string,
+  payload: components["schemas"]["DmDraftUpdate"],
+): Promise<DmDraftView> {
+  const { data, error } = await client.PATCH("/api/v1/dm-drafts/{draft_id}", {
+    params: { path: { draft_id: draftId } },
+    body: payload,
+  });
+  return requireData(data, error);
+}
+
+export async function publishDmDraft(draftId: string): Promise<{ draft: DmDraftView; message: MessageView }> {
+  const { data, error } = await client.POST("/api/v1/dm-drafts/{draft_id}:publish", {
+    params: { path: { draft_id: draftId } },
+  });
+  return requireData(data, error);
+}
+
+export async function discardDmDraft(draftId: string): Promise<DmDraftView> {
+  const { data, error } = await client.POST("/api/v1/dm-drafts/{draft_id}:discard", {
+    params: { path: { draft_id: draftId } },
+  });
+  return requireData(data, error);
+}
+
+export async function createSkillCheck(
+  campaignId: string,
+  payload: components["schemas"]["SkillCheckCreate"],
+): Promise<SkillCheckView> {
+  const { data, error } = await client.POST("/api/v1/campaigns/{campaign_id}/skill-checks", {
+    params: { path: { campaign_id: campaignId } },
+    body: payload,
+  });
+  return requireData(data, error);
+}
+
+export async function adjudicateSkillCheck(
+  checkId: string,
+  outcome: components["schemas"]["SkillCheckDmAdjudication"],
+): Promise<SkillCheckView> {
+  const { data, error } = await client.POST("/api/v1/skill-checks/{check_id}:adjudicate", {
+    params: { path: { check_id: checkId } },
+    body: { outcome },
+  });
+  return requireData(data, error);
+}
+
+export async function voidSkillCheck(checkId: string, reason: string): Promise<SkillCheckView> {
+  const { data, error } = await client.POST("/api/v1/skill-checks/{check_id}:void", {
+    params: { path: { check_id: checkId } },
+    body: { reason },
+  });
+  return requireData(data, error);
+}
+
+export async function listMessages(campaignId: string): Promise<MessageView[]> {
+  const { data, error } = await client.GET("/api/v1/campaigns/{campaign_id}/messages", {
+    params: { path: { campaign_id: campaignId } },
+  });
+  return requireData(data, error);
+}
+
+export async function sendDmMessage(
+  campaignId: string,
+  payload: DmMessageCreate,
+): Promise<components["schemas"]["DmMessageCommandResult"]> {
+  const { data, error } = await client.POST("/api/v1/campaigns/{campaign_id}/messages", {
+    params: { path: { campaign_id: campaignId } },
+    body: payload,
+  });
+  return requireData(data, error);
+}
+
+export async function stopCampaignRuntime(campaignId: string): Promise<RuntimeState> {
+  const { data, error } = await client.POST("/api/v1/campaigns/{campaign_id}/runtime:stop", {
+    params: { path: { campaign_id: campaignId } },
+  });
+  return requireData(data, error);
+}
+
+export async function retryCampaignRuntime(campaignId: string): Promise<RuntimeState> {
+  const response = await fetch(`/api/v1/campaigns/${encodeURIComponent(campaignId)}/runtime:retry`, {
     method: "POST",
   });
   const payload: unknown = await response.json();
@@ -245,11 +382,11 @@ export async function retrySessionRuntime(sessionId: string): Promise<RuntimeSta
 }
 
 export async function correctMessageWithOoc(
-  sessionId: string,
+  campaignId: string,
   payload: OocCorrectionCreate,
 ): Promise<RuntimeState> {
-  const { data, error } = await client.POST("/api/v1/sessions/{session_id}/messages:ooc", {
-    params: { path: { session_id: sessionId } },
+  const { data, error } = await client.POST("/api/v1/campaigns/{campaign_id}/messages:ooc", {
+    params: { path: { campaign_id: campaignId } },
     body: payload,
   });
   return requireData(data, error);
@@ -279,4 +416,76 @@ export async function activateCharacterSheet(
     { params: { path: { character_id: characterId, version_id: versionId } } },
   );
   return requireData(data, error);
+}
+
+// --- Campaign NPC cards -----------------------------------------------------
+// Hand-written until `npm run generate:api` folds these paths into generated.ts.
+
+export interface NpcView {
+  id: string;
+  campaignId: string;
+  name: string;
+  role: string;
+  personality: string;
+  ideal: string;
+  bond: string;
+  flaw: string;
+  knows: string;
+  wants: string;
+  voice: string;
+  source: string;
+  revision: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type NpcFields = Pick<
+  NpcView,
+  "name" | "role" | "personality" | "ideal" | "bond" | "flaw" | "knows" | "wants" | "voice"
+>;
+
+async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, {
+    ...init,
+    headers: init?.body ? { "content-type": "application/json" } : undefined,
+  });
+  if (response.status === 204) return undefined as T;
+  const payload: unknown = await response.json();
+  if (!response.ok) throw new Error(messageFromError(payload));
+  return payload as T;
+}
+
+export async function listNpcs(campaignId: string): Promise<NpcView[]> {
+  return requestJson<NpcView[]>(`/api/v1/campaigns/${encodeURIComponent(campaignId)}/npcs`);
+}
+
+export async function extractNpcs(campaignId: string): Promise<NpcView[]> {
+  return requestJson<NpcView[]>(
+    `/api/v1/campaigns/${encodeURIComponent(campaignId)}/npcs:extract`,
+    { method: "POST" },
+  );
+}
+
+export async function createNpc(
+  campaignId: string,
+  payload: Partial<NpcFields> & { name: string },
+): Promise<NpcView> {
+  return requestJson<NpcView>(`/api/v1/campaigns/${encodeURIComponent(campaignId)}/npcs`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateNpc(
+  npcId: string,
+  payload: Partial<NpcFields> & { revision: number },
+): Promise<NpcView> {
+  return requestJson<NpcView>(`/api/v1/npcs/${encodeURIComponent(npcId)}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteNpc(npcId: string): Promise<void> {
+  await requestJson<void>(`/api/v1/npcs/${encodeURIComponent(npcId)}`, { method: "DELETE" });
 }

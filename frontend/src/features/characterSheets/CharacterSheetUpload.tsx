@@ -96,7 +96,14 @@ export function CharacterSheetUpload({
               <dt>背包物品</dt>
               <dd>{preview.snapshot.inventory?.length ?? 0}</dd>
             </div>
+            <div>
+              <dt>技能加值</dt>
+              <dd>{Object.keys(preview.snapshot.skills ?? {}).length} / 18</dd>
+            </div>
           </dl>
+          {Object.keys(preview.snapshot.skills ?? {}).length === 18 && (
+            <p className={styles.hint}>确认后将覆盖角色当前的十八项技能加值。</p>
+          )}
           <div className={styles.actions}>
             <button type="button" onClick={() => setPreview(null)}>
               取消

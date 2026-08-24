@@ -14,7 +14,7 @@ export function App() {
         <Route index element={<Navigate replace to="/campaigns" />} />
         <Route path="/campaigns" element={<CampaignsPage />} />
         <Route path="/campaigns/:campaignId" element={<CampaignDetailPage />} />
-        <Route path="/sessions/:sessionId" element={<SessionPlayPage />} />
+        <Route path="/campaigns/:campaignId/play" element={<SessionPlayPage />} />
         <Route path="/characters" element={<CharactersPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
