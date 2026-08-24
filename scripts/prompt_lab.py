@@ -80,14 +80,30 @@ VARIANTS = {
 
 
 def scenario_context(scenario: dict, character: str, party: list[str]) -> str:
+    """Fill {peer} with someone who is not the character being tested.
+
+    Without this a character reaches a scenario where the triggering line is
+    their own, which is not a situation the runtime can ever produce.
+    """
+    peers = [name for name in party if name != character]
+    if not peers:
+        raise SystemExit("--party 里至少要有一个当前角色之外的人。")
+    subs = {"peer": peers[0], "peer2": peers[1 % len(peers)]}
+
+    def fill(text: str) -> str:
+        for key, value in subs.items():
+            text = text.replace("{" + key + "}", value)
+        return text
+
     speaker, line = scenario["trigger"]
     return build_context(
         CharacterContextInput(
-            health=[("你自己", "健康")]
-            + [(name, "健康") for name in party if name != character],
-            recent_messages=[tuple(item) for item in scenario.get("recent", [])],
-            trigger_speaker=speaker,
-            trigger_content=line,
+            health=[("你自己", "健康")] + [(name, "健康") for name in peers],
+            recent_messages=[
+                (fill(sender), fill(content)) for sender, content in scenario.get("recent", [])
+            ],
+            trigger_speaker=fill(speaker),
+            trigger_content=fill(line),
         )
     )
 
@@ -117,7 +133,7 @@ async def main() -> None:
     parser.add_argument("--samples", type=int, default=2, help="每个变体每个场景采样几次")
     parser.add_argument(
         "--party",
-        default="卡莱拉,赛蕾妮,卡斯珀",
+        default="卡莱拉,赛蕾妮,卡斯珀,维瑞娅,试验品一号",
         help="同场的其他角色，只用于健康状态与姓名识别",
     )
     args = parser.parse_args()
