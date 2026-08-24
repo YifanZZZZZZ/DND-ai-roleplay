@@ -3329,6 +3329,18 @@
             "title": "Narrationnotes",
             "default": ""
           },
+          "behaviorRules": {
+            "type": "string",
+            "maxLength": 20000,
+            "title": "Behaviorrules",
+            "default": ""
+          },
+          "expressionBans": {
+            "type": "string",
+            "maxLength": 8000,
+            "title": "Expressionbans",
+            "default": ""
+          },
           "maxHp": {
             "type": "integer",
             "maximum": 100000.0,
@@ -3403,6 +3415,14 @@
             "type": "string",
             "title": "Narrationnotes"
           },
+          "behaviorRules": {
+            "type": "string",
+            "title": "Behaviorrules"
+          },
+          "expressionBans": {
+            "type": "string",
+            "title": "Expressionbans"
+          },
           "profileContent": {
             "type": "string",
             "title": "Profilecontent"
@@ -3426,7 +3446,9 @@
           "voiceSamples",
           "profileContent",
           "profileStatus",
-          "narrationNotes"
+          "narrationNotes",
+          "behaviorRules",
+          "expressionBans"
         ],
         "title": "CharacterDetail"
       },
@@ -3680,6 +3702,30 @@
               }
             ],
             "title": "Narrationnotes"
+          },
+          "behaviorRules": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Behaviorrules"
+          },
+          "expressionBans": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expressionbans"
           },
           "maxHp": {
             "anyOf": [

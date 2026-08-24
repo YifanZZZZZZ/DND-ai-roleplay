@@ -146,6 +146,39 @@ def test_prompt_defines_when_the_dm_must_step_in() -> None:
     assert "和同伴商量或争论" in prompt
 
 
+def test_behaviour_rules_and_bans_get_their_own_blocks() -> None:
+    prompt = build_system_prompt(
+        name="维瑞娅",
+        roleplay_prompt="人设",
+        behavior_rules="有人受伤 → 可修复的损伤 → 直接查看伤口",
+        expression_bans="绝不说“我担心你”",
+    )
+    assert "<你会怎么做>" in prompt
+    assert "照着做，不要临时发挥" in prompt
+    assert "<你绝不会>" in prompt
+    assert "哪怕情境看起来很合适，也不要做" in prompt
+    # Behaviour precedes voice: what she does drives what she says, not the reverse.
+    assert prompt.index("<你会怎么做>") < prompt.index("<硬性边界>")
+
+    bare = build_system_prompt(name="维瑞娅", roleplay_prompt="人设")
+    assert "<你会怎么做>" not in bare
+    assert "<你绝不会>" not in bare
+
+
+def test_thinking_is_split_into_appraisal_and_intent() -> None:
+    """One call, three ordered fields: how she reads it, what she wants, how she says it."""
+    prompt = build_system_prompt(name="维瑞娅", roleplay_prompt="人设")
+    assert "- appraisal：" in prompt
+    assert "- intent：" in prompt
+    assert prompt.index("- appraisal：") < prompt.index("- intent：")
+    assert prompt.index("- intent：") < prompt.index("- content：")
+    # The repetition and answering-for-others checks moved into intent.
+    assert "是就选 SILENCE" in prompt
+    assert "替别人回答一个他还没回答的问题" in prompt
+    # And content is described exactly once.
+    assert prompt.count("- content：") == 1
+
+
 def test_prompt_stops_the_turn_after_asking_an_npc() -> None:
     """The transcript that motivated this: a character asked an NPC a question,
     then answered it himself across four more messages."""

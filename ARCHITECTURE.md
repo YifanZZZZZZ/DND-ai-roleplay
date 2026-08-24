@@ -206,7 +206,8 @@ MVP 不使用 LangGraph Persistent Checkpointer。Graph State 只存在于当前
 ```python
 class CharacterDecision:
     decision: Literal["SILENCE", "RESPOND"]
-    inner_beat: str                       # 内联 CoT，不入库、不展示
+    appraisal: str                        # 她如何理解当前局面
+    intent: str                           # 她因此想做什么
     content: str
     visibility: Literal["PUBLIC", "DM_ONLY"]
     urgency: Literal["NORMAL", "HIGH", "IMMEDIATE"]
@@ -215,13 +216,15 @@ class CharacterDecision:
     resolution_request: str | None
 ```
 
-字段顺序是有意义的。结构化输出自上而下生成，`inner_beat` 位于 `content` 之前，因此模型必须先确定角色此刻的反应，再写台词。这是一次零额外请求、零额外延迟的内联思维链；该字段在提交结果时直接丢弃，只在 `llm_invocations` 中留档供调试。
+字段顺序是有意义的。结构化输出自上而下生成，因此排在 `content` 之前的字段都是在台词存在之前被决定的：`appraisal` 与 `intent` 把「怎么想」「做什么」与「怎么说」分开，`requires_dm_resolution` 强制模型先判断这句话是否伸出角色自身的控制范围。
+
+这等价于 Appraisal → Decision → Expression 的三段式推理，但全部发生在同一次调用内：成本约 1.3 倍输出 Token，而拆成三次调用是 3 倍调用数与接近 3 倍延迟。`appraisal` 与 `intent` 在提交结果时直接丢弃，只在 `llm_invocations` 中留档供调试。
 
 `response_type` 已移除：产品中没有任何位置区分 SPEECH / ACTION / SPEECH_AND_ACTION，保留它只会让模型多填一个从不被读取的字段。
 
 一次调用只返回一个完整候选。未选择候选只在当前 Run 内存中短暂存在，默认不持久化正文。
 
-Character Agent 的 Prompt 要求正文为一句台词、一个动作或「一个动作 + 一句台词」，目标 80 个中文字符以内；Schema 硬限制为 240 字符，模型生成上限为 600 Tokens（较此前的 400 提高，用于容纳 `inner_beat` 而不挤压正文）。长度要求在 Prompt 中只出现一次。完整故事用于提高连续性，不得被解释为要求复述背景或生成长段落。
+Character Agent 的 Prompt 要求正文为一句台词、一个动作或「一个动作 + 一句台词」，目标 80 个中文字符以内；Schema 硬限制为 240 字符，模型生成上限为 600 Tokens（较此前的 400 提高，用于容纳 `appraisal` 与 `intent` 而不挤压正文）。长度要求在 Prompt 中只出现一次。完整故事用于提高连续性，不得被解释为要求复述背景或生成长段落。
 
 `CharacterDecision` 的 `content` 和 `resolution_request` 允许自然使用第一、第二人称，不做人称代词硬校验。Context Builder 仍显式提供 `当前角色名称`；已认识角色可按语境使用姓名或代词，未认识角色继续使用隐私过滤后的陌生人编号，避免通过称呼泄露身份。
 
@@ -601,6 +604,8 @@ characters
 - `roleplay_prompt`；
 - `voice_samples`：3～5 组「情境 → 这个角色会怎么说」的示例台词，与 Roleplay Prompt 一同进入该角色的系统提示词；
 - `narration_notes`：叙述必须遵守的用词约定，优先级高于角色卡快照。同时进入该角色自己的系统提示词和 AI DM 的 `<队伍>` 段，使两个 Agent 对同一事物的称呼一致；
+- `behavior_rules`：「情境 → 判断 → 行动」形式的可执行规则。形容词只能把模型带到同类角色的平均值，条件-反应对才能把人格相近的角色分开；
+- `expression_bans`：该角色绝不说的话与绝不做的动作。负面约束直接切掉「平均角色」最容易滑进去的表达，对区分度的效力常高于正面描述；
 - `avatar_path`；
 - `max_hp`；
 - `active_sheet_version_id`；
@@ -936,14 +941,16 @@ backend/app/agents/dm_prompt.py          # PROMPT_VERSION = "dm/v2"
 ```text
 入戏引导
 → <你是谁>        Roleplay Prompt 原文，Markdown 结构逐字保留
+→ <你会怎么做>    Behavior Rules
 → <你会怎么说话>   Voice Samples
+→ <你绝不会>      Expression Bans
 → <你后来变成了什么样>  Development Profile
 → <用词约定>      Narration Notes，声明其优先于能力与装备
 → <硬性边界>      8 条越界约束，含"不得重复他人已说内容"
-→ <你要输出什么>   inner_beat、长度、身体反应、禁破折号、SILENCE、可见范围
+→ <你要输出什么>   appraisal、intent、长度、身体反应、禁破折号、SILENCE、可见范围
 ```
 
-`inner_beat` 的提问从"此刻的反应是什么"扩展为三问：别人刚才已经说了什么、此刻真实的反应是什么、要说的是否与他人重复。第三问把去重从一条容易被忽略的禁令变成生成前必须回答的问题。
+去重与「是否在替别人作答」两项检查放在 `intent` 里回答，从两条容易被忽略的禁令变成生成前必须回答的问题。
 
 上下文（XML 分段，不再整体 JSON 序列化）：
 

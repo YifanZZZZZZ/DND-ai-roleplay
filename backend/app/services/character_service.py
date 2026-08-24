@@ -49,6 +49,8 @@ class CharacterService:
             roleplay_prompt=payload.roleplay_prompt.strip(),
             voice_samples=payload.voice_samples.strip(),
             narration_notes=payload.narration_notes.strip(),
+            behavior_rules=payload.behavior_rules.strip(),
+            expression_bans=payload.expression_bans.strip(),
             max_hp=payload.max_hp,
         )
         character.profile = CharacterProfile(content="")
@@ -74,6 +76,10 @@ class CharacterService:
             character.voice_samples = payload.voice_samples.strip()
         if payload.narration_notes is not None:
             character.narration_notes = payload.narration_notes.strip()
+        if payload.behavior_rules is not None:
+            character.behavior_rules = payload.behavior_rules.strip()
+        if payload.expression_bans is not None:
+            character.expression_bans = payload.expression_bans.strip()
         if payload.profile_content is not None:
             character.profile.content = payload.profile_content
             character.profile.revision += 1

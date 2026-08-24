@@ -13,6 +13,8 @@ class CharacterCreate(ApiSchema):
     roleplay_prompt: str = Field(min_length=1, max_length=200_000)
     voice_samples: str = Field(default="", max_length=20_000)
     narration_notes: str = Field(default="", max_length=4_000)
+    behavior_rules: str = Field(default="", max_length=20_000)
+    expression_bans: str = Field(default="", max_length=8_000)
     max_hp: int = Field(gt=0, le=100_000)
 
 
@@ -22,6 +24,8 @@ class CharacterUpdate(ApiSchema):
     roleplay_prompt: str | None = Field(default=None, min_length=1, max_length=200_000)
     voice_samples: str | None = Field(default=None, max_length=20_000)
     narration_notes: str | None = Field(default=None, max_length=4_000)
+    behavior_rules: str | None = Field(default=None, max_length=20_000)
+    expression_bans: str | None = Field(default=None, max_length=8_000)
     max_hp: int | None = Field(default=None, gt=0, le=100_000)
     profile_content: str | None = Field(default=None, max_length=200_000)
 
@@ -42,6 +46,8 @@ class CharacterDetail(CharacterSummary):
     roleplay_prompt: str
     voice_samples: str
     narration_notes: str
+    behavior_rules: str
+    expression_bans: str
     profile_content: str
     profile_status: ProfileStatus
 

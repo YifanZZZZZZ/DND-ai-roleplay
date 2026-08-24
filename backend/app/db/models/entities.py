@@ -64,6 +64,12 @@ class Character(Base):
     # a weapon the sheet records as a scimitar that is always called a longsword.
     # Read by both this character's own agent and the AI DM.
     narration_notes: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    # "情境 → 判断 → 行动" 三段式规则。形容词只能让模型输出"一个警惕的人大概会说的话"，
+    # 也就是所有警惕角色的平均值；可执行的条件-反应对才能把相似的角色分开。
+    behavior_rules: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    # 这个角色绝不会说的话、绝不会做的动作。负面约束直接切掉那个"平均角色"
+    # 最容易滑进去的表达，对区分度的效力常常高于正面描述。
+    expression_bans: Mapped[str] = mapped_column(Text, nullable=False, default="")
     avatar_path: Mapped[str | None] = mapped_column(String(500))
     max_hp: Mapped[int] = mapped_column(Integer, nullable=False)
     # Application-validated to avoid a circular SQLite DDL dependency with

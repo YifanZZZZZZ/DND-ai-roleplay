@@ -503,6 +503,8 @@ class RuntimeSupervisor:
             voice_samples=character.voice_samples,
             profile_content=profile.content if profile is not None else "",
             narration_notes=character.narration_notes,
+            behavior_rules=character.behavior_rules,
+            expression_bans=character.expression_bans,
         )
         return system_prompt, context
 

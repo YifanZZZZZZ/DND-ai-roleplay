@@ -991,6 +991,16 @@ export interface components {
              * @default 
              */
             narrationNotes: string;
+            /**
+             * Behaviorrules
+             * @default 
+             */
+            behaviorRules: string;
+            /**
+             * Expressionbans
+             * @default 
+             */
+            expressionBans: string;
             /** Maxhp */
             maxHp: number;
         };
@@ -1026,6 +1036,10 @@ export interface components {
             voiceSamples: string;
             /** Narrationnotes */
             narrationNotes: string;
+            /** Behaviorrules */
+            behaviorRules: string;
+            /** Expressionbans */
+            expressionBans: string;
             /** Profilecontent */
             profileContent: string;
             profileStatus: components["schemas"]["ProfileStatus"];
@@ -1111,6 +1125,10 @@ export interface components {
             voiceSamples?: string | null;
             /** Narrationnotes */
             narrationNotes?: string | null;
+            /** Behaviorrules */
+            behaviorRules?: string | null;
+            /** Expressionbans */
+            expressionBans?: string | null;
             /** Maxhp */
             maxHp?: number | null;
             /** Profilecontent */

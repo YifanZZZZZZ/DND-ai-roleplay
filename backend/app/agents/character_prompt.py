@@ -62,11 +62,16 @@ _BOUNDARIES = """<硬性边界>
 </硬性边界>"""
 
 _OUTPUT_RULES = """<你要输出什么>
-- inner_beat：先用一句话回答四个问题。别人刚才已经说了什么？{name}此刻真实的反应是什么？
-  你要说的和别人重复吗？你有没有在替别人回答一个他还没回答的问题？
-  这句话不会被任何人看到，只是帮你把台词写准。第三问答"重复"就选 SILENCE；第四问答"有"就重写。
-- requires_dm_resolution：在写 content 之前先回答它。写完台词再回头补这个字段，你会倾向于说"不需要"。
-- content：一句台词，或一个动作，或者"一个动作 + 一句台词"。目标 80 字以内，最多 240 字符。
+- appraisal：现在的局面是什么？别人刚才已经说了什么？有没有人在等你回答？
+- intent：按照上面写的你是谁、以及你在这种情况下会怎么做，{name}想做什么？
+  同时检查两件事：这件事别人是不是已经说过或做过了（是就选 SILENCE）；
+  你是不是在替别人回答一个他还没回答的问题（是就重写）。
+- requires_dm_resolution：在写 content 之前回答它。写完台词再回头补，你会倾向于说"不需要"。
+- content：把上面这个 intent 表现出来。一句台词，或一个动作，或者"一个动作 + 一句台词"。
+  目标 80 字以内，最多 240 字符。
+
+appraisal 和 intent 不会被任何人看到，它们只是让"怎么想""做什么""怎么说"三件事分开。
+混在一起时，语言风格会反过来主导人物行为：台词先写顺了，动机再去迁就它。
 - 尽量让台词带上一个身体反应：视线落在哪、手上在做什么、姿态、呼吸、声音的变化。
   这个反应必须是<你是谁>和<你会怎么说话>里写过的那一类，是{name}特有的。
   不要用"皱了皱眉""叹了口气""耸耸肩""沉默了一会儿"这种放在谁身上都成立的通用动作。
@@ -88,6 +93,8 @@ def build_system_prompt(
     voice_samples: str = "",
     profile_content: str = "",
     narration_notes: str = "",
+    behavior_rules: str = "",
+    expression_bans: str = "",
 ) -> str:
     """Everything that answers "who am I" goes here, in the model's strongest slot."""
     blocks = [
@@ -95,6 +102,13 @@ def build_system_prompt(
         f"下面是你的全部人格。你说的每一句话、做的每一个动作，都必须从这里长出来。",
         f"<你是谁>\n{_clean_persona(roleplay_prompt)}\n</你是谁>",
     ]
+    if behavior_rules.strip():
+        # Executable if-then pairs, not adjectives. "警惕、现实" only gets the model
+        # to the average cautious character; "陌生人示好 → 先问对方想要什么" does not.
+        blocks.append(
+            "<你会怎么做>\n遇到这些情况时，你的反应是固定的。照着做，不要临时发挥。\n\n"
+            f"{behavior_rules.strip()}\n</你会怎么做>"
+        )
     if voice_samples.strip():
         blocks.append(
             "<你会怎么说话>\n"
@@ -104,6 +118,11 @@ def build_system_prompt(
     if profile_content.strip():
         blocks.append(
             f"<你后来变成了什么样>\n{profile_content.strip()}\n</你后来变成了什么样>"
+        )
+    if expression_bans.strip():
+        blocks.append(
+            "<你绝不会>\n下面这些事你不会做。哪怕情境看起来很合适，也不要做。\n\n"
+            f"{expression_bans.strip()}\n</你绝不会>"
         )
     if narration_notes.strip():
         # Overrides the sheet on purpose: the DM decides how things are named in

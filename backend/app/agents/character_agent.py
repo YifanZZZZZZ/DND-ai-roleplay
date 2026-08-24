@@ -16,15 +16,18 @@ class CharacterDecision(BaseModel):
     """Field order is load-bearing.
 
     Structured output is generated top to bottom, so what sits above ``content``
-    is decided before the line exists. ``inner_beat`` forces the model to settle
-    on the character's reaction first; ``requires_dm_resolution`` forces it to
-    decide whether this reaches outside the character's own control. Both are
-    cheap, in-band reasoning: no extra request, no extra latency. ``inner_beat``
-    is never persisted or shown.
+    is decided before the line exists.
+    ``appraisal`` (how the character reads the situation) and ``intent`` (what
+    they therefore want to do) separate thinking from speaking, so the phrasing
+    cannot quietly drive the behaviour; ``requires_dm_resolution`` forces the
+    model to decide whether this reaches outside the character's own control
+    before the line exists. All of it is in-band: no extra request, no extra
+    latency. ``appraisal`` and ``intent`` are never persisted or shown.
     """
 
     decision: Literal["SILENCE", "RESPOND"]
-    inner_beat: str = Field(default="", max_length=200)
+    appraisal: str = Field(default="", max_length=200)
+    intent: str = Field(default="", max_length=200)
     # Decided before the line is written, not after. Sitting at the end of the
     # schema it was an afterthought the model filled in once the reply already
     # read like a complete turn, so questions to NPCs sailed through unflagged.
@@ -82,7 +85,7 @@ class DeepSeekCharacterAgent:
         )
         self._model_settings = {
             "temperature": 0.75,
-            # Raised from 400 to cover inner_beat without squeezing content.
+            # Raised from 400 to cover appraisal/intent without squeezing content.
             "max_tokens": 600,
             "extra_body": {"thinking": {"type": "disabled"}},
         }

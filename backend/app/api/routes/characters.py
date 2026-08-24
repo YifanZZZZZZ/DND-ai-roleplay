@@ -47,6 +47,8 @@ def to_detail(character: Character) -> CharacterDetail:
         roleplay_prompt=character.roleplay_prompt,
         voice_samples=character.voice_samples,
         narration_notes=character.narration_notes,
+        behavior_rules=character.behavior_rules,
+        expression_bans=character.expression_bans,
         profile_content=character.profile.content,
         profile_status=character.profile.status,
     )

@@ -59,8 +59,10 @@ function CharacterEditor({ characterId }: { characterId: string }) {
   const [profile, setProfile] = useState("");
   const [voice, setVoice] = useState("");
   const [narration, setNarration] = useState("");
+  const [rules, setRules] = useState("");
+  const [bans, setBans] = useState("");
   const mutation = useMutation({
-    mutationFn: () => updateCharacter(characterId, { revision: detail.data!.revision, roleplayPrompt: prompt, profileContent: profile, voiceSamples: voice, narrationNotes: narration }),
+    mutationFn: () => updateCharacter(characterId, { revision: detail.data!.revision, roleplayPrompt: prompt, profileContent: profile, voiceSamples: voice, narrationNotes: narration, behaviorRules: rules, expressionBans: bans }),
     onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: queryKeys.characters }); },
   });
   if (!detail.data) return null;
@@ -68,7 +70,9 @@ function CharacterEditor({ characterId }: { characterId: string }) {
   const editedProfile = profile || detail.data.profileContent;
   const editedVoice = voice || detail.data.voiceSamples;
   const editedNarration = narration || detail.data.narrationNotes;
-  return <details className={styles.stack}><summary>编辑角色扮演资料</summary><label>Roleplay Prompt<textarea value={editedPrompt} onChange={(event) => setPrompt(event.target.value)} /></label><label>说话范例<span className={styles.hint}>3～5 组「情境 → 这个角色会怎么说」。模型模仿的是这里的语气，不是人设里的形容词。</span><textarea placeholder={VOICE_SAMPLE_PLACEHOLDER} value={editedVoice} onChange={(event) => setVoice(event.target.value)} /></label><label>用词约定<span className={styles.hint}>叙述必须遵守的说法，优先于角色卡。例：他的武器一律称作“长剑”，不要说弯刀。</span><textarea value={editedNarration} onChange={(event) => setNarration(event.target.value)} /></label><label>成长档案<textarea value={editedProfile} onChange={(event) => setProfile(event.target.value)} /></label><button className={styles.secondary} disabled={mutation.isPending} onClick={() => mutation.mutate()} type="button">保存资料</button></details>;
+  const editedRules = rules || detail.data.behaviorRules;
+  const editedBans = bans || detail.data.expressionBans;
+  return <details className={styles.stack}><summary>编辑角色扮演资料</summary><label>Roleplay Prompt<textarea value={editedPrompt} onChange={(event) => setPrompt(event.target.value)} /></label><label>说话范例<span className={styles.hint}>3～5 组「情境 → 这个角色会怎么说」。模型模仿的是这里的语气，不是人设里的形容词。</span><textarea placeholder={VOICE_SAMPLE_PLACEHOLDER} value={editedVoice} onChange={(event) => setVoice(event.target.value)} /></label><label>行为规则<span className={styles.hint}>「情境 → 判断 → 行动」，一行一条。形容词只会让模型输出所有同类角色的平均值，可执行的条件-反应对才能把相似的角色分开。</span><textarea value={editedRules} onChange={(event) => setRules(event.target.value)} /></label><label>绝不会做的事<span className={styles.hint}>这个角色绝不说的话、绝不做的动作。负面约束直接切掉那个「平均角色」最容易滑进去的表达。</span><textarea value={editedBans} onChange={(event) => setBans(event.target.value)} /></label><label>用词约定<span className={styles.hint}>叙述必须遵守的说法，优先于角色卡。例：他的武器一律称作“长剑”，不要说弯刀。</span><textarea value={editedNarration} onChange={(event) => setNarration(event.target.value)} /></label><label>成长档案<textarea value={editedProfile} onChange={(event) => setProfile(event.target.value)} /></label><button className={styles.secondary} disabled={mutation.isPending} onClick={() => mutation.mutate()} type="button">保存资料</button></details>;
 }
 
 const skillNames = [
