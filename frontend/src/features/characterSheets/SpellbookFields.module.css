@@ -1,0 +1,67 @@
+.spellbook {
+  display: grid;
+  gap: 10px;
+}
+
+.spell {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  background: rgb(255 255 255 / 2%);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+}
+
+.heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px auto;
+  gap: 8px;
+}
+
+.heading input,
+.heading select,
+.spell textarea {
+  width: 100%;
+  color: var(--text);
+  background: #12100d;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.heading input,
+.heading select {
+  min-height: 36px;
+  padding: 0 9px;
+}
+
+.spell textarea {
+  min-height: 78px;
+  padding: 9px;
+  resize: vertical;
+}
+
+.heading button,
+.add {
+  min-height: 36px;
+  padding: 0 11px;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.add {
+  justify-self: start;
+}
+
+.empty {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .heading {
+    grid-template-columns: 1fr;
+  }
+}

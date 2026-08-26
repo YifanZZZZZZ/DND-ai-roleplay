@@ -58,6 +58,12 @@ class ExportService:
                 "id": character.id,
                 "name": character.name,
                 "roleplayPrompt": character.roleplay_prompt,
+                "appearancePrompt": character.appearance_prompt,
+                "spellbook": character.spellbook,
+                "voiceSamples": character.voice_samples,
+                "behaviorRules": character.behavior_rules,
+                "expressionBans": character.expression_bans,
+                "narrationNotes": character.narration_notes,
                 "developmentProfile": character.profile.content,
                 "sheetSnapshot": sheet.parsed_snapshot if sheet is not None else None,
             },
@@ -138,6 +144,8 @@ class ExportService:
                     "id": item.character.id,
                     "name": item.character.name,
                     "roleplayPrompt": item.character.roleplay_prompt,
+                    "appearancePrompt": item.character.appearance_prompt,
+                    "spellbook": item.character.spellbook,
                 }
                 for item in campaign.memberships
             ],

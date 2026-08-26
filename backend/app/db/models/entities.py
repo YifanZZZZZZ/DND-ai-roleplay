@@ -56,6 +56,12 @@ class Character(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     roleplay_prompt: Mapped[str] = mapped_column(Text, nullable=False)
+    # Stable, observable visual facts. The prompt builder tells the model to
+    # weave in only details made relevant by the current action or scene.
+    appearance_prompt: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    # DM-approved closed spell whitelist. Initially derived from the active
+    # sheet, then editable without replacing the sheet itself.
+    spellbook: Mapped[list[dict[str, str]]] = mapped_column(JSON, nullable=False, default=list)
     # Few-shot speech samples written by the DM. Injected into the character's
     # system prompt so the model imitates a concrete voice instead of an
     # abstract personality description.

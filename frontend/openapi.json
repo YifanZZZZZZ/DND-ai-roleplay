@@ -330,6 +330,98 @@
         }
       }
     },
+    "/api/v1/characters/{character_id}/spellbook": {
+      "get": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Get Spellbook",
+        "operationId": "get_spellbook_api_v1_characters__character_id__spellbook_get",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharacterSpellbookView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Update Spellbook",
+        "operationId": "update_spellbook_api_v1_characters__character_id__spellbook_put",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CharacterSpellbookUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharacterSpellbookView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/characters/{character_id}/memories": {
       "get": {
         "tags": [
@@ -648,6 +740,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/SheetActivationRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Payload"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -3317,6 +3426,12 @@
             "minLength": 1,
             "title": "Roleplayprompt"
           },
+          "appearancePrompt": {
+            "type": "string",
+            "maxLength": 20000,
+            "title": "Appearanceprompt",
+            "default": ""
+          },
           "voiceSamples": {
             "type": "string",
             "maxLength": 20000,
@@ -3407,6 +3522,10 @@
             "type": "string",
             "title": "Roleplayprompt"
           },
+          "appearancePrompt": {
+            "type": "string",
+            "title": "Appearanceprompt"
+          },
           "voiceSamples": {
             "type": "string",
             "title": "Voicesamples"
@@ -3443,12 +3562,13 @@
           "createdAt",
           "updatedAt",
           "roleplayPrompt",
+          "appearancePrompt",
           "voiceSamples",
-          "profileContent",
-          "profileStatus",
           "narrationNotes",
           "behaviorRules",
-          "expressionBans"
+          "expressionBans",
+          "profileContent",
+          "profileStatus"
         ],
         "title": "CharacterDetail"
       },
@@ -3584,6 +3704,82 @@
         ],
         "title": "CharacterSheetSnapshot"
       },
+      "CharacterSpellInput": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "maxLength": 40,
+            "title": "Category",
+            "default": "MANUAL"
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "summary"
+        ],
+        "title": "CharacterSpellInput"
+      },
+      "CharacterSpellbookUpdate": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "spells": {
+            "items": {
+              "$ref": "#/components/schemas/CharacterSpellInput"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "title": "Spells"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision"
+        ],
+        "title": "CharacterSpellbookUpdate"
+      },
+      "CharacterSpellbookView": {
+        "properties": {
+          "characterId": {
+            "type": "string",
+            "title": "Characterid"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "spells": {
+            "items": {
+              "$ref": "#/components/schemas/CharacterSpellInput"
+            },
+            "type": "array",
+            "title": "Spells"
+          }
+        },
+        "type": "object",
+        "required": [
+          "characterId",
+          "revision",
+          "spells"
+        ],
+        "title": "CharacterSpellbookView"
+      },
       "CharacterSummary": {
         "properties": {
           "id": {
@@ -3678,6 +3874,18 @@
               }
             ],
             "title": "Roleplayprompt"
+          },
+          "appearancePrompt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appearanceprompt"
           },
           "voiceSamples": {
             "anyOf": [
@@ -4801,15 +5009,37 @@
           },
           "snapshot": {
             "$ref": "#/components/schemas/CharacterSheetSnapshot"
+          },
+          "spellbook": {
+            "items": {
+              "$ref": "#/components/schemas/CharacterSpellInput"
+            },
+            "type": "array",
+            "title": "Spellbook"
           }
         },
         "type": "object",
         "required": [
           "characterId",
           "activeVersionId",
-          "snapshot"
+          "snapshot",
+          "spellbook"
         ],
         "title": "SheetActivation"
+      },
+      "SheetActivationRequest": {
+        "properties": {
+          "spellbook": {
+            "items": {
+              "$ref": "#/components/schemas/CharacterSpellInput"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "title": "Spellbook"
+          }
+        },
+        "type": "object",
+        "title": "SheetActivationRequest"
       },
       "SheetParseStatus": {
         "type": "string",
@@ -4836,6 +5066,13 @@
           "snapshot": {
             "$ref": "#/components/schemas/CharacterSheetSnapshot"
           },
+          "spellbook": {
+            "items": {
+              "$ref": "#/components/schemas/CharacterSpellInput"
+            },
+            "type": "array",
+            "title": "Spellbook"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time",
@@ -4848,6 +5085,7 @@
           "parseStatus",
           "originalFilename",
           "snapshot",
+          "spellbook",
           "createdAt"
         ],
         "title": "SheetPreview"

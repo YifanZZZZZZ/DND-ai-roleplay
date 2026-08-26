@@ -24,6 +24,8 @@ export type RollMode = components["schemas"]["RollMode"];
 export type DmDraftView = components["schemas"]["DmDraftView"];
 export type CampaignSummaryView = components["schemas"]["CampaignSummaryView"];
 export type CharacterAcquaintanceView = components["schemas"]["CharacterAcquaintanceView"];
+export type CharacterSpellInput = components["schemas"]["CharacterSpellInput"];
+export type CharacterSpellbookView = components["schemas"]["CharacterSpellbookView"];
 
 const client = createClient<paths>({ baseUrl: "" });
 
@@ -82,6 +84,25 @@ export async function updateSkillSet(
   const { data, error } = await client.PUT("/api/v1/characters/{character_id}/skills", {
     params: { path: { character_id: characterId } },
     body: payload,
+  });
+  return requireData(data, error);
+}
+
+export async function getSpellbook(characterId: string): Promise<CharacterSpellbookView> {
+  const { data, error } = await client.GET("/api/v1/characters/{character_id}/spellbook", {
+    params: { path: { character_id: characterId } },
+  });
+  return requireData(data, error);
+}
+
+export async function updateSpellbook(
+  characterId: string,
+  revision: number,
+  spells: CharacterSpellInput[],
+): Promise<CharacterSpellbookView> {
+  const { data, error } = await client.PUT("/api/v1/characters/{character_id}/spellbook", {
+    params: { path: { character_id: characterId } },
+    body: { revision, spells },
   });
   return requireData(data, error);
 }
@@ -410,10 +431,14 @@ export async function previewCharacterSheet(
 export async function activateCharacterSheet(
   characterId: string,
   versionId: string,
+  spellbook: CharacterSpellInput[],
 ): Promise<SheetActivation> {
   const { data, error } = await client.POST(
     "/api/v1/characters/{character_id}/sheet-versions/{version_id}:activate",
-    { params: { path: { character_id: characterId, version_id: versionId } } },
+    {
+      params: { path: { character_id: characterId, version_id: versionId } },
+      body: { spellbook },
+    },
   );
   return requireData(data, error);
 }

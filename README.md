@@ -8,32 +8,38 @@
 
 ## 当前状态
 
-项目已经完成 Stage 0、Stage 1、Stage 2，并完成 Stage 3 的多角色运行闭环。
+项目已经完成从角色管理到连续 Campaign 跑团的 MVP 闭环，并加入 AI DM 辅助叙事、技能检定和长期关系能力。
 
 当前可运行能力：
 
 - FastAPI、React/Vite、SQLite 和 Alembic 工程骨架；
 - 全局角色资料创建；
 - 固定模板 Excel 角色卡安全上传、解析预览和确认激活；
+- 角色卡确认前可编辑自动识别的法术及无数值摘要，激活后可独立维护角色法术书；
 - 角色定性身份、实际能力、法术、装备白名单快照；
 - Campaign 创建、阵容与唯一 ACTIVE Campaign 约束；
-- Session 创建、结束和唯一 ACTIVE Session 约束；
-- HP 查看与修改，修改 Max HP 时同步当前 Session 并自动回满；
-- 角色库、角色卡上传、战役阵容、生命周期、Session 与 HP 的桌面端操作页面；
+- 每个 Campaign 使用一条连续时间线，支持直接启动、暂停、继续、完成、归档、重置和永久删除；
+- HP 查看与修改，修改 Max HP 时同步当前 ACTIVE Campaign 并自动回满；
+- 角色库、角色卡上传、战役阵容、生命周期、连续跑团与 HP 的桌面端操作页面；
 - 两栏跑团主页面、DM 场内消息、消息接收者快照与实时状态刷新；
 - `clientRequestId` 幂等发送、Generation 抢占令牌和“停止 AI 自动对话”控制；
 - DeepSeek OpenAI 兼容接口与 PydanticAI 结构化角色输出；
 - 每条新消息并行询问所有可见角色，协调器只发布一条不冲突的候选气泡；
-- 角色可保持沉默，或在需要结果裁决时等待 DM；发布后会重新广播，连续发言最多 12 条；
+- 角色可保持沉默，或在需要结果裁决时等待 DM；发布后会重新广播，两条 DM 消息之间连续发言最多 5 条；
 - OOC 纠正会使错误消息失效，并以带标识的有效替代消息继续运行；
-- 角色拥有可编辑的成长档案、长期记忆、头像与按可见范围生成的 Session 记录；
+- 角色拥有可编辑的成长档案、长期记忆、头像、外貌与视觉表现、说话范例、行为规则、绝不清单与用词约定；
+- 系统根据双方共同可知的有效故事自动维护定性角色关系；
+- Campaign 支持模组大纲、场景笔记和可编辑的具名 NPC 卡片；
+- AI DM 支持可选开场草稿、按需自动叙事草稿和 DM 手动润色，所有草稿均须真人确认后发送；
+- 支持十八项技能加值以及普通、优势、劣势 D20 检定，并保存完整投掷快照；
+- Character Agent 只能使用 DM 已确认法术书中的准确法术名，白名单外法术在发布前强制退回；
 - 支持角色与 Campaign 的 JSON 导出，以及完成后 Campaign 的永久删除；
 - 角色上下文仅包含自己可见的消息、角色卡定性资料、长期记忆及定性健康状态；
 - 模型调用审计记录（模型、状态、耗时和输入/输出 token）；
 - OpenAPI 自动生成前端 DTO；
-- 角色、Campaign、Session 与消息可见范围的集成测试。
+- 角色、Campaign 连续时间线、消息可见范围与运行时规则的自动化测试。
 
-当前角色卡解析器只支持项目约定的“DND 5E2024 人物卡〈悲灵 v1.0.0〉”固定模板。真实 Character Agent 已优先接入 DeepSeek；未配置 API Key 时，DM 消息会安全保存且不会伪造 AI 回复。当前仍在完善发布前语义 Validator、模型驱动的摘要/记忆/成长生成，以及统一 OOC 有效消息投影。
+当前角色卡解析器只支持项目约定的“DND 5E2024 人物卡〈悲灵 v1.0.0〉”固定模板。真实 Character Agent 与 AI DM 已优先接入 DeepSeek；未配置对应 API Key 时，正式 DM 消息仍会安全保存，系统不会伪造 AI 回复。发布前语义 Validator 默认关闭，可在规则校准完成后通过环境变量启用。
 
 - [精简产品需求](./PRD.md)
 - [精简技术架构](./ARCHITECTURE.md)
@@ -98,7 +104,7 @@ React Web
    └── SSE：接收消息与运行状态变更通知
    │
 FastAPI
-   ├── Character / Campaign / Session / Message Services
+   ├── Character / Campaign / Runtime / Message Services
    ├── Runtime Supervisor
    ├── PydanticAI Character Agents
    ├── LangGraph Reaction Graph
@@ -108,7 +114,7 @@ FastAPI
 SQLite + Local File Storage
 ```
 
-每条已发布消息创建一个独立 `AgentRun`。所有有权看到消息的角色会独立、并行地产生沉默或完整候选；纯 Python 协调器按点名、紧急性、发言公平性和记录的随机种子选择一条候选。未选择的候选不会写入消息历史。若该气泡需要 DM 裁决，当前 Run 结束，Session 进入 `WAITING_FOR_DM`；DM 回复后再创建新的 Run。
+每条已发布消息创建一个独立 `AgentRun`。所有有权看到消息的角色会独立、并行地产生沉默或完整候选；纯 Python 协调器按点名、紧急性、发言公平性和记录的随机种子选择一条候选。未选择的候选不会写入消息历史。若该气泡需要 DM 裁决，当前 Run 结束，Campaign Runtime 进入 `WAITING_FOR_DM`；在叙事模式下系统同时按需准备一份待真人审核的 AI DM 草稿。
 
 SQLite 是业务事实的唯一来源。Agent 不保存框架内部长期历史，也不能直接访问或修改数据库。
 
@@ -174,8 +180,8 @@ AI_TRPG_ENABLE_MESSAGE_VALIDATOR=false
 ```
 
 `AI_TRPG_ENABLE_MESSAGE_VALIDATOR` 默认为 `false`；在校验规则细化完成前，角色候选消息
-不会被 Validator 阻断。运行失败时，Session API 和跑团页面会显示最近一次的错误代码与详情，
-服务器日志同时保留 Run、Session、角色和异常堆栈。
+不会被 Validator 阻断。运行失败时，Campaign API 和跑团页面会显示最近一次的错误代码与详情，
+服务器日志同时保留 Run、内部运行时间线、角色和异常堆栈。
 
 运行数据库、上传文件和导出文件必须位于仓库外的 `AI_TRPG_DATA_DIR`，不得提交到 Git。
 

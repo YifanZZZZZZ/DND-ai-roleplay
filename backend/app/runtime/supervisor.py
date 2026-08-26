@@ -55,7 +55,7 @@ from backend.app.domain.enums import (
 from backend.app.events import get_session_event_hub
 from backend.app.runtime.coordinator import Candidate, SpeakerCoordinator
 from backend.app.runtime.dm_draft_supervisor import DmDraftSupervisor
-from backend.app.runtime.message_validator import MessageValidator
+from backend.app.runtime.message_validator import MessageValidation, MessageValidator
 from backend.app.services.acquaintance_service import AcquaintanceService
 from backend.app.services.message_projection import EffectiveMessageProjection
 from backend.app.services.relationship_service import RelationshipService
@@ -75,6 +75,7 @@ class _ClaimedCandidate:
     invocation_id: str
     system_prompt: str
     context: str
+    allowed_spell_names: tuple[str, ...]
     is_directly_addressed: bool
     last_spoken_sequence: int | None
 
@@ -102,6 +103,7 @@ class _Selection:
 _RETRY_NOTE = """<刚才那句被退回了>
 你上一条回复没有通过发布前检查：{reason}
 不要写任何数字或规则术语，也不要替 DM 宣布行动的成败——你只能描写"尝试"。
+如果使用法术，只能从<你真正会的法术>中选择准确名称，并正确填写 action_source 和 source_name。
 用同样的意思重写一条不违反边界的回复；如果实在没有合适的说法，就选 SILENCE。
 </刚才那句被退回了>"""
 
@@ -306,6 +308,11 @@ class RuntimeSupervisor:
                         invocation_id=invocation.id,
                         system_prompt=system_prompt,
                         context=context,
+                        allowed_spell_names=tuple(
+                            str(spell.get("name", "")).strip()
+                            for spell in character.spellbook
+                            if str(spell.get("name", "")).strip()
+                        ),
                         is_directly_addressed=character.id in addressed_ids,
                         last_spoken_sequence=last_spoken.get(character.id),
                     )
@@ -466,6 +473,16 @@ class RuntimeSupervisor:
         context = build_context(
             CharacterContextInput(
                 abilities=render_abilities(sheet.parsed_snapshot if sheet is not None else None),
+                spellbook=[
+                    (
+                        str(spell.get("name", "")).strip(),
+                        str(spell.get("category", "MANUAL")).strip(),
+                        str(spell.get("summary", "")).strip(),
+                    )
+                    for spell in character.spellbook
+                    if str(spell.get("name", "")).strip()
+                    and str(spell.get("summary", "")).strip()
+                ],
                 memories=[memory.content for memory in memories],
                 relationships=relationships,
                 past_stories=[(item.session.title, item.content) for item in prior_summaries],
@@ -500,6 +517,7 @@ class RuntimeSupervisor:
         system_prompt = build_system_prompt(
             name=character.name,
             roleplay_prompt=character.roleplay_prompt,
+            appearance_prompt=character.appearance_prompt,
             voice_samples=character.voice_samples,
             profile_content=profile.content if profile is not None else "",
             narration_notes=character.narration_notes,
@@ -535,17 +553,26 @@ class RuntimeSupervisor:
             return None, []
 
         ranked = self._coordinator.rank(candidates, claimed.random_seed)
-        if not self._settings.enable_message_validator:
-            if not ranked:
-                return None, []
-            best = ranked[0]
-            return _Selection(best.character_id, best.character_name, best.result.decision), []
-
         sources = {item.character_id: item for item in claimed.candidates}
+
+        def validate_decision(
+            decision: CharacterDecision, source: _ClaimedCandidate | None
+        ) -> MessageValidation:
+            spell_validation = self._validator.validate_spell_choice(
+                decision.action_source,
+                decision.source_name,
+                source.allowed_spell_names if source is not None else (),
+                decision.content,
+            )
+            if not spell_validation.approved or not self._settings.enable_message_validator:
+                return spell_validation
+            return self._validator.validate(decision.content)
+
         rejections: list[str] = []
         for candidate in ranked:
             decision = candidate.result.decision
-            validation = self._validator.validate(decision.content)
+            source = sources.get(candidate.character_id)
+            validation = validate_decision(decision, source)
             if validation.approved:
                 return (
                     _Selection(candidate.character_id, candidate.character_name, decision),
@@ -563,7 +590,6 @@ class RuntimeSupervisor:
                 reason,
                 len(decision.content),
             )
-            source = sources.get(candidate.character_id)
             if agent is None or source is None:
                 continue
             try:
@@ -581,7 +607,7 @@ class RuntimeSupervisor:
             retried_decision = retried.decision
             if retried_decision.decision != "RESPOND":
                 continue
-            revalidation = self._validator.validate(retried_decision.content)
+            revalidation = validate_decision(retried_decision, source)
             if revalidation.approved:
                 return (
                     _Selection(

@@ -38,3 +38,20 @@ def test_message_validator_rejects_dashes() -> None:
     assert validator.validate("那条路两边是崖—出事跑都没地方跑。").approved is False
     assert validator.validate("等等--这个结构不对。").approved is False
     assert validator.validate("停了一下，“……别死在半路上。”").approved is True
+
+
+def test_spell_choice_must_match_the_closed_whitelist() -> None:
+    validator = MessageValidator()
+    assert validator.validate_spell_choice("SPELL", "魔能爆", ("魔能爆",)).approved is True
+    rejected = validator.validate_spell_choice("SPELL", "火球术", ("魔能爆",))
+    assert rejected.approved is False
+    assert "未掌握的法术" in (rejected.reason or "")
+    assert validator.validate_spell_choice("NONE", None, ()).approved is True
+    undeclared = validator.validate_spell_choice(
+        "NONE", None, ("魔能爆",), "卡斯珀抬剑释放火球术。"
+    )
+    assert undeclared.approved is False
+    mismatch = validator.validate_spell_choice(
+        "SPELL", "魔能爆", ("魔能爆",), "卡斯珀抬剑释放火球术。"
+    )
+    assert mismatch.approved is False

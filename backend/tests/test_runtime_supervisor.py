@@ -238,10 +238,10 @@ async def test_narrative_character_message_continues_without_dm_resolution(
     run_id, session_id, _ = await _seed_run(runtime_factory)
     agent = FakeCharacterAgent(
         CharacterAgentResult(
-            decision=CharacterDecision(
-                decision="RESPOND",
-                content="赛蕾妮转向布兰，问道：‘你怎么看？’",
-                requires_dm_resolution=False,
+                decision=CharacterDecision(
+                    decision="RESPOND",
+                    content="赛蕾妮握住剑柄，示意继续前进。",
+                    requires_dm_resolution=False,
             ),
             input_tokens=6,
             output_tokens=5,
@@ -271,6 +271,36 @@ async def test_narrative_character_message_continues_without_dm_resolution(
         followup = await session.get(AgentRun, next_run_id)
         assert followup is not None
         assert followup.status == AgentRunStatus.PENDING
+
+
+async def test_unknown_spell_is_rejected_even_when_general_validator_is_disabled(
+    runtime_factory: async_sessionmaker[AsyncSession], tmp_path: Path
+) -> None:
+    run_id, _, _ = await _seed_run(runtime_factory)
+    agent = FakeCharacterAgent(
+        CharacterAgentResult(
+            decision=CharacterDecision(
+                decision="RESPOND",
+                action_source="SPELL",
+                source_name="火球术",
+                content="赛蕾妮抬手释放火球术。",
+            ),
+            input_tokens=4,
+            output_tokens=4,
+        )
+    )
+    supervisor = RuntimeSupervisor(
+        runtime_factory,
+        lambda _: agent,
+        Settings(data_dir=tmp_path / "runtime-data", enable_message_validator=False),
+    )
+
+    claimed = await supervisor._claim(run_id)
+    assert claimed is not None
+    selection, rejections = await supervisor._select_publishable(agent, claimed, [agent.result])
+
+    assert selection is None
+    assert any("未掌握的法术" in rejection for rejection in rejections)
 
 
 async def test_stale_generation_cannot_publish_old_agent_result(
@@ -434,7 +464,23 @@ def test_character_response_allows_natural_personal_pronouns() -> None:
     assert decision.content == "我推开门，你们继续前进。"
 
 
-async def test_twelfth_published_ai_message_returns_runtime_to_idle(
+def test_character_spell_use_requires_an_explicit_source_name() -> None:
+    with pytest.raises(ValueError):
+        CharacterDecision(
+            decision="RESPOND",
+            action_source="SPELL",
+            content="卡斯珀抬起剑，符文沿剑脊亮起。",
+        )
+    decision = CharacterDecision(
+        decision="RESPOND",
+        action_source="SPELL",
+        source_name="魔能爆",
+        content="卡斯珀抬起剑，符文沿剑脊亮起。",
+    )
+    assert decision.source_name == "魔能爆"
+
+
+async def test_fifth_published_ai_message_returns_runtime_to_idle(
     runtime_factory: async_sessionmaker[AsyncSession], tmp_path: Path
 ) -> None:
     run_id, session_id, _ = await _seed_run(runtime_factory)
@@ -442,7 +488,7 @@ async def test_twelfth_published_ai_message_returns_runtime_to_idle(
         game_session = await session.get(GameSession, session_id)
         assert game_session is not None
         await session.refresh(game_session, ["runtime"])
-        game_session.runtime.consecutive_ai_messages = 11
+        game_session.runtime.consecutive_ai_messages = 4
         await session.commit()
     agent = FakeCharacterAgent(
         CharacterAgentResult(
@@ -464,7 +510,7 @@ async def test_twelfth_published_ai_message_returns_runtime_to_idle(
         assert game_session is not None
         await session.refresh(game_session, ["runtime"])
         assert game_session.runtime.status == RuntimeStatus.IDLE
-        assert game_session.runtime.consecutive_ai_messages == 12
+        assert game_session.runtime.consecutive_ai_messages == 5
         runs = list(
             await session.scalars(select(AgentRun).where(AgentRun.session_id == session_id))
         )

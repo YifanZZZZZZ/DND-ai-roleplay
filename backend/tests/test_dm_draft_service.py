@@ -125,8 +125,9 @@ async def test_new_character_reply_stales_old_draft_and_generates_private_replac
         await session.refresh(old_draft)
         await session.refresh(game_session, ["runtime"])
         assert old_draft.status == DmDraftStatus.STALE
-        assert game_session.runtime.status == RuntimeStatus.IDLE
-        assert game_session.runtime.waiting_message_id is None
+        assert game_session.runtime.status == RuntimeStatus.WAITING_FOR_DM
+        assert game_session.runtime.waiting_message_id == reply.id
+        assert game_session.runtime.waiting_request == "正在生成旧草稿"
 
 
 def test_ai_dm_output_has_a_short_hard_limit() -> None:

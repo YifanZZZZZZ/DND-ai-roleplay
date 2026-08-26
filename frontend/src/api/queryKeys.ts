@@ -2,6 +2,7 @@ export const queryKeys = {
   characters: ["characters"] as const,
   memories: (characterId: string) => ["characters", characterId, "memories"] as const,
   skills: (characterId: string) => ["characters", characterId, "skills"] as const,
+  spellbook: (characterId: string) => ["characters", characterId, "spellbook"] as const,
   campaigns: ["campaigns"] as const,
   campaign: (campaignId: string) => ["campaigns", campaignId] as const,
   play: (campaignId: string) => ["campaigns", campaignId, "play"] as const,

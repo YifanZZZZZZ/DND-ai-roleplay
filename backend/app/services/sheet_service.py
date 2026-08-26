@@ -4,7 +4,11 @@ from fastapi import UploadFile
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.api.schemas.sheets import SheetActivation, SheetPreview
+from backend.app.api.schemas.sheets import (
+    SheetActivation,
+    SheetActivationRequest,
+    SheetPreview,
+)
 from backend.app.core.errors import AppError, NotFoundError
 from backend.app.db.models import Character, CharacterSheetVersion, CharacterSkillSet
 from backend.app.domain.enums import SheetParseStatus, SkillName
@@ -16,6 +20,7 @@ from backend.app.files.sheet_parser import (
 from backend.app.files.storage import FileStorage
 from backend.app.services.edit_lock import ensure_character_editable
 from backend.app.services.skill_service import DEFAULT_SKILL_MODIFIERS
+from backend.app.services.spellbook_service import normalized_spellbook, spellbook_from_snapshot
 
 
 class SheetService:
@@ -64,10 +69,16 @@ class SheetService:
             parse_status=version.parse_status,
             original_filename=version.original_filename,
             snapshot=snapshot,
+            spellbook=spellbook_from_snapshot(snapshot),
             created_at=version.created_at,
         )
 
-    async def activate(self, character_id: str, version_id: str) -> SheetActivation:
+    async def activate(
+        self,
+        character_id: str,
+        version_id: str,
+        payload: SheetActivationRequest | None = None,
+    ) -> SheetActivation:
         character = await self.session.get(Character, character_id)
         if character is None:
             raise NotFoundError("Character", character_id)
@@ -84,6 +95,7 @@ class SheetService:
             raise AppError("SHEET_VERSION_NOT_VALID", "只有解析成功的角色卡可以激活。")
 
         snapshot = CharacterSheetSnapshot.model_validate(version.parsed_snapshot)
+        spellbook = payload.spellbook if payload is not None else spellbook_from_snapshot(snapshot)
 
         old_versions = list(
             await self.session.scalars(
@@ -94,6 +106,7 @@ class SheetService:
             )
         )
         character.active_sheet_version_id = version.id
+        character.spellbook = normalized_spellbook(spellbook)
         character.revision += 1
 
         if len(snapshot.skills) == len(SkillName):
@@ -124,6 +137,7 @@ class SheetService:
             character_id=character.id,
             active_version_id=version.id,
             snapshot=snapshot,
+            spellbook=spellbook,
         )
 
     @property

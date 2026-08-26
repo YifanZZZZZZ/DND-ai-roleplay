@@ -92,6 +92,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/characters/{character_id}/spellbook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Spellbook */
+        get: operations["get_spellbook_api_v1_characters__character_id__spellbook_get"];
+        /** Update Spellbook */
+        put: operations["update_spellbook_api_v1_characters__character_id__spellbook_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/characters/{character_id}/memories": {
         parameters: {
             query?: never;
@@ -626,6 +644,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/campaigns/{campaign_id}/npcs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Npcs */
+        get: operations["list_npcs_api_v1_campaigns__campaign_id__npcs_get"];
+        put?: never;
+        /** Create Npc */
+        post: operations["create_npc_api_v1_campaigns__campaign_id__npcs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/campaigns/{campaign_id}/npcs:extract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Extract Npcs */
+        post: operations["extract_npcs_api_v1_campaigns__campaign_id__npcs_extract_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/npcs/{npc_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Npc */
+        delete: operations["delete_npc_api_v1_npcs__npc_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Npc */
+        patch: operations["update_npc_api_v1_npcs__npc_id__patch"];
+        trace?: never;
+    };
     "/api/v1/campaigns/{campaign_id}/messages": {
         parameters: {
             query?: never;
@@ -982,23 +1053,28 @@ export interface components {
             /** Roleplayprompt */
             roleplayPrompt: string;
             /**
+             * Appearanceprompt
+             * @default
+             */
+            appearancePrompt: string;
+            /**
              * Voicesamples
-             * @default 
+             * @default
              */
             voiceSamples: string;
             /**
              * Narrationnotes
-             * @default 
+             * @default
              */
             narrationNotes: string;
             /**
              * Behaviorrules
-             * @default 
+             * @default
              */
             behaviorRules: string;
             /**
              * Expressionbans
-             * @default 
+             * @default
              */
             expressionBans: string;
             /** Maxhp */
@@ -1032,6 +1108,8 @@ export interface components {
             updatedAt: string;
             /** Roleplayprompt */
             roleplayPrompt: string;
+            /** Appearanceprompt */
+            appearancePrompt: string;
             /** Voicesamples */
             voiceSamples: string;
             /** Narrationnotes */
@@ -1086,6 +1164,34 @@ export interface components {
                 [key: string]: number;
             };
         };
+        /** CharacterSpellInput */
+        CharacterSpellInput: {
+            /** Name */
+            name: string;
+            /**
+             * Category
+             * @default MANUAL
+             */
+            category: string;
+            /** Summary */
+            summary: string;
+        };
+        /** CharacterSpellbookUpdate */
+        CharacterSpellbookUpdate: {
+            /** Revision */
+            revision: number;
+            /** Spells */
+            spells?: components["schemas"]["CharacterSpellInput"][];
+        };
+        /** CharacterSpellbookView */
+        CharacterSpellbookView: {
+            /** Characterid */
+            characterId: string;
+            /** Revision */
+            revision: number;
+            /** Spells */
+            spells: components["schemas"]["CharacterSpellInput"][];
+        };
         /** CharacterSummary */
         CharacterSummary: {
             /** Id */
@@ -1121,6 +1227,8 @@ export interface components {
             name?: string | null;
             /** Roleplayprompt */
             roleplayPrompt?: string | null;
+            /** Appearanceprompt */
+            appearancePrompt?: string | null;
             /** Voicesamples */
             voiceSamples?: string | null;
             /** Narrationnotes */
@@ -1134,7 +1242,10 @@ export interface components {
             /** Profilecontent */
             profileContent?: string | null;
         };
-        /** DmDraftCreate */
+        /**
+         * DmDraftCreate
+         * @description `prompt` is the DM's own rough reply or a one-line intent.
+         */
         DmDraftCreate: {
             /** Prompt */
             prompt: string;
@@ -1363,6 +1474,113 @@ export interface components {
              */
             description: string;
         };
+        /** NpcCreate */
+        NpcCreate: {
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @default
+             */
+            role: string;
+            /**
+             * Personality
+             * @default
+             */
+            personality: string;
+            /**
+             * Ideal
+             * @default
+             */
+            ideal: string;
+            /**
+             * Bond
+             * @default
+             */
+            bond: string;
+            /**
+             * Flaw
+             * @default
+             */
+            flaw: string;
+            /**
+             * Knows
+             * @default
+             */
+            knows: string;
+            /**
+             * Wants
+             * @default
+             */
+            wants: string;
+            /**
+             * Voice
+             * @default
+             */
+            voice: string;
+        };
+        /** NpcUpdate */
+        NpcUpdate: {
+            /** Revision */
+            revision: number;
+            /** Name */
+            name?: string | null;
+            /** Role */
+            role?: string | null;
+            /** Personality */
+            personality?: string | null;
+            /** Ideal */
+            ideal?: string | null;
+            /** Bond */
+            bond?: string | null;
+            /** Flaw */
+            flaw?: string | null;
+            /** Knows */
+            knows?: string | null;
+            /** Wants */
+            wants?: string | null;
+            /** Voice */
+            voice?: string | null;
+        };
+        /** NpcView */
+        NpcView: {
+            /** Id */
+            id: string;
+            /** Campaignid */
+            campaignId: string;
+            /** Name */
+            name: string;
+            /** Role */
+            role: string;
+            /** Personality */
+            personality: string;
+            /** Ideal */
+            ideal: string;
+            /** Bond */
+            bond: string;
+            /** Flaw */
+            flaw: string;
+            /** Knows */
+            knows: string;
+            /** Wants */
+            wants: string;
+            /** Voice */
+            voice: string;
+            /** Source */
+            source: string;
+            /** Revision */
+            revision: number;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
+        };
         /** OocCorrectionCreate */
         OocCorrectionCreate: {
             /** Targetmessageid */
@@ -1415,6 +1633,13 @@ export interface components {
             /** Activeversionid */
             activeVersionId: string;
             snapshot: components["schemas"]["CharacterSheetSnapshot"];
+            /** Spellbook */
+            spellbook: components["schemas"]["CharacterSpellInput"][];
+        };
+        /** SheetActivationRequest */
+        SheetActivationRequest: {
+            /** Spellbook */
+            spellbook?: components["schemas"]["CharacterSpellInput"][];
         };
         /**
          * SheetParseStatus
@@ -1429,6 +1654,8 @@ export interface components {
             /** Originalfilename */
             originalFilename: string;
             snapshot: components["schemas"]["CharacterSheetSnapshot"];
+            /** Spellbook */
+            spellbook: components["schemas"]["CharacterSpellInput"][];
             /**
              * Createdat
              * Format: date-time
@@ -1851,6 +2078,72 @@ export interface operations {
             };
         };
     };
+    get_spellbook_api_v1_characters__character_id__spellbook_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                character_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CharacterSpellbookView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_spellbook_api_v1_characters__character_id__spellbook_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                character_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CharacterSpellbookUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CharacterSpellbookView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_memories_api_v1_characters__character_id__memories_get: {
         parameters: {
             query?: never;
@@ -2059,7 +2352,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SheetActivationRequest"] | null;
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -3055,6 +3352,167 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DmDraftPublishResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_npcs_api_v1_campaigns__campaign_id__npcs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NpcView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_npc_api_v1_campaigns__campaign_id__npcs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NpcCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NpcView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    extract_npcs_api_v1_campaigns__campaign_id__npcs_extract_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NpcView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_npc_api_v1_npcs__npc_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                npc_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_npc_api_v1_npcs__npc_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                npc_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NpcUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NpcView"];
                 };
             };
             /** @description Validation Error */

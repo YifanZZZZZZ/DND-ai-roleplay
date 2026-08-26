@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
-import { createCharacter, createMemory, deleteMemory, exportUrl, getCharacter, getSkillSet, listCharacters, listMemories, updateCharacter, updateMemory, updateSkillSet, uploadAvatar, type SkillSetView } from "../api/client";
+import { createCharacter, createMemory, deleteMemory, exportUrl, getCharacter, getSkillSet, getSpellbook, listCharacters, listMemories, updateCharacter, updateMemory, updateSkillSet, updateSpellbook, uploadAvatar, type CharacterSpellInput, type SkillSetView } from "../api/client";
 import { queryKeys } from "../api/queryKeys";
 import { EmptyState } from "../components/EmptyState/EmptyState";
 import { CharacterSheetUpload } from "../features/characterSheets/CharacterSheetUpload";
+import { SpellbookFields } from "../features/characterSheets/SpellbookFields";
 import styles from "./Page.module.css";
 
 function CharacterMemories({ characterId }: { characterId: string }) {
@@ -56,23 +57,28 @@ function CharacterEditor({ characterId }: { characterId: string }) {
   const queryClient = useQueryClient();
   const detail = useQuery({ queryKey: ["characters", characterId, "detail"], queryFn: () => getCharacter(characterId) });
   const [prompt, setPrompt] = useState("");
+  const [appearance, setAppearance] = useState("");
   const [profile, setProfile] = useState("");
   const [voice, setVoice] = useState("");
   const [narration, setNarration] = useState("");
   const [rules, setRules] = useState("");
   const [bans, setBans] = useState("");
+  useEffect(() => {
+    if (!detail.data) return;
+    setPrompt(detail.data.roleplayPrompt);
+    setAppearance(detail.data.appearancePrompt);
+    setProfile(detail.data.profileContent);
+    setVoice(detail.data.voiceSamples);
+    setNarration(detail.data.narrationNotes);
+    setRules(detail.data.behaviorRules);
+    setBans(detail.data.expressionBans);
+  }, [detail.data]);
   const mutation = useMutation({
-    mutationFn: () => updateCharacter(characterId, { revision: detail.data!.revision, roleplayPrompt: prompt, profileContent: profile, voiceSamples: voice, narrationNotes: narration, behaviorRules: rules, expressionBans: bans }),
+    mutationFn: () => updateCharacter(characterId, { revision: detail.data!.revision, roleplayPrompt: prompt, appearancePrompt: appearance, profileContent: profile, voiceSamples: voice, narrationNotes: narration, behaviorRules: rules, expressionBans: bans }),
     onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: queryKeys.characters }); },
   });
   if (!detail.data) return null;
-  const editedPrompt = prompt || detail.data.roleplayPrompt;
-  const editedProfile = profile || detail.data.profileContent;
-  const editedVoice = voice || detail.data.voiceSamples;
-  const editedNarration = narration || detail.data.narrationNotes;
-  const editedRules = rules || detail.data.behaviorRules;
-  const editedBans = bans || detail.data.expressionBans;
-  return <details className={styles.stack}><summary>编辑角色扮演资料</summary><label>Roleplay Prompt<textarea value={editedPrompt} onChange={(event) => setPrompt(event.target.value)} /></label><label>说话范例<span className={styles.hint}>3～5 组「情境 → 这个角色会怎么说」。模型模仿的是这里的语气，不是人设里的形容词。</span><textarea placeholder={VOICE_SAMPLE_PLACEHOLDER} value={editedVoice} onChange={(event) => setVoice(event.target.value)} /></label><label>行为规则<span className={styles.hint}>「情境 → 判断 → 行动」，一行一条。形容词只会让模型输出所有同类角色的平均值，可执行的条件-反应对才能把相似的角色分开。</span><textarea value={editedRules} onChange={(event) => setRules(event.target.value)} /></label><label>绝不会做的事<span className={styles.hint}>这个角色绝不说的话、绝不做的动作。负面约束直接切掉那个「平均角色」最容易滑进去的表达。</span><textarea value={editedBans} onChange={(event) => setBans(event.target.value)} /></label><label>用词约定<span className={styles.hint}>叙述必须遵守的说法，优先于角色卡。例：他的武器一律称作“长剑”，不要说弯刀。</span><textarea value={editedNarration} onChange={(event) => setNarration(event.target.value)} /></label><label>成长档案<textarea value={editedProfile} onChange={(event) => setProfile(event.target.value)} /></label><button className={styles.secondary} disabled={mutation.isPending} onClick={() => mutation.mutate()} type="button">保存资料</button></details>;
+  return <details className={styles.stack}><summary>编辑角色扮演资料</summary><label>Roleplay Prompt<textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} /></label><label>外貌与视觉表现<span className={styles.hint}>填写稳定外貌、服装装备、魔法视觉和习惯性姿态。Agent 只会在当前动作相关时自然带出一两个细节，不会每轮重复完整介绍。</span><textarea value={appearance} onChange={(event) => setAppearance(event.target.value)} /></label><label>说话范例<span className={styles.hint}>3～5 组「情境 → 这个角色会怎么说」。模型模仿的是这里的语气，不是人设里的形容词。</span><textarea placeholder={VOICE_SAMPLE_PLACEHOLDER} value={voice} onChange={(event) => setVoice(event.target.value)} /></label><label>行为规则<span className={styles.hint}>「情境 → 判断 → 行动」，一行一条。形容词只会让模型输出所有同类角色的平均值，可执行的条件-反应对才能把相似的角色分开。</span><textarea value={rules} onChange={(event) => setRules(event.target.value)} /></label><label>绝不会做的事<span className={styles.hint}>这个角色绝不说的话、绝不做的动作。负面约束直接切掉那个「平均角色」最容易滑进去的表达。</span><textarea value={bans} onChange={(event) => setBans(event.target.value)} /></label><label>用词约定<span className={styles.hint}>叙述必须遵守的说法，优先于角色卡。例：他的武器一律称作“长剑”，不要说弯刀。</span><textarea value={narration} onChange={(event) => setNarration(event.target.value)} /></label><label>成长档案<textarea value={profile} onChange={(event) => setProfile(event.target.value)} /></label><button className={styles.secondary} disabled={mutation.isPending} onClick={() => mutation.mutate()} type="button">保存资料</button></details>;
 }
 
 const skillNames = [
@@ -126,6 +132,38 @@ function CharacterSkillsEditor({ characterId }: { characterId: string }) {
   </details>;
 }
 
+function CharacterSpellbookEditor({ characterId }: { characterId: string }) {
+  const queryClient = useQueryClient();
+  const spellbook = useQuery({
+    queryKey: queryKeys.spellbook(characterId),
+    queryFn: () => getSpellbook(characterId),
+  });
+  const [spells, setSpells] = useState<CharacterSpellInput[]>([]);
+  useEffect(() => {
+    if (spellbook.data) setSpells(spellbook.data.spells);
+  }, [spellbook.data]);
+  const mutation = useMutation({
+    mutationFn: () => updateSpellbook(characterId, spellbook.data!.revision, spells),
+    onSuccess: async (data) => {
+      queryClient.setQueryData(queryKeys.spellbook(characterId), data);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.characters });
+    },
+  });
+  if (spellbook.isLoading) return <small>正在读取法术书…</small>;
+  if (spellbook.error) return <small className={styles.error}>{spellbook.error.message}</small>;
+  if (!spellbook.data) return null;
+  const hasIncompleteSpell = spells.some((spell) => !spell.name.trim() || !spell.summary.trim());
+  return <details className={styles.stack}>
+    <summary>角色法术书 · {spells.length}</summary>
+    <span className={styles.hint}>这是 Character Agent 唯一可以使用的法术白名单。修改后立即用于下一次角色回复。</span>
+    <SpellbookFields spells={spells} onChange={setSpells} />
+    {mutation.error && <p className={styles.error}>{mutation.error.message}</p>}
+    <button className={styles.secondary} disabled={mutation.isPending || hasIncompleteSpell} onClick={() => mutation.mutate()} type="button">
+      {mutation.isPending ? "保存中…" : "保存法术书"}
+    </button>
+  </details>;
+}
+
 function AvatarUpload({ characterId, avatarPath }: { characterId: string; avatarPath: string | null }) {
   const queryClient = useQueryClient();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -139,6 +177,7 @@ export function CharactersPage() {
   const [name, setName] = useState("");
   const [maxHp, setMaxHp] = useState("");
   const [prompt, setPrompt] = useState("");
+  const [appearance, setAppearance] = useState("");
   const [voice, setVoice] = useState("");
   const [narration, setNarration] = useState("");
   const characters = useQuery({ queryKey: queryKeys.characters, queryFn: listCharacters });
@@ -148,6 +187,7 @@ export function CharactersPage() {
       setName("");
       setMaxHp("");
       setPrompt("");
+      setAppearance("");
       setVoice("");
       setNarration("");
       setShowForm(false);
@@ -161,8 +201,11 @@ export function CharactersPage() {
       name: name.trim(),
       maxHp: Number(maxHp),
       roleplayPrompt: prompt.trim(),
+      appearancePrompt: appearance.trim(),
       voiceSamples: voice.trim(),
       narrationNotes: narration.trim(),
+      behaviorRules: "",
+      expressionBans: "",
     });
   }
 
@@ -209,6 +252,16 @@ export function CharactersPage() {
               required
               value={prompt}
               onChange={(event) => setPrompt(event.target.value)}
+            />
+          </label>
+          <label>
+            外貌与视觉表现（可选）
+            <span className={styles.hint}>
+              统一按固定轮廓、面部与头发、服装与装备、魔法视觉、习惯性姿态与情境变化五段填写；没有魔法视觉时可以留空。
+            </span>
+            <textarea
+              value={appearance}
+              onChange={(event) => setAppearance(event.target.value)}
             />
           </label>
           <label>
@@ -276,10 +329,12 @@ export function CharactersPage() {
                 hasActiveSheet={character.hasActiveSheet}
                 onActivated={async () => {
                   await queryClient.invalidateQueries({ queryKey: queryKeys.characters });
+                  await queryClient.invalidateQueries({ queryKey: queryKeys.spellbook(character.id) });
                 }}
               />
               <CharacterMemories characterId={character.id} />
               <CharacterEditor characterId={character.id} />
+              {character.hasActiveSheet && <CharacterSpellbookEditor characterId={character.id} />}
               <CharacterSkillsEditor characterId={character.id} />
               <a className={styles.secondary} href={exportUrl("character", character.id)}>
                 导出角色资料

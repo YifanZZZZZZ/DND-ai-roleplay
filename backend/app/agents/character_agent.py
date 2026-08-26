@@ -28,6 +28,8 @@ class CharacterDecision(BaseModel):
     decision: Literal["SILENCE", "RESPOND"]
     appraisal: str = Field(default="", max_length=200)
     intent: str = Field(default="", max_length=200)
+    action_source: Literal["NONE", "SPELL"] = "NONE"
+    source_name: str | None = Field(default=None, max_length=120)
     # Decided before the line is written, not after. Sitting at the end of the
     # schema it was an afterthought the model filled in once the reply already
     # read like a complete turn, so questions to NPCs sailed through unflagged.
@@ -46,6 +48,12 @@ class CharacterDecision(BaseModel):
             raise ValueError("沉默时不能请求 DM 裁决。")
         if self.decision == "SILENCE" and self.content.strip():
             raise ValueError("SILENCE 不能包含角色发言。")
+        if self.decision == "SILENCE" and self.action_source != "NONE":
+            raise ValueError("沉默时不能使用法术。")
+        if self.action_source == "SPELL" and not (self.source_name or "").strip():
+            raise ValueError("使用法术时必须声明准确的法术名称。")
+        if self.action_source == "NONE" and self.source_name is not None:
+            raise ValueError("不使用法术时不能填写法术名称。")
         if self.requires_dm_resolution and not (self.resolution_request or "").strip():
             raise ValueError("请求 DM 裁决时必须说明需要裁决的事项。")
         return self

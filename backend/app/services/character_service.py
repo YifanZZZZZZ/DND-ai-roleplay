@@ -47,6 +47,7 @@ class CharacterService:
         character = Character(
             name=payload.name.strip(),
             roleplay_prompt=payload.roleplay_prompt.strip(),
+            appearance_prompt=payload.appearance_prompt.strip(),
             voice_samples=payload.voice_samples.strip(),
             narration_notes=payload.narration_notes.strip(),
             behavior_rules=payload.behavior_rules.strip(),
@@ -72,6 +73,8 @@ class CharacterService:
             character.name = payload.name.strip()
         if payload.roleplay_prompt is not None:
             character.roleplay_prompt = payload.roleplay_prompt.strip()
+        if payload.appearance_prompt is not None:
+            character.appearance_prompt = payload.appearance_prompt.strip()
         if payload.voice_samples is not None:
             character.voice_samples = payload.voice_samples.strip()
         if payload.narration_notes is not None:

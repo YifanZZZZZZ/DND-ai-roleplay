@@ -15,13 +15,19 @@ from backend.app.api.schemas.characters import (
     SkillSetUpdate,
     SkillSetView,
 )
-from backend.app.api.schemas.sheets import SheetActivation, SheetPreview
+from backend.app.api.schemas.sheets import (
+    SheetActivation,
+    SheetActivationRequest,
+    SheetPreview,
+)
+from backend.app.api.schemas.spells import CharacterSpellbookUpdate, CharacterSpellbookView
 from backend.app.db.models import Character, CharacterMemory
 from backend.app.services.character_service import CharacterService
 from backend.app.services.export_service import ExportService
 from backend.app.services.memory_service import MemoryService
 from backend.app.services.sheet_service import SheetService
 from backend.app.services.skill_service import SkillService
+from backend.app.services.spellbook_service import SpellbookService
 
 router = APIRouter(prefix="/characters", tags=["characters"])
 
@@ -45,6 +51,7 @@ def to_detail(character: Character) -> CharacterDetail:
     return CharacterDetail(
         **summary.model_dump(),
         roleplay_prompt=character.roleplay_prompt,
+        appearance_prompt=character.appearance_prompt,
         voice_samples=character.voice_samples,
         narration_notes=character.narration_notes,
         behavior_rules=character.behavior_rules,
@@ -108,6 +115,20 @@ async def update_skills(
     return SkillSetView.model_validate(skill_set)
 
 
+@router.get("/{character_id}/spellbook", response_model=CharacterSpellbookView)
+async def get_spellbook(character_id: str, session: DatabaseSession) -> CharacterSpellbookView:
+    return await SpellbookService(session).get(character_id)
+
+
+@router.put("/{character_id}/spellbook", response_model=CharacterSpellbookView)
+async def update_spellbook(
+    character_id: str,
+    payload: CharacterSpellbookUpdate,
+    session: DatabaseSession,
+) -> CharacterSpellbookView:
+    return await SpellbookService(session).update(character_id, payload)
+
+
 @router.get("/{character_id}/memories", response_model=list[MemoryView])
 async def list_memories(character_id: str, session: DatabaseSession) -> list[MemoryView]:
     return [to_memory_view(item) for item in await MemoryService(session).list(character_id)]
@@ -162,5 +183,6 @@ async def activate_character_sheet(
     version_id: str,
     session: DatabaseSession,
     storage: FileStorageDependency,
+    payload: SheetActivationRequest | None = None,
 ) -> SheetActivation:
-    return await SheetService(session, storage).activate(character_id, version_id)
+    return await SheetService(session, storage).activate(character_id, version_id, payload)

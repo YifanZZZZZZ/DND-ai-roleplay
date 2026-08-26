@@ -104,13 +104,26 @@ async def configure_sheet(
     assert preview["snapshot"]["species"] == "影灵"
     assert len(preview["snapshot"]["classFeatures"]) == 1
     assert len(preview["snapshot"]["spells"]) == 1
+    assert preview["spellbook"][0]["name"] == "魔能爆"
+    assert "角色释放一束爆裂的魔法能量" in preview["spellbook"][0]["summary"]
+    assert not any(character.isdigit() for character in preview["spellbook"][0]["summary"])
     assert len(preview["snapshot"]["skills"]) == 18
     assert preview["snapshot"]["skills"]["investigation"] == 8
 
     activation = await client.post(
-        f"/api/v1/characters/{character_id}/sheet-versions/{preview['versionId']}:activate"
+        f"/api/v1/characters/{character_id}/sheet-versions/{preview['versionId']}:activate",
+        json={
+            "spellbook": [
+                {
+                    "name": "魔能爆",
+                    "category": "CANTRIP",
+                    "summary": "向视野中的目标释放爆裂魔法能量，命中与结果由 DM 裁定。",
+                }
+            ]
+        },
     )
     assert activation.status_code == 200
+    assert activation.json()["spellbook"][0]["summary"].startswith("向视野中的目标")
 
     skills_response = await client.get(f"/api/v1/characters/{character_id}/skills")
     assert skills_response.status_code == 200
@@ -118,6 +131,45 @@ async def configure_sheet(
     assert modifiers["investigation"] == 8
     assert modifiers["religion"] == 8
     assert modifiers["perception"] == 0
+
+
+async def test_spellbook_can_be_manually_updated_after_sheet_activation(
+    api_client: AsyncClient, tmp_path: Path
+) -> None:
+    character = await create_character(api_client, "卡斯珀")
+    character_id = str(character["id"])
+    await configure_sheet(api_client, tmp_path, character_id, "卡斯珀")
+
+    current = await api_client.get(f"/api/v1/characters/{character_id}/spellbook")
+    assert current.status_code == 200
+    payload = current.json()
+    assert [spell["name"] for spell in payload["spells"]] == ["魔能爆"]
+
+    updated = await api_client.put(
+        f"/api/v1/characters/{character_id}/spellbook",
+        json={
+            "revision": payload["revision"],
+            "spells": [
+                payload["spells"][0],
+                {
+                    "name": "护盾术",
+                    "category": "PREPARED",
+                    "summary": "迅速形成短暂的魔法屏障，是否挡住来袭攻击由 DM 裁定。",
+                },
+            ],
+        },
+    )
+    assert updated.status_code == 200
+    assert [spell["name"] for spell in updated.json()["spells"]] == ["魔能爆", "护盾术"]
+
+    duplicate = await api_client.put(
+        f"/api/v1/characters/{character_id}/spellbook",
+        json={
+            "revision": updated.json()["revision"],
+            "spells": [updated.json()["spells"][0], updated.json()["spells"][0]],
+        },
+    )
+    assert duplicate.status_code == 422
 
 
 async def test_character_sheet_campaign_play_and_hp_flow(

@@ -95,3 +95,7 @@
   font-size: 12px;
 }
 
+.spellEditor {
+  display: grid;
+  gap: 8px;
+}

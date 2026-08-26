@@ -11,6 +11,7 @@ ALL_SKILLS = frozenset(SkillName)
 class CharacterCreate(ApiSchema):
     name: str = Field(min_length=1, max_length=120)
     roleplay_prompt: str = Field(min_length=1, max_length=200_000)
+    appearance_prompt: str = Field(default="", max_length=20_000)
     voice_samples: str = Field(default="", max_length=20_000)
     narration_notes: str = Field(default="", max_length=4_000)
     behavior_rules: str = Field(default="", max_length=20_000)
@@ -22,6 +23,7 @@ class CharacterUpdate(ApiSchema):
     revision: int = Field(ge=1)
     name: str | None = Field(default=None, min_length=1, max_length=120)
     roleplay_prompt: str | None = Field(default=None, min_length=1, max_length=200_000)
+    appearance_prompt: str | None = Field(default=None, max_length=20_000)
     voice_samples: str | None = Field(default=None, max_length=20_000)
     narration_notes: str | None = Field(default=None, max_length=4_000)
     behavior_rules: str | None = Field(default=None, max_length=20_000)
@@ -44,6 +46,7 @@ class CharacterSummary(ApiSchema):
 
 class CharacterDetail(CharacterSummary):
     roleplay_prompt: str
+    appearance_prompt: str
     voice_samples: str
     narration_notes: str
     behavior_rules: str

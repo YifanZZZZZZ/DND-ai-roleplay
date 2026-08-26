@@ -28,10 +28,10 @@ def upgrade() -> None:
     )
     with op.batch_alter_table("session_runtimes") as batch:
         batch.drop_constraint(
-            "ck_session_runtimes_valid_consecutive_ai_messages", type_="check"
+            op.f("ck_session_runtimes_valid_consecutive_ai_messages"), type_="check"
         )
         batch.create_check_constraint(
-            "ck_session_runtimes_valid_consecutive_ai_messages",
+            op.f("ck_session_runtimes_valid_consecutive_ai_messages"),
             "consecutive_ai_messages >= 0 AND consecutive_ai_messages <= 5",
         )
 
@@ -39,10 +39,10 @@ def upgrade() -> None:
 def downgrade() -> None:
     with op.batch_alter_table("session_runtimes") as batch:
         batch.drop_constraint(
-            "ck_session_runtimes_valid_consecutive_ai_messages", type_="check"
+            op.f("ck_session_runtimes_valid_consecutive_ai_messages"), type_="check"
         )
         batch.create_check_constraint(
-            "ck_session_runtimes_valid_consecutive_ai_messages",
+            op.f("ck_session_runtimes_valid_consecutive_ai_messages"),
             "consecutive_ai_messages >= 0 AND consecutive_ai_messages <= 12",
         )
     op.drop_column("characters", "narration_notes")

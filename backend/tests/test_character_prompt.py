@@ -34,7 +34,21 @@ def test_template_brackets_are_stripped_from_the_persona() -> None:
 def test_optional_blocks_are_omitted_when_empty() -> None:
     prompt = build_system_prompt(name="卡莱拉", roleplay_prompt="人设")
     assert "<你会怎么说话>" not in prompt
+    assert "<你的外貌与视觉表现>" not in prompt
     assert "<你后来变成了什么样>" not in prompt
+
+
+def test_appearance_is_identity_material_but_not_a_mandatory_checklist() -> None:
+    prompt = build_system_prompt(
+        name="卡斯珀",
+        roleplay_prompt="好奇而坦率的年轻剑法师。",
+        appearance_prompt="灰蓝色眼睛，深棕色短发，腰间佩着细长的单手剑。",
+    )
+    assert "<你的外貌与视觉表现>" in prompt
+    assert "灰蓝色眼睛" in prompt
+    assert "只有当前动作、情绪、光线、服装变化或施法让某个细节自然相关时" in prompt
+    assert "不要完整介绍外貌" in prompt
+    assert prompt.index("<你的外貌与视觉表现>") < prompt.index("<硬性边界>")
 
 
 def test_trigger_is_its_own_final_block() -> None:
@@ -75,6 +89,28 @@ def test_empty_sections_produce_no_empty_tags() -> None:
     assert build_context(CharacterContextInput()) == ""
 
 
+def test_spellbook_is_a_closed_narrative_whitelist() -> None:
+    context = build_context(
+        CharacterContextInput(
+            spellbook=[
+                ("魔能爆", "CANTRIP", "向视野中的目标释放爆裂魔法能量。"),
+                ("护盾术", "PREPARED", "迅速形成短暂的魔法屏障。"),
+            ]
+        )
+    )
+    assert "<你真正会的法术>" in context
+    assert "封闭白名单" in context
+    assert "魔能爆【戏法】" in context
+    assert "护盾术【已准备】" in context
+
+
+def test_raw_sheet_spells_never_bypass_the_approved_spellbook() -> None:
+    rendered = render_abilities(
+        {"spells": [{"name": "未经确认的法术", "description": "不应进入上下文"}]}
+    )
+    assert "未经确认的法术" not in rendered
+
+
 def test_render_abilities_drops_raw_snapshot_noise() -> None:
     rendered = render_abilities(
         {
@@ -111,7 +147,7 @@ def test_narration_notes_override_the_sheet() -> None:
 def test_prompt_forbids_repetition_and_dashes() -> None:
     prompt = build_system_prompt(name="卡莱拉", roleplay_prompt="人设")
     assert "别人刚说过的话，你不要再说一遍" in prompt
-    assert "你要说的和别人重复吗？" in prompt
+    assert "这件事别人是不是已经说过或做过了" in prompt
     assert "不要使用破折号" in prompt
 
 
@@ -144,6 +180,8 @@ def test_prompt_defines_when_the_dm_must_step_in() -> None:
     # And the negative list, so ordinary party talk does not stall the scene.
     assert "不需要 DM 裁定，正常发言就好" in prompt
     assert "和同伴商量或争论" in prompt
+    assert "<你真正会的法术>是封闭白名单" in prompt
+    assert "action_source" in prompt
 
 
 def test_behaviour_rules_and_bans_get_their_own_blocks() -> None:
@@ -186,5 +224,5 @@ def test_prompt_stops_the_turn_after_asking_an_npc() -> None:
     assert "只要你向 NPC 提了一个问题，你的这一轮就到此为止" in prompt
     assert "不能替他回答" in prompt
     assert "绝不能写出别人的回答、反应或态度" in prompt
-    assert "你有没有在替别人回答一个他还没回答的问题？" in prompt
-    assert "在写 content 之前先回答它" in prompt
+    assert "你是不是在替别人回答一个他还没回答的问题" in prompt
+    assert "在写 content 之前回答它" in prompt

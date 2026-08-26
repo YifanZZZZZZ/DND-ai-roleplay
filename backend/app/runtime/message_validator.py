@@ -37,6 +37,35 @@ class MessageValidator:
     )
 
     _dash_pattern = re.compile(r"[—–]|--")
+    _explicit_cast_pattern = re.compile(
+        r"(?:施展|施放|释放|发动|吟唱)(?:名为)?[《“\"]?([\u4e00-\u9fff]{1,12}(?:术|咒|法术))"
+    )
+
+    def validate_spell_choice(
+        self,
+        action_source: str,
+        source_name: str | None,
+        allowed_spell_names: tuple[str, ...],
+        content: str = "",
+    ) -> MessageValidation:
+        explicit_cast = self._explicit_cast_pattern.search(content)
+        if action_source != "SPELL" and explicit_cast is not None:
+            return MessageValidation(False, "正文明确描述了施法，但没有声明 SPELL 和准确法术名。")
+        if action_source != "SPELL":
+            return MessageValidation(True)
+        selected = (source_name or "").strip()
+        if selected not in allowed_spell_names:
+            available = "、".join(allowed_spell_names) or "无"
+            return MessageValidation(
+                False,
+                f"角色声明了未掌握的法术“{selected or '未填写'}”；当前法术白名单：{available}。",
+            )
+        if explicit_cast is not None and explicit_cast.group(1) != selected:
+            return MessageValidation(
+                False,
+                f"正文施展的是“{explicit_cast.group(1)}”，但结构化声明是“{selected}”。",
+            )
+        return MessageValidation(True)
 
     def validate(self, content: str) -> MessageValidation:
         text = content.strip()
