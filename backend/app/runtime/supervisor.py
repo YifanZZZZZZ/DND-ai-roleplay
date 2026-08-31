@@ -28,9 +28,9 @@ from backend.app.db.models import (
     Campaign,
     CampaignMembership,
     Character,
-    CharacterAcquaintance,
     CharacterMemory,
     CharacterProfile,
+    CharacterRelationship,
     CharacterSheetVersion,
     GameSession,
     LlmInvocation,
@@ -406,9 +406,8 @@ class RuntimeSupervisor:
         acquainted_ids = await AcquaintanceService(session).acquainted_character_ids(character.id)
         relationship_rows = list(
             await session.scalars(
-                select(CharacterAcquaintance).where(
-                    (CharacterAcquaintance.character_a_id == character.id)
-                    | (CharacterAcquaintance.character_b_id == character.id)
+                select(CharacterRelationship).where(
+                    CharacterRelationship.owner_character_id == character.id
                 )
             )
         )
@@ -451,18 +450,18 @@ class RuntimeSupervisor:
 
         relationships = [
             (
-                related_characters[related_id].name,
-                relationship.relationship_history,
+                related_characters[relationship.target_character_id].name,
+                "\n".join(
+                    [f"当前看法：{relationship.current_view}"]
+                    + (
+                        ["重要经历：" + "；".join(relationship.important_history)]
+                        if relationship.important_history
+                        else []
+                    )
+                ),
             )
             for relationship in relationship_rows
-            if (
-                related_id := (
-                    relationship.character_b_id
-                    if relationship.character_a_id == character.id
-                    else relationship.character_a_id
-                )
-            )
-            in related_characters
+            if relationship.target_character_id in related_characters
         ]
         for state in other_states:
             alias = stranger_aliases.get(state.character_id)

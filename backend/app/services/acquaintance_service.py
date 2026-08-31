@@ -1,19 +1,23 @@
+from dataclasses import dataclass
 from itertools import combinations
 
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.core.errors import AppError
-from backend.app.db.models import Character, CharacterAcquaintance
+from backend.app.db.models import Character, CharacterRelationship
 from backend.app.services.campaign_service import CampaignService
 
 
-def ordered_pair(character_a_id: str, character_b_id: str) -> tuple[str, str]:
-    if character_a_id == character_b_id:
-        raise AppError("INVALID_ACQUAINTANCE_PAIR", "角色不能与自己建立相识关系。")
-    if character_a_id < character_b_id:
-        return character_a_id, character_b_id
-    return character_b_id, character_a_id
+@dataclass(frozen=True, slots=True)
+class RelationshipPair:
+    character_a: Character
+    character_b: Character
+    a_to_b: CharacterRelationship | None
+    b_to_a: CharacterRelationship | None
+
+    @property
+    def acquainted(self) -> bool:
+        return self.a_to_b is not None or self.b_to_a is not None
 
 
 class AcquaintanceService:
@@ -22,7 +26,7 @@ class AcquaintanceService:
 
     async def list_for_campaign(
         self, campaign_id: str
-    ) -> list[tuple[Character, Character, CharacterAcquaintance | None]]:
+    ) -> list[RelationshipPair]:
         campaign = await CampaignService(self.session).get(campaign_id)
         characters = sorted(
             (membership.character for membership in campaign.memberships),
@@ -31,20 +35,21 @@ class AcquaintanceService:
         ids = [character.id for character in characters]
         rows = list(
             await self.session.scalars(
-                select(CharacterAcquaintance).where(
-                    CharacterAcquaintance.character_a_id.in_(ids),
-                    CharacterAcquaintance.character_b_id.in_(ids),
+                select(CharacterRelationship).where(
+                    CharacterRelationship.owner_character_id.in_(ids),
+                    CharacterRelationship.target_character_id.in_(ids),
                 )
             )
         )
-        acquaintances = {
-            (row.character_a_id, row.character_b_id): row for row in rows
+        relationships = {
+            (row.owner_character_id, row.target_character_id): row for row in rows
         }
         return [
-            (
-                character_a,
-                character_b,
-                acquaintances.get(ordered_pair(character_a.id, character_b.id)),
+            RelationshipPair(
+                character_a=character_a,
+                character_b=character_b,
+                a_to_b=relationships.get((character_a.id, character_b.id)),
+                b_to_a=relationships.get((character_b.id, character_a.id)),
             )
             for character_a, character_b in combinations(characters, 2)
         ]
@@ -52,17 +57,17 @@ class AcquaintanceService:
     async def acquainted_character_ids(self, character_id: str) -> set[str]:
         rows = list(
             await self.session.scalars(
-                select(CharacterAcquaintance).where(
+                select(CharacterRelationship).where(
                     or_(
-                        CharacterAcquaintance.character_a_id == character_id,
-                        CharacterAcquaintance.character_b_id == character_id,
+                        CharacterRelationship.owner_character_id == character_id,
+                        CharacterRelationship.target_character_id == character_id,
                     )
                 )
             )
         )
         return {
-            row.character_b_id
-            if row.character_a_id == character_id
-            else row.character_a_id
+            row.target_character_id
+            if row.owner_character_id == character_id
+            else row.owner_character_id
             for row in rows
         }

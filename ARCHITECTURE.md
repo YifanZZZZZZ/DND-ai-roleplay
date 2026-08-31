@@ -382,7 +382,9 @@ MANUAL_ASSIST
 
 每条正式 `IN_GAME` DM 或 Character Message 提交后，Relationship Service 自动执行一次 Campaign 级刷新，并在下一次 Character Agent 或 AI DM 草稿构建上下文前完成。DM 没有创建或编辑关系的入口，只能读取自动生成结果。
 
-每一对角色只获得双方 Recipient Snapshot 的交集消息、既有关系历史和共同参与信息。Agent 只有在明确见面、交谈、相互识别或共同参与事件时才能建立关系；只被一方看见的私密故事不能成为双方关系事实。关系为全局、对称记录，保存首次相识 Campaign 和定性的共同经历历史，不保存数值好感度。
+每一对角色只获得双方 Recipient Snapshot 的交集消息、既有关系和共同参与信息。Agent 只有在明确见面、交谈、相互识别或共同参与事件时才能建立关系；只被一方看见的私密故事不能成为双方关系事实。Relationship Service 不处理 NPC。
+
+关系按 `owner_character_id → target_character_id` 定向存储，同一角色对通常有两行，允许双方形成不同判断。每行保存 `current_view`、最多 6 条 `important_history`、首次相识 Campaign 和 `last_processed_message_id`；不保存 `unresolved` 或任何数值关系。更新时只把游标之后的共同有效消息交给模型，普通闲聊可以只推进游标而不改正文。
 
 OOC 修订后按 Effective Message 重新计算。如果被修订后的共同故事不再支持本 Campaign 中刚建立的关系，系统可以移除该关系；其他 Campaign 已形成的历史不能被当前修订误删。关系刷新完成后再发出消息变更通知，使前端读取到一致的新关系。
 
@@ -519,7 +521,7 @@ DND跑团/
 
 ### 7.1.1 Character Relationship
 
-负责全局对称角色关系、首次相识 Campaign、共同经历历史、消息发布后的自动刷新和 OOC 后重新计算。关系只能由故事派生，API 和前端均不提供 DM 手工新增或修改能力。
+负责 Character 之间的双向独立关系、首次相识 Campaign、重要共同经历、消息发布后的增量刷新和 OOC 后重新计算。关系只能由故事派生，API 和前端均不提供 DM 手工新增或修改能力，也不为 NPC 建立关系。
 
 ### 7.2 Character Sheet
 
@@ -575,7 +577,7 @@ characters
   ├── character_skill_sets
   ├── character_profiles
   ├── character_memories
-  ├── character_acquaintances（有序角色对）
+  ├── character_relationships（定向 Character 关系）
   └── campaign_memberships ── campaigns
                                 └── sessions (内部一对一运行记录)
                                      ├── session_character_states
@@ -612,9 +614,9 @@ characters
 - `revision`；
 - `created_at`、`updated_at`。
 
-#### `character_acquaintances`
+#### `character_relationships`
 
-以 `character_a_id + character_b_id` 为联合主键，并通过 `character_a_id < character_b_id` 保证同一角色对只有一条对称记录。保存 `met_campaign_id`、`relationship_history`、Created At 和 Updated At。`met_campaign_id` 在 Campaign 删除后置空，关系历史仍属于全局角色资产。该表只允许 Relationship Service 写入，对外仅提供只读查询。
+以 `owner_character_id + target_character_id` 为联合主键，约束两者不能相同。只允许 Character 指向 Character，不建立 NPC 关系。保存 `met_campaign_id`、`current_view`、`important_history` JSON 数组、`last_processed_message_id`、Created At 和 Updated At。反向关系使用另一行独立保存；该表只允许 Relationship Service 写入，对外仅提供只读查询。
 
 `revision` 用于多标签页编辑时的乐观并发检查。
 
@@ -957,7 +959,7 @@ backend/app/agents/dm_prompt.py          # PROMPT_VERSION = "dm/v2"
 ```text
 <你的能力与装备>            Sheet Snapshot 压缩为可读文本
 → <你记得的事>              Long-Term Memory，受字数预算约束
-→ <你和他们之间>            自动生成的关系与共同经历
+→ <你和他们之间>            只注入该角色指向其他角色的 current_view 与 important_history
 → <你以前经历过什么>        按时间排序的已结束 Campaign 故事摘要
 → <你身边的人现在什么状态>  定性 Health View
 → <注意>                    陌生人编号约束
@@ -977,7 +979,7 @@ Trigger Message 必须从历史中摘出单独成段。作为消息数组的最�
 - 当前 Campaign 消息取最近若干条，触发消息本身从中排除；
 - Sheet Snapshot 只保留种族、职业、背景、语言、已选能力与法术名及简短描述、关键装备，丢弃全部解析元数据；整份 Snapshot 直接倾倒会用数千 Token 的参考资料淹没人设。
 
-已结束 Campaign 的故事摘要仍然全量保留。Campaign 完成时生成故事摘要不按条数或字符截断输入；若未来因供应商上下文上限必须压缩，应使用可审计的分段归并，而不是静默丢弃较早故事。
+已结束 Campaign 的故事摘要仍然全量保留，但每个摘要本身必须经过压缩，不能用原始逐句记录冒充摘要。Campaign 完成时，Summary Agent 读取该角色可见的完整有效记录，输出精简故事摘要和默认 2～4 条长期记忆；供应商失败时只写入带明确标记、最多约 5000 字符的临时首尾摘要，不生成猜测性记忆。完成顺序固定为「摘要与记忆 → flush → 成长档案」，避免成长档案漏掉刚结束的战役。
 
 ### 10.3 AI DM Context
 

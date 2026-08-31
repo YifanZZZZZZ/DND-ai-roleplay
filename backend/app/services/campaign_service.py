@@ -318,6 +318,14 @@ class CampaignService:
             CampaignLifecycleStatus.PAUSED,
         }:
             raise ConflictError("CAMPAIGN_NOT_RUNNABLE", "只有进行中或已暂停的战役可以完成。")
+        # Summaries and memories must exist before the development profile reads
+        # them. The old order read stale rows first, then generated this campaign's
+        # memories after the profile had already been saved.
+        summary_service = SummaryService(self.session)
+        for game_session in campaign.sessions:
+            await summary_service.build_for_campaign(game_session)
+        await self.session.flush()
+
         member_ids = [item.character_id for item in campaign.memberships]
         profiles = {
             profile.character_id: profile
@@ -342,9 +350,10 @@ class CampaignService:
             profile = profiles.get(character_id)
             items = [item.content for item in memories if item.character_id == character_id]
             if profile is not None and items:
+                marker = f"【战役 {campaign.name} 的成长记录】"
+                base = profile.content.split(marker, 1)[0].rstrip()
                 profile.content = (
-                    f"{profile.content.rstrip()}\n\n"
-                    f"【战役 {campaign.name} 的成长记录】\n- " + "\n- ".join(items)
+                    f"{base}\n\n{marker}\n- " + "\n- ".join(items)
                 ).strip()
                 profile.status = ProfileStatus.READY
                 profile.updated_by = UpdatedBy.SYSTEM
@@ -359,10 +368,6 @@ class CampaignService:
                 game_session.runtime.active_agent_run_id = None
         campaign.revision += 1
         await self.session.commit()
-        game_session = next(iter(campaign.sessions), None)
-        if game_session is not None:
-            await SummaryService(self.session).build_for_campaign(game_session)
-            await self.session.commit()
         return await self.get(campaign.id)
 
     async def reopen(self, campaign_id: str) -> Campaign:

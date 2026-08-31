@@ -47,13 +47,24 @@ class CampaignMember(ApiSchema):
     is_configured: bool
 
 
+class CharacterRelationshipDirectionView(ApiSchema):
+    owner_character_id: str
+    owner_character_name: str
+    target_character_id: str
+    target_character_name: str
+    current_view: str
+    important_history: list[str]
+    last_processed_message_id: str | None
+
+
 class CharacterAcquaintanceView(ApiSchema):
     character_a_id: str
     character_a_name: str
     character_b_id: str
     character_b_name: str
     acquainted: bool
-    relationship_history: str
+    a_to_b: CharacterRelationshipDirectionView | None = None
+    b_to_a: CharacterRelationshipDirectionView | None = None
 
 
 class CampaignSummary(ApiSchema):

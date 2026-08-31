@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.agents.summary_agent import DeepSeekSummaryAgent
@@ -34,14 +34,17 @@ class SummaryService:
             await self._record(game_session.id),
         )
         for membership in members:
-            record = await self._record(game_session.id, membership.character_id)
+            raw_record = await self._record(game_session.id, membership.character_id)
+            record = self._fallback_summary(raw_record)
             memories: list[str] = []
+            generated = False
             settings = get_settings()
             if settings.summary_agent_is_configured:
                 try:
-                    result = await DeepSeekSummaryAgent(settings).summarize(record)
+                    result = await DeepSeekSummaryAgent(settings).summarize(raw_record)
                     record = result.output.summary
                     memories = [item.strip() for item in result.output.memories if item.strip()]
+                    generated = True
                 except Exception:
                     # Session completion must remain successful when the provider is unavailable.
                     pass
@@ -51,16 +54,24 @@ class SummaryService:
                 SummaryAudience.CHARACTER,
                 record,
             )
-            for content in memories:
-                self.session.add(
-                    CharacterMemory(
-                        character_id=membership.character_id,
-                        origin=MemoryOrigin.AUTO,
-                        content=content,
-                        source_campaign_id=game_session.campaign_id,
-                        source_session_id=game_session.id,
+            if generated:
+                await self.session.execute(
+                    delete(CharacterMemory).where(
+                        CharacterMemory.character_id == membership.character_id,
+                        CharacterMemory.source_session_id == game_session.id,
+                        CharacterMemory.origin == MemoryOrigin.AUTO,
                     )
                 )
+                for content in memories:
+                    self.session.add(
+                        CharacterMemory(
+                            character_id=membership.character_id,
+                            origin=MemoryOrigin.AUTO,
+                            content=content,
+                            source_campaign_id=game_session.campaign_id,
+                            source_session_id=game_session.id,
+                        )
+                    )
 
     async def build_for_session(self, game_session: GameSession) -> None:
         """Compatibility alias for internal callers during the Session-to-Campaign transition."""
@@ -72,6 +83,17 @@ class SummaryService:
         )
         lines = [message.content.strip() for message in messages if message.content.strip()]
         return "本节可见事实记录：\n" + "\n".join(lines)
+
+    @staticmethod
+    def _fallback_summary(record: str) -> str:
+        """Keep provider outages from injecting an unbounded transcript next campaign."""
+        if len(record) <= 5000:
+            return record
+        return (
+            record[:2500].rstrip()
+            + "\n\n【中间记录暂未完成智能摘要】\n\n"
+            + record[-2400:].lstrip()
+        )
 
     async def _upsert(
         self, session_id: str, character_id: str | None, audience: SummaryAudience, content: str

@@ -1043,8 +1043,8 @@ export interface components {
             characterBName: string;
             /** Acquainted */
             acquainted: boolean;
-            /** Relationshiphistory */
-            relationshipHistory: string;
+            aToB?: components["schemas"]["CharacterRelationshipDirectionView"] | null;
+            bToA?: components["schemas"]["CharacterRelationshipDirectionView"] | null;
         };
         /** CharacterCreate */
         CharacterCreate: {
@@ -1121,6 +1121,23 @@ export interface components {
             /** Profilecontent */
             profileContent: string;
             profileStatus: components["schemas"]["ProfileStatus"];
+        };
+        /** CharacterRelationshipDirectionView */
+        CharacterRelationshipDirectionView: {
+            /** Ownercharacterid */
+            ownerCharacterId: string;
+            /** Ownercharactername */
+            ownerCharacterName: string;
+            /** Targetcharacterid */
+            targetCharacterId: string;
+            /** Targetcharactername */
+            targetCharacterName: string;
+            /** Currentview */
+            currentView: string;
+            /** Importanthistory */
+            importantHistory: string[];
+            /** Lastprocessedmessageid */
+            lastProcessedMessageId: string | null;
         };
         /** CharacterSheetSnapshot */
         CharacterSheetSnapshot: {

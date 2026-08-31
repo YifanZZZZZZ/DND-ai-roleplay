@@ -14,8 +14,8 @@ from backend.app.db.models import (
     Campaign,
     CampaignMembership,
     Character,
-    CharacterAcquaintance,
     CharacterProfile,
+    CharacterRelationship,
     GameSession,
     LlmInvocation,
     Message,
@@ -404,12 +404,12 @@ async def test_context_contains_relationship_history_and_every_prior_story(
             )
         )
         selene = next(item for item in characters if item.id != bran_id)
-        pair = sorted((selene.id, bran_id))
         session.add(
-            CharacterAcquaintance(
-                character_a_id=pair[0],
-                character_b_id=pair[1],
-                relationship_history="曾在黑石矿坑并肩逃生，彼此信任。",
+            CharacterRelationship(
+                owner_character_id=selene.id,
+                target_character_id=bran_id,
+                current_view="赛蕾妮认为布兰在危险时值得信任。",
+                important_history=["曾在黑石矿坑并肩逃生"],
             )
         )
         for index in range(1, 7):
@@ -448,7 +448,8 @@ async def test_context_contains_relationship_history_and_every_prior_story(
         for system_prompt, context in zip(agent.system_prompts, agent.contexts, strict=True)
         if "你就是赛蕾妮" in system_prompt
     )
-    assert "曾在黑石矿坑并肩逃生，彼此信任。" in selene_context
+    assert "赛蕾妮认为布兰在危险时值得信任。" in selene_context
+    assert "曾在黑石矿坑并肩逃生" in selene_context
     assert "布兰" in selene_context
     assert "第1段完整经历。" in selene_context
     assert "第6段完整经历。" in selene_context

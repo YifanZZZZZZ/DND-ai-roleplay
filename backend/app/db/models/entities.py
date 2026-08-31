@@ -108,19 +108,31 @@ class Character(Base):
     __table_args__ = (CheckConstraint("max_hp > 0", name="positive_max_hp"),)
 
 
-class CharacterAcquaintance(Base):
-    __tablename__ = "character_acquaintances"
+class CharacterRelationship(Base):
+    """One character's subjective view of another player character.
 
-    character_a_id: Mapped[str] = mapped_column(
+    Relationships are directional on purpose: two people can share an event
+    without trusting, liking, or understanding each other in the same way.
+    NPCs are deliberately excluded; most are transient and remain in story
+    memory rather than occupying a permanent relationship row.
+    """
+
+    __tablename__ = "character_relationships"
+
+    owner_character_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("characters.id", ondelete="CASCADE"), primary_key=True
     )
-    character_b_id: Mapped[str] = mapped_column(
+    target_character_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("characters.id", ondelete="CASCADE"), primary_key=True
     )
     met_campaign_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("campaigns.id", ondelete="SET NULL"), index=True
     )
-    relationship_history: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    current_view: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    important_history: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    last_processed_message_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("messages.id", ondelete="SET NULL")
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utc_now
     )
@@ -129,7 +141,10 @@ class CharacterAcquaintance(Base):
     )
 
     __table_args__ = (
-        CheckConstraint("character_a_id < character_b_id", name="ordered_character_pair"),
+        CheckConstraint(
+            "owner_character_id != target_character_id",
+            name="relationship_distinct_characters",
+        ),
     )
 
 

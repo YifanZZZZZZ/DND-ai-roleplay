@@ -1,4 +1,4 @@
-from sqlalchemy import or_, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -7,8 +7,8 @@ from backend.app.db.models import (
     CampaignDmDraft,
     CampaignMembership,
     Character,
-    CharacterAcquaintance,
     CharacterMemory,
+    CharacterRelationship,
     CharacterSheetVersion,
     SessionSummary,
     SkillCheck,
@@ -33,20 +33,12 @@ class ExportService:
         sheet = await self.session.get(CharacterSheetVersion, character.active_sheet_version_id)
         relationships = list(
             await self.session.scalars(
-                select(CharacterAcquaintance).where(
-                    or_(
-                        CharacterAcquaintance.character_a_id == character.id,
-                        CharacterAcquaintance.character_b_id == character.id,
-                    )
+                select(CharacterRelationship).where(
+                    CharacterRelationship.owner_character_id == character.id
                 )
             )
         )
-        related_ids = {
-            item.character_b_id
-            if item.character_a_id == character.id
-            else item.character_a_id
-            for item in relationships
-        }
+        related_ids = {item.target_character_id for item in relationships}
         related_characters = {
             item.id: item
             for item in list(
@@ -70,16 +62,14 @@ class ExportService:
             "memories": [self._memory(memory) for memory in character.memories],
             "relationships": [
                 {
-                    "characterId": related_id,
-                    "characterName": related_characters[related_id].name,
-                    "relationshipHistory": item.relationship_history,
+                    "characterId": item.target_character_id,
+                    "characterName": related_characters[item.target_character_id].name,
+                    "currentView": item.current_view,
+                    "importantHistory": item.important_history,
+                    "lastProcessedMessageId": item.last_processed_message_id,
                 }
                 for item in relationships
-                if (related_id := (
-                    item.character_b_id
-                    if item.character_a_id == character.id
-                    else item.character_a_id
-                )) in related_characters
+                if item.target_character_id in related_characters
             ],
         }
 
@@ -120,9 +110,9 @@ class ExportService:
         )
         relationships = list(
             await self.session.scalars(
-                select(CharacterAcquaintance).where(
-                    CharacterAcquaintance.character_a_id.in_(member_ids),
-                    CharacterAcquaintance.character_b_id.in_(member_ids),
+                select(CharacterRelationship).where(
+                    CharacterRelationship.owner_character_id.in_(member_ids),
+                    CharacterRelationship.target_character_id.in_(member_ids),
                 )
             )
         )
@@ -172,9 +162,11 @@ class ExportService:
             "memories": [self._memory(item) for item in memories],
             "characterRelationships": [
                 {
-                    "characterAId": item.character_a_id,
-                    "characterBId": item.character_b_id,
-                    "relationshipHistory": item.relationship_history,
+                    "ownerCharacterId": item.owner_character_id,
+                    "targetCharacterId": item.target_character_id,
+                    "currentView": item.current_view,
+                    "importantHistory": item.important_history,
+                    "lastProcessedMessageId": item.last_processed_message_id,
                 }
                 for item in relationships
             ],

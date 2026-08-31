@@ -3396,9 +3396,25 @@
             "type": "boolean",
             "title": "Acquainted"
           },
-          "relationshipHistory": {
-            "type": "string",
-            "title": "Relationshiphistory"
+          "aToB": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CharacterRelationshipDirectionView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "bToA": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CharacterRelationshipDirectionView"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -3407,8 +3423,7 @@
           "characterAName",
           "characterBId",
           "characterBName",
-          "acquainted",
-          "relationshipHistory"
+          "acquainted"
         ],
         "title": "CharacterAcquaintanceView"
       },
@@ -3571,6 +3586,59 @@
           "profileStatus"
         ],
         "title": "CharacterDetail"
+      },
+      "CharacterRelationshipDirectionView": {
+        "properties": {
+          "ownerCharacterId": {
+            "type": "string",
+            "title": "Ownercharacterid"
+          },
+          "ownerCharacterName": {
+            "type": "string",
+            "title": "Ownercharactername"
+          },
+          "targetCharacterId": {
+            "type": "string",
+            "title": "Targetcharacterid"
+          },
+          "targetCharacterName": {
+            "type": "string",
+            "title": "Targetcharactername"
+          },
+          "currentView": {
+            "type": "string",
+            "title": "Currentview"
+          },
+          "importantHistory": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Importanthistory"
+          },
+          "lastProcessedMessageId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lastprocessedmessageid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ownerCharacterId",
+          "ownerCharacterName",
+          "targetCharacterId",
+          "targetCharacterName",
+          "currentView",
+          "importantHistory",
+          "lastProcessedMessageId"
+        ],
+        "title": "CharacterRelationshipDirectionView"
       },
       "CharacterSheetSnapshot": {
         "properties": {

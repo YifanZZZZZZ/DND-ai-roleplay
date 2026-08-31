@@ -14,6 +14,7 @@ from backend.app.api.schemas.campaigns import (
     CampaignSummary,
     CampaignUpdate,
     CharacterAcquaintanceView,
+    CharacterRelationshipDirectionView,
     HpState,
     HpUpdate,
 )
@@ -148,16 +149,39 @@ async def list_campaign_acquaintances(
     pairs = await AcquaintanceService(session).list_for_campaign(campaign_id)
     return [
         CharacterAcquaintanceView(
-            character_a_id=character_a.id,
-            character_a_name=character_a.name,
-            character_b_id=character_b.id,
-            character_b_name=character_b.name,
-            acquainted=acquaintance is not None,
-            relationship_history=(
-                acquaintance.relationship_history if acquaintance is not None else ""
+            character_a_id=pair.character_a.id,
+            character_a_name=pair.character_a.name,
+            character_b_id=pair.character_b.id,
+            character_b_name=pair.character_b.name,
+            acquainted=pair.acquainted,
+            a_to_b=(
+                CharacterRelationshipDirectionView(
+                    owner_character_id=pair.character_a.id,
+                    owner_character_name=pair.character_a.name,
+                    target_character_id=pair.character_b.id,
+                    target_character_name=pair.character_b.name,
+                    current_view=pair.a_to_b.current_view,
+                    important_history=pair.a_to_b.important_history,
+                    last_processed_message_id=pair.a_to_b.last_processed_message_id,
+                )
+                if pair.a_to_b is not None
+                else None
+            ),
+            b_to_a=(
+                CharacterRelationshipDirectionView(
+                    owner_character_id=pair.character_b.id,
+                    owner_character_name=pair.character_b.name,
+                    target_character_id=pair.character_a.id,
+                    target_character_name=pair.character_a.name,
+                    current_view=pair.b_to_a.current_view,
+                    important_history=pair.b_to_a.important_history,
+                    last_processed_message_id=pair.b_to_a.last_processed_message_id,
+                )
+                if pair.b_to_a is not None
+                else None
             ),
         )
-        for character_a, character_b, acquaintance in pairs
+        for pair in pairs
     ]
 
 

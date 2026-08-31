@@ -130,8 +130,8 @@ class DmDraftService:
                 for item in campaign.memberships
             ],
             acquaintance=[
-                (character_a.name, character_b.name, acquaintance is not None)
-                for character_a, character_b, acquaintance in acquaintance_pairs
+                (pair.character_a.name, pair.character_b.name, pair.acquainted)
+                for pair in acquaintance_pairs
             ],
             recent_messages=(
                 await self._recent_messages(session_id) if session_id else []

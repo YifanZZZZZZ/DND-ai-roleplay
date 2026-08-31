@@ -16,7 +16,7 @@ from backend.app.db.models import (
     Campaign,
     CampaignMembership,
     Character,
-    CharacterAcquaintance,
+    CharacterRelationship,
     GameSession,
     Message,
     MessageRecipient,
@@ -44,11 +44,21 @@ class FakeRelationshipAgent:
             output=RelationshipDecision(
                 updates=[
                     RelationshipUpdate(
-                        character_a_id=self.character_a_id,
-                        character_b_id=self.character_b_id,
+                        owner_character_id=self.character_a_id,
+                        target_character_id=self.character_b_id,
                         acquainted=True,
-                        relationship_history="在断桥前互相救援，因此开始信任彼此。",
-                    )
+                        changed=True,
+                        current_view="认为对方在危险时值得信任。",
+                        important_history=["在断桥前互相救援"],
+                    ),
+                    RelationshipUpdate(
+                        owner_character_id=self.character_b_id,
+                        target_character_id=self.character_a_id,
+                        acquainted=True,
+                        changed=True,
+                        current_view="感谢对方及时伸手，但仍会观察其判断。",
+                        important_history=["在断桥前互相救援"],
+                    ),
                 ]
             ),
             input_tokens=10,
@@ -105,8 +115,7 @@ async def test_relationship_is_generated_from_only_the_shared_story(
         private.recipients = [MessageRecipient(character=aria)]
         session.add_all([campaign, game_session, shared, private])
         await session.commit()
-        pair = sorted((aria.id, bran.id))
-        agent = FakeRelationshipAgent(pair[0], pair[1])
+        agent = FakeRelationshipAgent(aria.id, bran.id)
 
         await RelationshipService(
             session,
@@ -114,8 +123,13 @@ async def test_relationship_is_generated_from_only_the_shared_story(
             agent,
         ).refresh_for_campaign(campaign.id)
 
-        relationship = await session.get(CharacterAcquaintance, (pair[0], pair[1]))
-        assert relationship is not None
-        assert relationship.relationship_history == "在断桥前互相救援，因此开始信任彼此。"
+        aria_view = await session.get(CharacterRelationship, (aria.id, bran.id))
+        bran_view = await session.get(CharacterRelationship, (bran.id, aria.id))
+        assert aria_view is not None
+        assert bran_view is not None
+        assert aria_view.current_view == "认为对方在危险时值得信任。"
+        assert bran_view.current_view == "感谢对方及时伸手，但仍会观察其判断。"
+        assert aria_view.important_history == ["在断桥前互相救援"]
+        assert aria_view.last_processed_message_id == shared.id
         assert "断桥坍塌" in agent.contexts[0]
         assert "只有艾莉娅知道的秘密" not in agent.contexts[0]

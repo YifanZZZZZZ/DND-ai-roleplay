@@ -73,11 +73,23 @@ function HpEditor({ campaignId, hp }: { campaignId: string; hp: CampaignPlayStat
 }
 
 function RelationshipCard({ pair }: { pair: CharacterAcquaintanceView }) {
+  const directions = [pair.aToB, pair.bToA].filter((item) => item != null);
   return (
     <article className={styles.card}>
       <span className={styles.status}>{pair.acquainted ? "已建立关系" : "尚未相识"}</span>
       <h3>{pair.characterAName} ↔ {pair.characterBName}</h3>
-      <p>{pair.relationshipHistory || "系统会在双方实际相遇或互动后自动生成关系记录。"}</p>
+      {directions.length === 0 && <p>系统会在双方实际相遇或互动后自动生成关系记录。</p>}
+      {directions.map((direction) => (
+        <div key={`${direction.ownerCharacterId}:${direction.targetCharacterId}`}>
+          <strong>{direction.ownerCharacterName}怎么看{direction.targetCharacterName}</strong>
+          <p>{direction.currentView}</p>
+          {direction.importantHistory.length > 0 && (
+            <ul>
+              {direction.importantHistory.map((item) => <li key={item}>{item}</li>)}
+            </ul>
+          )}
+        </div>
+      ))}
     </article>
   );
 }
@@ -386,8 +398,8 @@ export function CampaignDetailPage() {
       {campaign.data.members.length >= 2 && (
         <section className={`${styles.panel} ${styles.stack}`}>
           <div>
-            <h2 className={styles.sectionTitle}>角色关系与共同经历</h2>
-            <p className={styles.muted}>系统会根据双方共同可知的场内故事自动建立并实时更新关系，无需 DM 填写。</p>
+            <h2 className={styles.sectionTitle}>角色关系</h2>
+            <p className={styles.muted}>系统根据共同可知的重要互动，分别维护双方对彼此的看法，无需 DM 填写。</p>
           </div>
           {acquaintances.isLoading && <p>正在读取角色相识状态…</p>}
           {acquaintances.error && <p className={styles.error}>{acquaintances.error.message}</p>}

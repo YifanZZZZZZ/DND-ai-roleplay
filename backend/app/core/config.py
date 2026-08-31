@@ -61,17 +61,25 @@ class Settings(BaseSettings):
         )
 
     @property
+    def summary_model_name(self) -> str:
+        return (
+            self.summary_model.strip()
+            or self.memory_model.strip()
+            or self.character_model.strip()
+        )
+
+    @property
     def summary_agent_is_configured(self) -> bool:
         return (
             self.llm_provider == "deepseek"
-            and bool(self.summary_model.strip())
+            and bool(self.summary_model_name)
             and self.deepseek_api_key is not None
             and bool(self.deepseek_api_key.get_secret_value().strip())
         )
 
     @property
     def relationship_model_name(self) -> str:
-        return self.relationship_model.strip() or self.summary_model.strip() or self.character_model
+        return self.relationship_model.strip() or self.summary_model_name
 
     @property
     def relationship_agent_is_configured(self) -> bool:
