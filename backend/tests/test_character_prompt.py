@@ -147,16 +147,37 @@ def test_narration_notes_override_the_sheet() -> None:
 def test_prompt_forbids_repetition_and_dashes() -> None:
     prompt = build_system_prompt(name="卡莱拉", roleplay_prompt="人设")
     assert "别人刚说过的话，你不要再说一遍" in prompt
-    assert "这件事别人是不是已经说过或做过了" in prompt
+    assert "这个意思别人是不是已经说过或做过了" in prompt
+    assert "自己最近 3 至 5 次回复" in prompt
     assert "不要使用破折号" in prompt
 
 
-def test_prompt_asks_for_character_specific_physical_beats() -> None:
+def test_prompt_makes_physical_beats_optional_and_deduplicates_their_structure() -> None:
     prompt = build_system_prompt(name="卡莱拉", roleplay_prompt="人设")
-    assert "尽量让台词带上一个身体反应" in prompt
+    assert "动作和神态是可选项，不是每次回复的必需部分" in prompt
+    assert "一句台词已经足够时，直接说话" in prompt
+    assert "最近 3 至 5 次回复中用过相同结构" in prompt
+    assert '"转身离开后回头补充"' in prompt
     # Generic beats are named so the model has something concrete to avoid.
     assert "皱了皱眉" in prompt
     assert "目标 80 字以内" in prompt
+
+
+def test_prompt_allows_emotional_replies_without_a_plot_goal() -> None:
+    prompt = build_system_prompt(name="卡斯珀", roleplay_prompt="人设")
+    assert "角色不必每次推动剧情或提出诉求" in prompt
+    assert "也可以只是表达当前情绪" in prompt
+    assert "不必每次都有剧情目标或实际诉求" in prompt
+    assert "只表达真实情绪或塑造人物形象的话" in prompt
+
+
+def test_prompt_treats_an_unknown_answer_as_an_exhausted_information_source() -> None:
+    prompt = build_system_prompt(name="卡斯珀", roleplay_prompt="人设")
+    assert "已经向同一个 NPC 或同伴问过相同或近似的问题" in prompt
+    for answer in ("不知道", "不记得", "没见过", "无法确认"):
+        assert answer in prompt
+    assert "不要继续逼对方回忆或反复确认" in prompt
+    assert "询问不同的人、寻找其他线索、改变调查方法或结束话题" in prompt
 
 
 def test_prompt_does_not_itself_use_the_dash_it_bans() -> None:
@@ -191,15 +212,16 @@ def test_behaviour_rules_and_bans_get_their_own_blocks() -> None:
         behavior_rules="有人受伤 → 可修复的损伤 → 直接查看伤口",
         expression_bans="绝不说“我担心你”",
     )
-    assert "<你会怎么做>" in prompt
-    assert "照着做，不要临时发挥" in prompt
+    assert "<你会怎么判断>" in prompt
+    assert "不是必须复刻的固定剧本" in prompt
+    assert "当前状态、关系、风险、已有信息、过去结果和最近表达" in prompt
     assert "<你绝不会>" in prompt
     assert "哪怕情境看起来很合适，也不要做" in prompt
     # Behaviour precedes voice: what she does drives what she says, not the reverse.
-    assert prompt.index("<你会怎么做>") < prompt.index("<硬性边界>")
+    assert prompt.index("<你会怎么判断>") < prompt.index("<硬性边界>")
 
     bare = build_system_prompt(name="维瑞娅", roleplay_prompt="人设")
-    assert "<你会怎么做>" not in bare
+    assert "<你会怎么判断>" not in bare
     assert "<你绝不会>" not in bare
 
 
