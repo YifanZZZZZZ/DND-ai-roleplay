@@ -1,0 +1,7 @@
+interface:
+  display_name: "Story Adapter"
+  short_description: "将原始故事转换为 Beat 锁定输入和视频剧本包"
+  default_prompt: "Use $story-adapter to turn this story into a cost-aware beat breakdown, locked screenplay input, and camera-free video screenplay."
+
+policy:
+  allow_implicit_invocation: true

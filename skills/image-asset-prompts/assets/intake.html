@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="intake-token" content="__TOKEN__">
+  <title>图片素材参考图收集</title>
+  <style>
+    :root { color-scheme: light; --ink:#22312c; --muted:#62746b; --bg:#f5f5ef; --paper:#fffefb; --line:#dce4da; --green:#2f654c; --pale:#e9f2eb; --gold:#b58d42; --danger:#a84a42; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; }
+    header { background:linear-gradient(125deg,#264a3b,#46755c); color:white; padding:40px max(22px,calc((100vw - 1120px)/2)); }
+    header .eyebrow { color:#d7e9d7; font-size:12px; letter-spacing:.16em; text-transform:uppercase; }
+    h1 { margin:6px 0 8px; font-size:30px; font-weight:650; }
+    header p { margin:0; max-width:740px; color:#e0ede4; }
+    main { max-width:1120px; margin:26px auto 70px; padding:0 22px; }
+    .summary { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+    .stat { background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:16px 18px; box-shadow:0 4px 18px #253b2b08; }
+    .stat strong { display:block; font-size:25px; font-weight:650; line-height:1.15; }
+    .stat span { color:var(--muted); font-size:12px; }
+    .callout { background:#fffaf0; border:1px solid #e8d9b9; border-radius:14px; padding:13px 18px; color:#695637; margin-bottom:24px; }
+    section { margin:30px 0; }
+    .section-head { display:flex; align-items:baseline; justify-content:space-between; border-bottom:1px solid var(--line); padding-bottom:9px; margin-bottom:15px; }
+    h2 { margin:0; font-size:20px; }
+    .section-head span { color:var(--muted); font-size:13px; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+    .card { background:var(--paper); border:1px solid var(--line); border-radius:17px; padding:19px; box-shadow:0 4px 18px #253b2b08; }
+    .card-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .card h3 { font-size:17px; line-height:1.35; margin:0; }
+    .badge { flex:none; font-size:11px; color:var(--green); background:var(--pale); padding:3px 8px; border-radius:30px; }
+    .id { font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--muted); margin-top:4px; }
+    .brief { margin:13px 0 8px; }
+    .meta { color:var(--muted); font-size:13px; margin:5px 0; }
+    .upload { display:block; border:1px dashed #9ebb9f; background:#f8fbf7; border-radius:11px; padding:10px 13px; color:var(--green); cursor:pointer; margin:14px 0 10px; }
+    .upload input { display:block; width:100%; margin-top:5px; font-size:12px; }
+    .thumbs { display:flex; flex-wrap:wrap; gap:8px; }
+    .thumb { position:relative; width:76px; height:92px; border:1px solid var(--line); border-radius:9px; overflow:hidden; background:#e8ebe6; }
+    .thumb img { width:100%; height:100%; object-fit:cover; }
+    .thumb button { position:absolute; top:2px; right:2px; width:22px; height:22px; padding:0; border:0; border-radius:50%; color:white; background:#193c31cc; cursor:pointer; }
+    .empty { color:var(--muted); font-size:13px; padding:8px 0; }
+    textarea { resize:vertical; width:100%; min-height:55px; border:1px solid var(--line); border-radius:9px; background:white; padding:9px; font:inherit; margin-top:10px; }
+    .actions { position:sticky; bottom:10px; background:#fffefbf2; backdrop-filter:blur(12px); border:1px solid var(--line); border-radius:16px; padding:16px 20px; box-shadow:0 12px 30px #163c2c25; }
+    .actions label { display:flex; align-items:center; gap:9px; cursor:pointer; }
+    .actions input { accent-color:var(--green); width:17px; height:17px; }
+    .actions-row { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-top:10px; }
+    .actions p { color:var(--muted); margin:0; font-size:13px; }
+    button.primary { border:0; border-radius:10px; background:var(--green); color:white; padding:11px 20px; font:inherit; font-weight:600; cursor:pointer; white-space:nowrap; }
+    button.primary:disabled { background:#a5b8aa; cursor:not-allowed; }
+    #result { display:none; background:var(--pale); border:1px solid #accab3; border-radius:14px; padding:16px 20px; margin:20px 0; }
+    #result a { color:var(--green); font-weight:600; margin-right:16px; }
+    #message { min-height:22px; margin-top:8px; color:var(--danger); font-size:13px; }
+    @media(max-width:760px) { .summary {grid-template-columns:repeat(2,1fr);} .grid {grid-template-columns:1fr;} .actions-row {align-items:stretch;flex-direction:column;} }
+  </style>
+</head>
+<body>
+  <header><div class="eyebrow">Image Asset Intake · Phase 1 / 2</div><h1>图片素材参考图收集</h1><p id="project">先核对所有人物与场景，再上传已有参考图。没有参考图的项目留空即可。只有确认上传完成后，才会统一生成五类图片的正、负面 Prompt。</p></header>
+  <main>
+    <div class="summary">
+      <div class="stat"><strong id="personCount">—</strong><span>人物／可辨认生物</span></div>
+      <div class="stat"><strong id="sceneCount">—</strong><span>场景／关键道具</span></div>
+      <div class="stat"><strong id="uploadCount">—</strong><span>已上传参考图的项目</span></div>
+      <div class="stat"><strong id="frameCount">—</strong><span>首尾帧 Prompt（暂不展示）</span></div>
+    </div>
+    <div class="callout">上传图片只决定「有素材／无素材」分类，不代表图片已被批准。这里的按钮只批量生成文字 Prompt，不会调用图片模型，也不会产生图片生成费用。</div>
+    <section><div class="section-head"><h2>人物与可辨认生物</h2><span>身份、年龄与服装连续性</span></div><div id="characters" class="grid"></div></section>
+    <section><div class="section-head"><h2>场景与关键道具</h2><span>布局、时间状态与道具连续性</span></div><div id="scenes" class="grid"></div></section>
+    <div id="result"></div>
+    <div class="actions"><label><input id="confirmed" type="checkbox">我已完成全部参考图选择；未上传的项目按「无素材」处理</label><div class="actions-row"><p>生成时会一次性写出五类的正、负面 Prompt；图片仍需后续逐张审批。</p><button id="generate" class="primary" disabled>生成全部 Prompt</button></div><div id="message"></div></div>
+  </main>
+  <script>
+    const token = document.querySelector('meta[name="intake-token"]').content;
+    let current;
+    const $ = id => document.getElementById(id);
+    async function api(url, options={}) {
+      const headers = {'X-Intake-Token': token, ...(options.headers || {})};
+      const response = await fetch(url, {...options, headers});
+      const value = await response.json();
+      if (!response.ok) throw new Error(value.error || '请求失败');
+      return value;
+    }
+    function el(tag, className, content) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (content !== undefined) node.textContent = content;
+      return node;
+    }
+    function field(label, content) {
+      const p = el('p','meta'); p.append(el('b','',label), document.createTextNode(content)); return p;
+    }
+    async function refresh() { current = await api('/api/state'); render(); }
+    function renderCard(row) {
+      const card = el('article','card');
+      const top = el('div','card-top');
+      top.append(el('h3','',row.name), el('span','badge',row.asset_subtype === 'scene_support' ? '关键道具' : row.asset_subtype === 'location' ? '场景' : '人物'));
+      card.append(top, el('div','id',row.image_id), el('p','brief',row.brief));
+      card.append(field('涉及镜头：', (row.shot_ids || []).join('、') || '—'));
+      card.append(field('希望看到：', (row.must_show || []).join('；') || '由设计稿确定'));
+      card.append(field('参考图建议：', (row.reference_requirements || []).join('；') || '任意清晰视图'));
+      const upload = el('label','upload','上传此项目的参考图片（可多选）');
+      const input = document.createElement('input'); input.type='file'; input.accept='image/png,image/jpeg,image/webp'; input.multiple=true;
+      input.addEventListener('change', async () => {
+        try {
+          $('message').textContent = '正在保存参考图…';
+          for (const file of input.files) await api(`/api/upload?image_id=${encodeURIComponent(row.image_id)}&name=${encodeURIComponent(file.name)}`, {method:'POST',headers:{'Content-Type':file.type || 'application/octet-stream'},body:file});
+          $('message').textContent=''; await refresh();
+        } catch(error) { $('message').textContent=error.message; }
+      });
+      upload.append(input); card.append(upload);
+      const thumbs = el('div','thumbs');
+      const files = current.reference_sources[row.image_id] || [];
+      if (!files.length) thumbs.append(el('span','empty','未上传：将归为无素材'));
+      for (const file of files) {
+        const wrapper=el('div','thumb'); const image=document.createElement('img');
+        image.src='/api/ref?path='+encodeURIComponent(file.stored_path); image.alt=file.original_name;
+        const remove=el('button','', '×'); remove.title='从本次选择中移除';
+        remove.addEventListener('click', async () => { try { await api('/api/remove',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_id:row.image_id,sha256:file.sha256})}); await refresh(); } catch(error){$('message').textContent=error.message;} });
+        wrapper.append(image,remove); thumbs.append(wrapper);
+      }
+      card.append(thumbs);
+      const notes=el('textarea'); notes.placeholder='可选：补充身份、画风或布局要求；离开输入框后保存'; notes.value=row.user_notes || '';
+      notes.addEventListener('change', async () => { try { await api('/api/note',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_id:row.image_id,note:notes.value})}); await refresh(); } catch(error){$('message').textContent=error.message;} });
+      card.append(notes); return card;
+    }
+    function render() {
+      $('project').textContent=`${current.project.title} · 先核对所有人物与场景，再上传已有参考图。没有参考图的项目留空即可。`;
+      $('personCount').textContent=current.characters.length;
+      $('sceneCount').textContent=current.scenes.length;
+      $('uploadCount').textContent=Object.values(current.reference_sources).filter(files => files.length).length;
+      $('frameCount').textContent=current.frame_count;
+      for (const [id,rows] of [['characters',current.characters],['scenes',current.scenes]]) {
+        $(id).replaceChildren(...rows.map(renderCard));
+      }
+      $('confirmed').checked=false; $('generate').disabled=true;
+      if (current.last_prompt_package) {
+        $('result').style.display='block';
+        const fresh=current.last_generated_revision === current.reference_revision;
+        $('result').replaceChildren(el('b','',fresh ? '最近一次 Prompt 已生成。' : '参考图／备注已更改，上一版 Prompt 已过期，请重新生成。'));
+        const link=document.createElement('a'); link.href='/download/'+encodeURIComponent(current.last_prompt_package); link.textContent='查看上一版 JSON'; $('result').append(' ',link);
+      }
+    }
+    $('confirmed').addEventListener('change', event => $('generate').disabled=!event.target.checked);
+    $('generate').addEventListener('click', async () => {
+      $('generate').disabled=true; $('message').textContent='正在统一生成五类 Prompt…';
+      try {
+        const result=await api('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirmed:true})});
+        const box=$('result'); box.style.display='block'; box.replaceChildren(el('b','',`已生成：${result.status === 'awaiting_prompt_review' ? '待 Prompt 审核' : '上游未批准的草稿'}`));
+        const labels={person_with_reference:'有素材人物',person_without_reference:'无素材人物',scene_with_reference:'有素材场景',scene_without_reference:'无素材场景',shot_frame:'首尾帧'};
+        const counts=el('p','',Object.entries(result.categories).map(([key,value])=>`${labels[key]} ${value}`).join(' · ')); box.append(counts);
+        for (const [name,label] of [[result.markdown,'查看全部正负面 Prompt'],[result.json,'下载机器可读清单']]) {
+          const link=document.createElement('a'); link.href='/download/'+encodeURIComponent(name); link.textContent=label; box.append(link);
+        }
+        $('message').textContent='';
+      } catch(error) { $('message').textContent=error.message; }
+    });
+    refresh().catch(error => $('message').textContent=error.message);
+  </script>
+</body>
+</html>
