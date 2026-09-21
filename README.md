@@ -1,5 +1,9 @@
+<p align="right">阅读语言 / Read in: <a href="#readme-zh">中文</a> · <a href="#readme-en">English</a></p>
+
+<a id="readme-zh"></a>
+
 <p align="center">
-  <img src="assets/hero.svg" alt="AI TRPG：和有记忆、有性格的 AI 角色一起冒险" width="100%" />
+  <img src="assets/hero.svg" alt="AI TRPG — Adventures With AI Companions" width="100%" />
 </p>
 
 <div align="center">
@@ -10,7 +14,7 @@
 
 一个由真人 DM 主持的多人 AI 跑团 App。冒险发生在你们的对话里；冒险结束后，它还可以成为一部关于角色的短片。
 
-[走进冒险](#-走进冒险) · [认识角色](#-队友不是聊天框) · [故事片段](#-一次冒险真的会发生什么) · [冒险之后](#-冒险结束故事才刚开始)
+[走进冒险](#-走进冒险) · [认识角色](#-队友不是聊天框) · [从 Log 到视频](#-冒险结束故事才刚开始)
 
 </div>
 
@@ -40,6 +44,10 @@
 
 角色可以跟着你从一场冒险走向下一场。我们想留下的不只是“一个会说话的人设”，而是一个在经历中慢慢改变的人。
 
+<p align="center">
+  <img src="assets/multi-agent-system.svg" alt="Human Dungeon Master and independent AI character agents" width="92%" />
+</p>
+
 ## 🗝️ 一场跑团，可以怎么玩？
 
 <div align="center">
@@ -61,47 +69,33 @@
 
 ---
 
-## 📖 一次冒险真的会发生什么
-
-下面的片段来自已经完成的跑团故事 **《循迹英雄》**。卡斯珀本来只是在替商人寻找一位神秘的“无名英雄”。在石溪村，他先是帮腰不好的老人收鸡蛋，又和村民围坐在一起吃刚出炉的面包。
-
-午餐还没结束，八名山匪闯入村庄。老人和孩子就在他身后。
-
-> **卡斯珀：**“人是我杀的。要算账，冲我来。”
->
-> **匪首：**“就你一个？”
->
-> **卡斯珀：**“就我一个，够了。这些老人和孩子跟你没仇，让他们走。要见血，我陪你见。”
-
-他明知胜算渺茫，还是站在了那里。浑身是伤、确认战斗结束之后，他最先问的是：
-
-> “……都没事吧。”
-
-旅程最后，白金之龙的化身告诉他：
-
-> “商人要找的英雄，早已不是我了。在这一刻，那位‘无名英雄’，就是你自己。”
-
-这就是我们想让 App 见证的瞬间：**角色不是因为设定里写着“勇敢”才成为英雄，而是在一次次选择后，真的走到了那个位置。**
-
-<sub>这里只展示少量经挑选的剧情摘录；完整跑团记录与角色资料不在公开仓库中。</sub>
-
----
-
 ## 🎬 冒险结束，故事才刚开始
 
-今天，一场跑团会留下可回看的对话和可导出的 Log。我们正在把下一步做成更自然的体验：**结束冒险，选一个角色，和 App 一起把他或她的旅程剪成一支动画短片。**
+一场跑团结束后，对话与行动会留下 Log。我们可以从中选择一位角色，找出真正改变 TA 的时刻，把共同经历过的冒险改编成一支短片。
 
-理想中的体验是这样的：你选中某位角色，App 从整场跑团中找出真正改变了 TA 的时刻——初次登场、一次分歧、一场险胜，或一个终于说出口的决定。你可以调整故事重点，确认角色的样貌、服装与场景；随后预览分镜，挑选满意的镜头，让这些片段连成一支有开端、有情绪、有余韵的个人电影。
+从 Log 到视频镜头，制作流程依次经过故事改编、导演设计、图片素材规划、分镜画面审核和视频 Prompt 编写。每一步都使用上一步确认的成果，让故事、角色形象与镜头动作保持一致。
 
-**故事仍以真实跑团记录为依据。** 视频可以重新组织镜头，却不该把没有发生过的事说成角色的经历。你也始终可以审核故事取舍与视觉呈现。
+### 从跑团记录到视频镜头
+
+| 阶段 | 使用的 skill | 产出 |
+| --- | --- | --- |
+| **1. 找到故事** | [Story Adapter](skills/story-adapter/SKILL.md) | 从选定的 Log 内容中提炼关键情节（beats），确定角色的变化、故事的开端与结尾，形成经过确认的视频剧本。剧本描述发生了什么，暂不决定摄影机怎么拍。 |
+| **2. 设计分镜** | [Video Director](skills/video-director/SKILL.md) | 根据剧本建立角色、场景和道具的连续性设定，安排人物走位，写出逐镜头分镜。镜头时长与数量一起规划：通常让一个生成镜头承载约 5–10 秒的连续动作，把制作预算用在真正推动故事的画面上。 |
+| **3. 列出图片素材** | [Image Asset Prompts](skills/image-asset-prompts/SKILL.md) | 汇总所需角色、场景及关键道具，并让创作者为已有形象上传参考图。随后生成五类图片清单及正、负面提示词：有参考图的人物、无参考图的人物、有参考图的场景、无参考图的场景，以及镜头起始帧与必要的结束帧。 |
+| **4. 确认视觉分镜** | [Storyboard QC](skills/storyboard-qc/SKILL.md) | 依照清单制作角色与场景锚点、镜头画面。每张图逐一审核；不合格的图针对具体问题重试，通过的图成为后续镜头的固定视觉依据。最后检查整段分镜中的人物身份、服装、空间和动作是否连贯。 |
+| **5. 编写视频 Prompt** | MiniMax H3 Prompt | 将已确认的分镜、角色与场景图片、镜头起止状态和动作，整理成逐镜头的视频生成 Prompt。每条 Prompt 说明画面如何从参考帧发展、人物做什么、摄影机如何运动，以及对应的环境声音与音乐。 |
+
+这条流程把三个容易混淆的问题分开处理：**剧本决定讲什么，分镜决定怎么看，图片与视频 Prompt 决定怎样稳定地生成出来。** 已有角色设定图可以直接成为视觉参考；没有素材的 NPC 和场景则先建立各自的锚点。镜头不因一个短暂的特写就自动增加一次视频生成，而在确实需要明确的动作终点时，才额外制作结束帧。
+
+最终，每个镜头都有对应的时长、分镜描述、已审核的参考画面，以及可交给 MiniMax H3 使用的生成 Prompt。故事可以为了短片重新组织，但角色经历过什么、为什么作出选择，始终要能回到跑团记录中找到依据。
 
 ### 一支角色短片，可以是什么样子？
 
-我们已经用 **《卢勒斯 Intro》** 完成了一次手工参与较多的制作实验。它展示的是目标成片的方向，**不是目前 App 内已经上线的一键生成功能**。
+我们用 **《卢勒斯 Intro》** 展示了角色短片的呈现方向：先让观众认识这个人，再跟随 TA 走进一个值得记住的世界与故事。
 
 <p align="center">
   <a href="assets/showcase/lules-intro-preview.m4v">
-    <img src="assets/showcase/02-radiant-citadel.png" alt="点击观看卢勒斯 Intro 视频预览" width="92%" />
+    <img src="assets/showcase/02-radiant-citadel.png" alt="Watch the Lules Intro video preview" width="92%" />
   </a>
 </p>
 
@@ -114,8 +108,8 @@
       <td align="center" width="50%"><b>再走进 TA 的故事</b></td>
     </tr>
     <tr>
-      <td><img src="assets/showcase/04-character-sheet.png" alt="卢勒斯的动作与表情设计" width="100%" /></td>
-      <td><img src="assets/showcase/01-market-stall.png" alt="卢勒斯在占卜摊的故事镜头" width="100%" /></td>
+      <td><img src="assets/showcase/04-character-sheet.png" alt="Lules character expressions and action studies" width="100%" /></td>
+      <td><img src="assets/showcase/01-market-stall.png" alt="Lules at a fortune-teller's stall" width="100%" /></td>
     </tr>
   </table>
 </div>
@@ -127,8 +121,8 @@
       <td align="center" width="50%"><b>一个还会继续的人生</b></td>
     </tr>
     <tr>
-      <td><img src="assets/showcase/02-radiant-citadel.png" alt="初见耀光城的镜头" width="100%" /></td>
-      <td><img src="assets/showcase/03-open-ending.png" alt="卢勒斯短片开放式结尾镜头" width="100%" /></td>
+      <td><img src="assets/showcase/02-radiant-citadel.png" alt="First glimpse of the Radiant Citadel" width="100%" /></td>
+      <td><img src="assets/showcase/03-open-ending.png" alt="Open ending of the Lules character film" width="100%" /></td>
     </tr>
   </table>
 </div>
@@ -140,6 +134,155 @@
 <div align="center">
 
 ### 让 AI 记住的不只是设定，而是一起走过的冒险。
+
+<i>Every campaign leaves a log. The best ones deserve a film.</i>
+
+</div>
+
+---
+
+<a id="readme-en"></a>
+
+<p align="right">Read in / 阅读语言: <a href="#readme-zh">中文</a> · <a href="#readme-en">English</a></p>
+
+<p align="center">
+  <img src="assets/hero.svg" alt="AI TRPG — Adventures With AI Companions" width="100%" />
+</p>
+
+<div align="center">
+
+# 🎲 AI TRPG
+
+### You build the world. AI characters with minds of their own step into the story.
+
+A multiplayer AI tabletop role-playing app led by a human Dungeon Master. The adventure unfolds through the choices you make together—and when the session ends, it can become a short film about one of its characters.
+
+[Enter the adventure](#enter-the-adventure) · [Meet the characters](#more-than-chatbots) · [From log to film](#when-the-adventure-ends-the-story-begins)
+
+</div>
+
+---
+
+<a id="enter-the-adventure"></a>
+
+## ✨ Enter the adventure
+
+Imagine you're the DM, opening tonight's session with a scene:
+
+> Rain has fallen all night. The tavern door swings open. A soaked messenger sets a sealed letter on the table. “If you want to see the mayor again, don't wait until dawn.”
+
+The party doesn't answer in chorus. One cautious character inspects the wax seal; another is already asking the messenger for directions. Someone else spots blood on his sleeve and says nothing—yet. You can follow any of those reactions and let the story take an unexpected turn.
+
+Here, **AI plays the adventurers, not the Dungeon Master**. The world, NPCs, rules, and final say remain yours. Characters can make suggestions, ask questions, act, or choose to stay silent. You decide when a truth comes to light and what an adventure costs.
+
+<a id="more-than-chatbots"></a>
+
+## 🎭 More than chatbots
+
+Give each character a background, goals, appearance, voice, and lines they will not cross. The same clue means something different to each of them: one worries about a companion, another weighs the risk, and a third remembers an old wound.
+
+We want playing alongside AI characters to feel more like sharing a real table:
+
+- **They choose when to speak.** You don't have to call on everyone every round. A glance, a question, or silence can be exactly right for a character.
+- **They know only what they have experienced.** A secret told to one character doesn't become party knowledge; an absent character doesn't suddenly hear a private scene.
+- **They remember.** Shared escapes, misunderstandings, and unspoken thanks can shape memories and relationships. Two people may remember the same event differently.
+- **They bring their character sheets.** Skills, spells, equipment, and hit points matter. When a roll or ruling is needed, they wait for the DM instead of declaring their own victory.
+- **You can take control at any moment.** AI may draft narration, but it cannot silently make that draft canon. Correct a mistake, and the story continues from the right facts.
+
+Characters can travel with you from one adventure to the next. The point isn't merely a persona that talks; it's a person who changes through what happens at the table.
+
+<p align="center">
+  <img src="assets/multi-agent-system.svg" alt="Human Dungeon Master and independent AI character agents" width="92%" />
+</p>
+
+## 🗝️ How does a session play out?
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="33%"><b>01 · Gather the party</b></td>
+      <td align="center" width="33%"><b>02 · Give them a world</b></td>
+      <td align="center" width="33%"><b>03 · Let choices leave a mark</b></td>
+    </tr>
+    <tr>
+      <td>Choose characters and prepare an adventure. Each companion arrives with abilities, secrets, and goals of their own.</td>
+      <td>Describe the world, play the NPCs, and present the dilemma. Characters respond based on what they know and stop for your ruling when needed.</td>
+      <td>Conversations, disagreements, private actions, and shared experiences become an ongoing adventure log—and change how the characters see each other.</td>
+    </tr>
+  </table>
+</div>
+
+There is no fixed “correct” plot. You may prepare an ancient tomb and spend half an hour persuading its gatekeeper. Or plan a simple lunch and watch a character make a choice that changes their life.
+
+---
+
+<a id="when-the-adventure-ends-the-story-begins"></a>
+
+## 🎬 When the adventure ends, the story begins
+
+After a session, its conversations and actions live on in a log. Choose one character, find the moments that truly changed them, and adapt the adventure you shared into a short film.
+
+The path from log to video shot runs through story adaptation, directing, image-asset planning, storyboard review, and video-prompt writing. Each stage builds on the approved output of the previous one, keeping the story, character designs, and on-screen action consistent.
+
+### From session log to video shots
+
+| Stage | Skill | Output |
+| --- | --- | --- |
+| **1. Find the story** | [Story Adapter](skills/story-adapter/SKILL.md) | Extract key beats from the selected log. Define the character's change, the opening, and the ending; then confirm a video screenplay. It says what happens without yet deciding how to film it. |
+| **2. Direct the shots** | [Video Director](skills/video-director/SKILL.md) | Establish continuity for characters, locations, and props; block the action; and write a shot-by-shot plan. Duration and shot count are planned together: a generated shot typically holds about 5–10 seconds of continuous action, reserving the budget for images that move the story forward. |
+| **3. Plan the image assets** | [Image Asset Prompts](skills/image-asset-prompts/SKILL.md) | Inventory characters, locations, and key props, and collect reference images for designs that already exist. Then prepare positive and negative prompts for five classes: referenced characters, new characters, referenced locations, new locations, and shot start frames with end frames where needed. |
+| **4. Approve the visual storyboard** | [Storyboard QC](skills/storyboard-qc/SKILL.md) | Create character and location anchors and shot images from that inventory. Review each image individually; retry specific failures and lock approved images as visual references. Finally check identity, costume, space, and action across the sequence. |
+| **5. Write video prompts** | MiniMax H3 Prompt | Turn the approved storyboard, reference images, shot start and end states, and movement into a prompt for each video shot. Each prompt describes how the frame evolves, what the characters do, how the camera moves, and the corresponding ambience and music. |
+
+The workflow separates three questions that are easy to blur together: **the screenplay decides what to tell; the shot list decides how we see it; images and video prompts decide how to generate it consistently.** Existing character art can serve as a visual reference. New NPCs and locations get their own anchors first. A fleeting close-up doesn't automatically require another video generation, while a clear action endpoint may call for an extra end frame.
+
+In the end, every shot has a duration, a description, approved reference images, and a prompt ready for MiniMax H3. The story may be reshaped for film, but what a character lived through—and why they made a choice—must remain grounded in the session log.
+
+### What could a character film look like?
+
+**Lules Intro** shows the direction we imagine: meet the character first, then follow them into a world and a story worth remembering.
+
+<p align="center">
+  <a href="assets/showcase/lules-intro-preview.m4v">
+    <img src="assets/showcase/02-radiant-citadel.png" alt="Watch the Lules Intro video preview" width="92%" />
+  </a>
+</p>
+
+<p align="center"><b>▶ Click the image to watch Lules Intro</b></p>
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="50%"><b>Meet the character</b></td>
+      <td align="center" width="50%"><b>Enter their story</b></td>
+    </tr>
+    <tr>
+      <td><img src="assets/showcase/04-character-sheet.png" alt="Lules character expressions and action studies" width="100%" /></td>
+      <td><img src="assets/showcase/01-market-stall.png" alt="Lules at a fortune-teller's stall" width="100%" /></td>
+    </tr>
+  </table>
+</div>
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="50%"><b>A world worth remembering</b></td>
+      <td align="center" width="50%"><b>A life still unfolding</b></td>
+    </tr>
+    <tr>
+      <td><img src="assets/showcase/02-radiant-citadel.png" alt="First glimpse of the Radiant Citadel" width="100%" /></td>
+      <td><img src="assets/showcase/03-open-ending.png" alt="Open ending of the Lules character film" width="100%" /></td>
+    </tr>
+  </table>
+</div>
+
+Many of the story choices, image reviews, and editing steps between a campaign log and a film are still handled by people. We hope to make that journey shorter, so more characters can have a film of their own without losing the story that players and the DM created together.
+
+---
+
+<div align="center">
+
+### Let AI remember not just the character sheet, but the adventure we shared.
 
 <i>Every campaign leaves a log. The best ones deserve a film.</i>
 

@@ -1,0 +1,37 @@
+<svg width="1200" height="360" viewBox="0 0 1200 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="60" y1="20" x2="1120" y2="340" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#17142D"/>
+      <stop offset="0.52" stop-color="#29205A"/>
+      <stop offset="1" stop-color="#3F255D"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#F6D58A"/>
+      <stop offset="1" stop-color="#E89868"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="360" rx="28" fill="url(#bg)"/>
+  <circle cx="1030" cy="80" r="120" fill="#9976FF" opacity="0.12" filter="url(#glow)"/>
+  <circle cx="110" cy="310" r="130" fill="#F0A46A" opacity="0.09" filter="url(#glow)"/>
+  <g opacity="0.5" fill="#F6D58A">
+    <circle cx="92" cy="64" r="2"/><circle cx="154" cy="102" r="3"/><circle cx="1085" cy="250" r="2"/>
+    <path d="M1120 105l3 8 8 3-8 3-3 8-3-8-8-3 8-3 3-8z"/>
+    <path d="M103 206l2 6 6 2-6 2-2 6-2-6-6-2 6-2 2-6z"/>
+  </g>
+  <text x="600" y="118" text-anchor="middle" fill="#F9F3E8" font-family="ui-sans-serif, system-ui, -apple-system" font-size="24" font-weight="600" letter-spacing="7">AI TRPG</text>
+  <text x="600" y="180" text-anchor="middle" fill="url(#gold)" font-family="ui-sans-serif, system-ui, -apple-system" font-size="52" font-weight="800">Adventures With AI Companions</text>
+  <text x="600" y="226" text-anchor="middle" fill="#D9D0EA" font-family="ui-sans-serif, system-ui, -apple-system" font-size="20">Human DM · Multi-Agent Roleplay · Persistent Memory · Log to Video</text>
+  <g transform="translate(278 276)">
+    <rect width="128" height="38" rx="19" fill="#FFFFFF" opacity="0.08"/>
+    <text x="64" y="25" text-anchor="middle" fill="#F8E7BD" font-family="ui-sans-serif, system-ui" font-size="15">01 · CAST</text>
+    <path d="M144 19h54" stroke="#D7B973" stroke-width="2" stroke-dasharray="5 7"/>
+    <rect x="214" width="148" height="38" rx="19" fill="#FFFFFF" opacity="0.08"/>
+    <text x="288" y="25" text-anchor="middle" fill="#F8E7BD" font-family="ui-sans-serif, system-ui" font-size="15">02 · PLAY</text>
+    <path d="M378 19h54" stroke="#D7B973" stroke-width="2" stroke-dasharray="5 7"/>
+    <rect x="448" width="196" height="38" rx="19" fill="#FFFFFF" opacity="0.08"/>
+    <text x="546" y="25" text-anchor="middle" fill="#F8E7BD" font-family="ui-sans-serif, system-ui" font-size="15">03 · REMEMBER</text>
+  </g>
+</svg>
