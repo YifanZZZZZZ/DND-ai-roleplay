@@ -1,0 +1,4 @@
+interface:
+  display_name: "Video Director"
+  short_description: "Build continuity, blocking and a cost-aware shot list"
+  default_prompt: "Use $video-director to turn this approved screenplay into a continuity bible, blocking plan and cost-aware shot list for the downstream image-asset-prompts skill."

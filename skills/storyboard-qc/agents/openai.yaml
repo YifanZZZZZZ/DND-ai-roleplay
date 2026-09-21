@@ -1,0 +1,4 @@
+interface:
+  display_name: "Storyboard QC"
+  short_description: "Review image prompts and assets one by one"
+  default_prompt: "Use $storyboard-qc to confirm the Image Asset Prompts package, then review each image candidate one at a time. Stop for my explicit approval or retry decision."

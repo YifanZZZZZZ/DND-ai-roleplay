@@ -1,0 +1,4 @@
+interface:
+  display_name: "Image Asset Prompts"
+  short_description: "Collect references, then batch-generate image prompts"
+  default_prompt: "Use $image-asset-prompts to inventory all images from my approved screenplay and shot list, open the reference-upload page, and generate positive and negative prompts after I finish uploads."
