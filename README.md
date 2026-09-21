@@ -1,280 +1,146 @@
-# AI TRPG
+<p align="center">
+  <img src="assets/hero.svg" alt="AI TRPG：和有记忆、有性格的 AI 角色一起冒险" width="100%" />
+</p>
 
-## 项目简介
+<div align="center">
 
-一个由真人 DM 主持、多个长期存在的 AI 角色共同参与的本地网页跑团工具。
+# 🎲 AI TRPG
 
-项目的重点不是让 AI 代替 DM 自动生成冒险，而是让 AI 稳定地扮演玩家角色：每个角色拥有独立人设、能力资料、可见信息、长期记忆与成长轨迹；DM 始终掌握世界、NPC、规则结果和叙事裁决权。
+### 你来主持世界，让一群真正有性格的 AI 角色走进故事。
 
-## 当前状态
+一个由真人 DM 主持的多人 AI 跑团 App。冒险发生在你们的对话里；冒险结束后，它还可以成为一部关于角色的短片。
 
-项目已经完成从角色管理到连续 Campaign 跑团的 MVP 闭环，并加入 AI DM 辅助叙事、技能检定和长期关系能力。
+[走进冒险](#-走进冒险) · [认识角色](#-队友不是聊天框) · [故事片段](#-一次冒险真的会发生什么) · [冒险之后](#-冒险结束故事才刚开始)
 
-当前可运行能力：
+</div>
 
-- FastAPI、React/Vite、SQLite 和 Alembic 工程骨架；
-- 全局角色资料创建；
-- 固定模板 Excel 角色卡安全上传、解析预览和确认激活；
-- 角色卡确认前可编辑自动识别的法术及无数值摘要，激活后可独立维护角色法术书；
-- 角色定性身份、实际能力、法术、装备白名单快照；
-- Campaign 创建、阵容与唯一 ACTIVE Campaign 约束；
-- 每个 Campaign 使用一条连续时间线，支持直接启动、暂停、继续、完成、归档、重置和永久删除；
-- HP 查看与修改，修改 Max HP 时同步当前 ACTIVE Campaign 并自动回满；
-- 角色库、角色卡上传、战役阵容、生命周期、连续跑团与 HP 的桌面端操作页面；
-- 两栏跑团主页面、DM 场内消息、消息接收者快照与实时状态刷新；
-- `clientRequestId` 幂等发送、Generation 抢占令牌和“停止 AI 自动对话”控制；
-- DeepSeek OpenAI 兼容接口与 PydanticAI 结构化角色输出；
-- 每条新消息并行询问所有可见角色，协调器只发布一条不冲突的候选气泡；
-- 角色可保持沉默，或在需要结果裁决时等待 DM；发布后会重新广播，两条 DM 消息之间连续发言最多 5 条；
-- OOC 纠正会使错误消息失效，并以带标识的有效替代消息继续运行；
-- 角色拥有可编辑的成长档案、长期记忆、头像、外貌与视觉表现、说话范例、行为规则、绝不清单与用词约定；
-- 系统根据双方共同可知的有效故事，自动维护 Character 之间双向独立的定性关系；
-- Campaign 支持模组大纲、场景笔记和可编辑的具名 NPC 卡片；
-- AI DM 支持可选开场草稿、按需自动叙事草稿和 DM 手动润色，所有草稿均须真人确认后发送；
-- 支持十八项技能加值以及普通、优势、劣势 D20 检定，并保存完整投掷快照；
-- Character Agent 只能使用 DM 已确认法术书中的准确法术名，白名单外法术在发布前强制退回；
-- 支持角色与 Campaign 的 JSON 导出，以及完成后 Campaign 的永久删除；
-- 角色上下文仅包含自己可见的消息、角色卡定性资料、长期记忆及定性健康状态；
-- 模型调用审计记录（模型、状态、耗时和输入/输出 token）；
-- OpenAPI 自动生成前端 DTO；
-- 角色、Campaign 连续时间线、消息可见范围与运行时规则的自动化测试。
+---
 
-当前角色卡解析器只支持项目约定的“DND 5E2024 人物卡〈悲灵 v1.0.0〉”固定模板。真实 Character Agent 与 AI DM 已优先接入 DeepSeek；未配置对应 API Key 时，正式 DM 消息仍会安全保存，系统不会伪造 AI 回复。发布前语义 Validator 默认关闭，可在规则校准完成后通过环境变量启用。
+## ✨ 走进冒险
 
-- [精简产品需求](./PRD.md)
-- [精简技术架构](./ARCHITECTURE.md)
-- [完整产品需求文档](./AI_TRPG_Website_MVP_PRD_v0.3.md)
-- [完整技术架构文档](./AI_TRPG_MVP_TECH_ARCHITECTURE.md)
+想象你是一位 DM，刚刚写下今晚的开场：
 
-## 项目特点
+> 雨下了整夜。酒馆的门被推开，一位浑身湿透的信使把密封的信放在桌上：“如果你们还想见到镇长，就别等到天亮。”
 
-- 真人 DM 拥有最终叙事权和规则裁决权；
-- 支持 1～6 名 AI 角色参与一个 Campaign；
-- Character 是跨 Campaign 长期存在的全局实体；
-- 每个角色只能读取自己实际知道的公开、私密和历史信息；
-- 每个角色可以自主选择发言、行动或保持沉默；
-- 每次 Agent 响应最多发布一个完整消息气泡；
-- 需要外部结果时，所有 AI 停止并等待 DM；
-- DM 可以随时停止未发布 AI 输出或发送新消息接管对话；
-- 支持公开消息、DM 私密消息和角色对 DM 的秘密行动；
-- 支持 OOC 纠正并让相关角色重新处理；
-- 支持角色级滚动摘要、长期记忆和成长档案；
-- 严格维护当前 HP，但只向 AI 提供定性健康状态；
-- 支持 Campaign 和角色资料导出；
-- Campaign 重置或永久删除时同步移除其来源记忆。
+队伍不会齐刷刷地回答“我们接受任务”。谨慎的角色可能先检查封蜡；急性子的角色已经追着信使问路；还有人注意到他袖口的血迹，却暂时没有说出口。你可以接住任何一个反应，让故事朝意想不到的方向走。
 
-## 技术栈
+在这里，**AI 扮演玩家角色，而不是替你当 DM**。场景、NPC、规则结果与最终叙事权始终在你手里。角色可以提议、追问、行动，甚至保持沉默；什么时候揭晓真相、一次冒险会付出什么代价，由你决定。
 
-### 前端
+## 🎭 队友不是聊天框
 
-- React
-- TypeScript
-- Vite
-- React Router
-- TanStack Query
-- CSS Modules + CSS Variables
+你可以为每位角色设定出身、目标、外貌、说话习惯，以及他们绝不会做的事。同一条线索到了不同角色手里，会变成不同的判断：有人先关心同伴，有人先盘算风险，有人则会被一句话勾起旧事。
 
-### 后端
+这个 App 希望让“和 AI 角色一起跑团”更接近真正同桌冒险的感觉：
 
-- Python
-- FastAPI
-- PydanticAI
-- LangGraph（将在多角色编排阶段接入）
-- SQLAlchemy 2.x
-- Alembic
-- SQLite + aiosqlite
-- openpyxl
+- **他们会自己决定要不要开口。** 不必每轮点名，也不会每个人都抢着发表意见；一个眼神、一句反问，或者一次沉默，都可能是符合角色的回应。
+- **他们只知道自己经历过的事。** DM 私下告诉某人的秘密，不会自动变成全队共识；角色离队单独行动时，留在原地的人也不会突然“听见”那边发生了什么。
+- **他们会记得。** 共同脱险、一次误解、没说出口的感谢，都能进入角色的记忆与关系。两个人对同一段经历的看法，也未必相同。
+- **他们带着角色卡上桌。** 技能、法术、装备和生命值不只是背景设定；需要掷骰或裁定时，角色会等 DM 给出结果，而不是自己宣布胜负。
+- **你随时可以接管。** AI 可以帮你起草叙事，但草稿不会越过真人 DM 擅自进入故事。说错了，也可以纠正，让后续对话从正确的事实继续。
 
-### 开发与测试
+角色可以跟着你从一场冒险走向下一场。我们想留下的不只是“一个会说话的人设”，而是一个在经历中慢慢改变的人。
 
-- uv
-- npm
-- Ruff
-- Pyright
-- pytest + pytest-asyncio
-- Vitest
-- Playwright
+## 🗝️ 一场跑团，可以怎么玩？
 
-## 核心架构
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="33%"><b>01 · 组建队伍</b></td>
+      <td align="center" width="33%"><b>02 · 把故事交给他们</b></td>
+      <td align="center" width="33%"><b>03 · 看选择留下痕迹</b></td>
+    </tr>
+    <tr>
+      <td>挑选角色、准备冒险背景。每位队友带着自己的能力、秘密和目标走进队伍。</td>
+      <td>你描述世界、扮演 NPC、抛出难题。角色会依据各自知道的事回应；必要时停下来等你裁决。</td>
+      <td>对话、分歧、私下行动和共同经历汇成一条连续的冒险记录，也改变他们对彼此的看法。</td>
+    </tr>
+  </table>
+</div>
 
-```text
-React Web
-   │
-   ├── REST：读取数据和发送命令
-   └── SSE：接收消息与运行状态变更通知
-   │
-FastAPI
-   ├── Character / Campaign / Runtime / Message Services
-   ├── Runtime Supervisor
-   ├── PydanticAI Character Agents
-   ├── LangGraph Reaction Graph
-   ├── Context & Memory
-   └── Export
-   │
-SQLite + Local File Storage
-```
+这里没有预设的“标准剧情路线”。你可能准备了一座古墓，结果大家先花半小时说服守门人；你也可能只安排了一顿午饭，却在饭后看见某个角色作出改变一生的选择。
 
-每条已发布消息创建一个独立 `AgentRun`。所有有权看到消息的角色会独立、并行地产生沉默或完整候选；纯 Python 协调器按点名、紧急性、发言公平性和记录的随机种子选择一条候选。未选择的候选不会写入消息历史。若该气泡需要 DM 裁决，当前 Run 结束，Campaign Runtime 进入 `WAITING_FOR_DM`；在叙事模式下系统同时按需准备一份待真人审核的 AI DM 草稿。
+---
 
-SQLite 是业务事实的唯一来源。Agent 不保存框架内部长期历史，也不能直接访问或修改数据库。
+## 📖 一次冒险真的会发生什么
 
-## 项目目录
+下面的片段来自已经完成的跑团故事 **《循迹英雄》**。卡斯珀本来只是在替商人寻找一位神秘的“无名英雄”。在石溪村，他先是帮腰不好的老人收鸡蛋，又和村民围坐在一起吃刚出炉的面包。
 
-```text
-DND跑团/
-├── README.md
-├── PRD.md
-├── ARCHITECTURE.md
-├── pyproject.toml
-├── uv.lock
-├── alembic.ini
-├── backend/
-│   ├── alembic/
-│   ├── app/
-│   │   ├── api/
-│   │   ├── domain/
-│   │   ├── services/
-│   │   ├── runtime/
-│   │   ├── agents/
-│   │   ├── context/
-│   │   ├── db/
-│   │   ├── files/
-│   │   └── events/
-│   └── tests/
-├── frontend/
-│   ├── package.json
-│   └── src/
-│       ├── app/
-│       ├── api/
-│       ├── pages/
-│       ├── features/
-│       └── components/
-├── scripts/
-└── docs/
-```
+午餐还没结束，八名山匪闯入村庄。老人和孩子就在他身后。
 
-## 如何运行
+> **卡斯珀：**“人是我杀的。要算账，冲我来。”
+>
+> **匪首：**“就你一个？”
+>
+> **卡斯珀：**“就我一个，够了。这些老人和孩子跟你没仇，让他们走。要见血，我陪你见。”
 
-### 1. 环境要求
+他明知胜算渺茫，还是站在了那里。浑身是伤、确认战斗结束之后，他最先问的是：
 
-- Python 3.11 或更高版本；
-- Node.js 和 npm；
-- uv；
-- DeepSeek API Key（仅在启用真实角色回应时需要）。
+> “……都没事吧。”
 
-### 2. 创建本地配置
+旅程最后，白金之龙的化身告诉他：
 
-```bash
-cp .env.example .env
-```
+> “商人要找的英雄，早已不是我了。在这一刻，那位‘无名英雄’，就是你自己。”
 
-当前至少需要配置数据目录：
+这就是我们想让 App 见证的瞬间：**角色不是因为设定里写着“勇敢”才成为英雄，而是在一次次选择后，真的走到了那个位置。**
 
-```dotenv
-AI_TRPG_DATA_DIR=/absolute/path/to/AI_TRPG_DATA
-AI_TRPG_LLM_PROVIDER=deepseek
-AI_TRPG_CHARACTER_MODEL=deepseek-v4-flash
-AI_TRPG_DEEPSEEK_API_KEY=your-api-key
-AI_TRPG_DEEPSEEK_BASE_URL=https://api.deepseek.com
-AI_TRPG_ENABLE_MESSAGE_VALIDATOR=false
-```
+<sub>这里只展示少量经挑选的剧情摘录；完整跑团记录与角色资料不在公开仓库中。</sub>
 
-`AI_TRPG_ENABLE_MESSAGE_VALIDATOR` 默认为 `false`；在校验规则细化完成前，角色候选消息
-不会被 Validator 阻断。运行失败时，Campaign API 和跑团页面会显示最近一次的错误代码与详情，
-服务器日志同时保留 Run、内部运行时间线、角色和异常堆栈。
+---
 
-运行数据库、上传文件和导出文件必须位于仓库外的 `AI_TRPG_DATA_DIR`，不得提交到 Git。
+## 🎬 冒险结束，故事才刚开始
 
-### 3. 安装后端依赖
+今天，一场跑团会留下可回看的对话和可导出的 Log。我们正在把下一步做成更自然的体验：**结束冒险，选一个角色，和 App 一起把他或她的旅程剪成一支动画短片。**
 
-```bash
-uv sync
-```
+理想中的体验是这样的：你选中某位角色，App 从整场跑团中找出真正改变了 TA 的时刻——初次登场、一次分歧、一场险胜，或一个终于说出口的决定。你可以调整故事重点，确认角色的样貌、服装与场景；随后预览分镜，挑选满意的镜头，让这些片段连成一支有开端、有情绪、有余韵的个人电影。
 
-### 4. 安装前端依赖
+**故事仍以真实跑团记录为依据。** 视频可以重新组织镜头，却不该把没有发生过的事说成角色的经历。你也始终可以审核故事取舍与视觉呈现。
 
-```bash
-npm --prefix frontend ci
-```
+### 一支角色短片，可以是什么样子？
 
-### 5. 初始化或升级数据库
+我们已经用 **《卢勒斯 Intro》** 完成了一次手工参与较多的制作实验。它展示的是目标成片的方向，**不是目前 App 内已经上线的一键生成功能**。
 
-```bash
-uv run alembic upgrade head
-```
+<p align="center">
+  <a href="assets/showcase/lules-intro-preview.m4v">
+    <img src="assets/showcase/02-radiant-citadel.png" alt="点击观看卢勒斯 Intro 视频预览" width="92%" />
+  </a>
+</p>
 
-### 6. 启动开发环境
+<p align="center"><b>▶ 点击画面观看《卢勒斯 Intro》预览</b></p>
 
-终端一：
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="50%"><b>先认识这个人</b></td>
+      <td align="center" width="50%"><b>再走进 TA 的故事</b></td>
+    </tr>
+    <tr>
+      <td><img src="assets/showcase/04-character-sheet.png" alt="卢勒斯的动作与表情设计" width="100%" /></td>
+      <td><img src="assets/showcase/01-market-stall.png" alt="卢勒斯在占卜摊的故事镜头" width="100%" /></td>
+    </tr>
+  </table>
+</div>
 
-```bash
-uv run uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
-```
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="50%"><b>一个值得记住的世界</b></td>
+      <td align="center" width="50%"><b>一个还会继续的人生</b></td>
+    </tr>
+    <tr>
+      <td><img src="assets/showcase/02-radiant-citadel.png" alt="初见耀光城的镜头" width="100%" /></td>
+      <td><img src="assets/showcase/03-open-ending.png" alt="卢勒斯短片开放式结尾镜头" width="100%" /></td>
+    </tr>
+  </table>
+</div>
 
-终端二：
+从跑团 Log 到这支短片，许多关键的故事选择、画面审核和剪辑目前仍由人完成。我们希望未来把这段路缩短，让更多角色都能拥有自己的片尾，而不失去由玩家与 DM 共同创造的那个故事。
 
-```bash
-npm --prefix frontend run dev
-```
+---
 
-随后打开 Vite 输出的本地地址。
+<div align="center">
 
-### 7. 构建前端
+### 让 AI 记住的不只是设定，而是一起走过的冒险。
 
-```bash
-npm --prefix frontend run build
-```
+<i>Every campaign leaves a log. The best ones deserve a film.</i>
 
-当前开发阶段由 Vite 提供前端。FastAPI 同源提供构建产物会在进入可发布版本前接入。
-
-## 检查与测试
-
-```bash
-uv run ruff check .
-uv run ruff format --check backend scripts
-uv run pyright backend/app
-uv run pytest
-uv run alembic check
-npm --prefix frontend run lint
-npm --prefix frontend run test
-npm --prefix frontend run build
-```
-
-CI 中使用假的 Model Adapter 或 PydanticAI TestModel，不调用真实 Gemini 或 DeepSeek。
-
-## 本地数据
-
-建议结构：
-
-```text
-AI_TRPG_DATA/
-├── app-data.sqlite3
-├── uploads/
-│   ├── avatars/
-│   └── character-sheets/
-├── temp/
-└── exports/
-```
-
-以下内容不得提交到 Git：
-
-- `.env`；
-- API Key；
-- SQLite 数据库；
-- 上传的头像和 Excel；
-- 导出文件；
-- 调试日志中的私密内容。
-
-## MVP 范围
-
-MVP 是本地单用户桌面网页，不包含登录、多用户、多 ACTIVE Campaign、移动端、Docker、向量数据库、严格法术位/物品资源系统或 Campaign 导入恢复。
-
-## 文档优先级
-
-发生冲突时按以下顺序处理：
-
-1. [完整 PRD](./AI_TRPG_Website_MVP_PRD_v0.3.md)；
-2. [完整技术架构](./AI_TRPG_MVP_TECH_ARCHITECTURE.md)；
-3. [PRD.md](./PRD.md)；
-4. [ARCHITECTURE.md](./ARCHITECTURE.md)；
-5. README。
+</div>
